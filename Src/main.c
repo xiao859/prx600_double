@@ -28,7 +28,8 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "state_machine.h"
+#include "protect.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -103,16 +104,23 @@ int main(void)
   MX_TIM6_Init();
   MX_TIM7_Init();
   /* USER CODE BEGIN 2 */
+	Load_Config_Params();          //加载配置参数
+  StateMachine_Init();           //初始化状态机
 
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
+	HAL_TIM_Base_Start_IT(&htim6);
+  HAL_TIM_Base_Start_IT(&htim7);
   while (1)
   {
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
+		StateMachine_Run();        //状态机运行
+    Protect_Check_Slow();      //慢速故障检查
+    Comm_Protocol_Task();      //通信协议处理
   }
   /* USER CODE END 3 */
 }
