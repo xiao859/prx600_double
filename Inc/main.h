@@ -59,7 +59,99 @@ void Error_Handler(void);
 /* Private defines -----------------------------------------------------------*/
 
 /* USER CODE BEGIN Private defines */
+#define XRAY_LED_Pin GPIO_PIN_2
+#define XRAY_LED_GPIO_Port GPIOE
+#define FAULT_LED_Pin GPIO_PIN_3
+#define FAULT_LED_GPIO_Port GPIOE
+#define HEART_LED_Pin GPIO_PIN_4
+#define HEART_LED_GPIO_Port GPIOE
+#define HV_V_FAULT_Pin GPIO_PIN_5
+#define HV_V_FAULT_GPIO_Port GPIOE
+#define HV_V_FAULT_EXTI_IRQn EXTI9_5_IRQn
+#define RESET_Pin GPIO_PIN_6
+#define RESET_GPIO_Port GPIOE
+#define HV_C_FAULT_Pin GPIO_PIN_9
+#define HV_C_FAULT_GPIO_Port GPIOF
+#define HV_EN_Pin GPIO_PIN_1
+#define HV_EN_GPIO_Port GPIOC
+#define MCU_LOCK_Pin GPIO_PIN_2
+#define MCU_LOCK_GPIO_Port GPIOC
+#define FILAMENT_EN_Pin GPIO_PIN_3
+#define FILAMENT_EN_GPIO_Port GPIOC
+#define HV_REF_Pin GPIO_PIN_4
+#define HV_REF_GPIO_Port GPIOA
+#define FILA_REF_Pin GPIO_PIN_5
+#define FILA_REF_GPIO_Port GPIOA
+#define POWER_24V_Pin GPIO_PIN_7
+#define POWER_24V_GPIO_Port GPIOA
+#define IS_Pin GPIO_PIN_4
+#define IS_GPIO_Port GPIOC
+#define T_SINK_Pin GPIO_PIN_5
+#define T_SINK_GPIO_Port GPIOC
+#define VS_Pin GPIO_PIN_2
+#define VS_GPIO_Port GPIOB
+#define HV_N_Pin GPIO_PIN_7
+#define HV_N_GPIO_Port GPIOE
+#define T_OIL_Pin GPIO_PIN_8
+#define T_OIL_GPIO_Port GPIOE
+#define IA_Pin GPIO_PIN_9
+#define IA_GPIO_Port GPIOE
+#define HV_P_Pin GPIO_PIN_10
+#define HV_P_GPIO_Port GPIOE
+#define MCU_RX2_Pin GPIO_PIN_15
+#define MCU_RX2_GPIO_Port GPIOE
+#define MCU_TX2_Pin GPIO_PIN_10
+#define MCU_TX2_GPIO_Port GPIOB
+#define EXP_Pin GPIO_PIN_9
+#define EXP_GPIO_Port GPIOD
+#define EXP_EXTI_IRQn EXTI9_5_IRQn
+#define ENABLE_Pin GPIO_PIN_10
+#define ENABLE_GPIO_Port GPIOD
+#define INTERLOCK_Pin GPIO_PIN_11
+#define INTERLOCK_GPIO_Port GPIOD
+#define INTERLOCK_EXTI_IRQn EXTI15_10_IRQn
+#define READY_Pin GPIO_PIN_12
+#define READY_GPIO_Port GPIOD
+#define XRAY_ON_Pin GPIO_PIN_13
+#define XRAY_ON_GPIO_Port GPIOD
+#define FAULT_Pin GPIO_PIN_14
+#define FAULT_GPIO_Port GPIOD
+#define SWDIO_Pin GPIO_PIN_13
+#define SWDIO_GPIO_Port GPIOA
+#define SWCLK_Pin GPIO_PIN_14
+#define SWCLK_GPIO_Port GPIOA
+#define SPI1_NSS_Pin GPIO_PIN_15
+#define SPI1_NSS_GPIO_Port GPIOA
+#define MCU_TX1_Pin GPIO_PIN_10
+#define MCU_TX1_GPIO_Port GPIOC
+#define MCU_RX1_Pin GPIO_PIN_11
+#define MCU_RX1_GPIO_Port GPIOC
+#define MCU_TX3_Pin GPIO_PIN_12
+#define MCU_TX3_GPIO_Port GPIOC
+#define MCU_RX3_Pin GPIO_PIN_2
+#define MCU_RX3_GPIO_Port GPIOD
+#define HOLD_Pin GPIO_PIN_6
+#define HOLD_GPIO_Port GPIOD
+#define DEBUG_TX_Pin GPIO_PIN_6
+#define DEBUG_TX_GPIO_Port GPIOB
+#define DEBUG_RX_Pin GPIO_PIN_7
+#define DEBUG_RX_GPIO_Port GPIOB
+#define WP_Pin GPIO_PIN_9
+#define WP_GPIO_Port GPIOB
 
+/* USER CODE BEGIN Private defines */
+//extern SPI_HandleTypeDef hspi1;
+
+extern UART_HandleTypeDef huart1;
+extern UART_HandleTypeDef huart4;
+extern UART_HandleTypeDef huart3;
+extern UART_HandleTypeDef huart5;
+
+extern DMA_HandleTypeDef hdma_usart1_rx;
+extern DMA_HandleTypeDef hdma_usart1_tx;
+extern ADC_HandleTypeDef hadc2;
+extern ADC_HandleTypeDef hadc3;
+extern DAC_HandleTypeDef hdac1;
 /* USER CODE END Private defines */
 
 #ifdef __cplusplus

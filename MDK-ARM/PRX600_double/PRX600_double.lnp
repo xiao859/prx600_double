@@ -35,6 +35,7 @@
 "prx600_double\stm32g4xx_hal_uart_ex.o"
 "prx600_double\system_stm32g4xx.o"
 "prx600_double\state_machine.o"
+"prx600_double\app_uart.o"
 "prx600_double\protect.o"
 "prx600_double\exposure.o"
 "prx600_double\pi_contorl.o"

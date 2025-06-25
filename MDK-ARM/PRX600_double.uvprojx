@@ -339,7 +339,7 @@
               <MiscControls></MiscControls>
               <Define>USE_HAL_DRIVER,STM32G474xx</Define>
               <Undefine></Undefine>
-              <IncludePath>../Inc;../Drivers/STM32G4xx_HAL_Driver/Inc;../Drivers/STM32G4xx_HAL_Driver/Inc/Legacy;../Drivers/CMSIS/Device/ST/STM32G4xx/Include;../Drivers/CMSIS/Include;..\..\prx600_double;..\Upgrade;..\State;..\Protocol;..\Protect;..\core</IncludePath>
+              <IncludePath>../Inc;../Drivers/STM32G4xx_HAL_Driver/Inc;../Drivers/STM32G4xx_HAL_Driver/Inc/Legacy;../Drivers/CMSIS/Device/ST/STM32G4xx/Include;../Drivers/CMSIS/Include;../../prx600_double;../Upgrade;../State;../Protocol;../Protect;../core</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -1403,6 +1403,13 @@
         </Group>
         <Group>
           <GroupName>Application/Drivers</GroupName>
+          <Files>
+            <File>
+              <FileName>app_uart.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\App_drivers\app_uart.c</FilePath>
+            </File>
+          </Files>
         </Group>
         <Group>
           <GroupName>Application/Upgrade</GroupName>
@@ -1434,6 +1441,16 @@
               <FileName>xray.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\core\xray.c</FilePath>
+            </File>
+          </Files>
+        </Group>
+        <Group>
+          <GroupName>Application/comm</GroupName>
+          <Files>
+            <File>
+              <FileName>comm_protocol.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Protocol\comm_protocol.c</FilePath>
             </File>
           </Files>
         </Group>

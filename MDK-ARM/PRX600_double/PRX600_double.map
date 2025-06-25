@@ -50,7 +50,9 @@ Section Cross References
     main.o(i.main) refers to tim.o(i.MX_TIM6_Init) for MX_TIM6_Init
     main.o(i.main) refers to tim.o(i.MX_TIM7_Init) for MX_TIM7_Init
     main.o(i.main) refers to state_machine.o(i.StateMachine_Init) for StateMachine_Init
+    main.o(i.main) refers to stm32g4xx_hal_tim.o(i.HAL_TIM_Base_Start_IT) for HAL_TIM_Base_Start_IT
     main.o(i.main) refers to state_machine.o(i.StateMachine_Run) for StateMachine_Run
+    main.o(i.main) refers to tim.o(.bss) for htim6
     gpio.o(i.MX_GPIO_Init) refers to rt_memclr_w.o(.text) for __aeabi_memclr4
     gpio.o(i.MX_GPIO_Init) refers to stm32g4xx_hal_gpio.o(i.HAL_GPIO_WritePin) for HAL_GPIO_WritePin
     gpio.o(i.MX_GPIO_Init) refers to stm32g4xx_hal_gpio.o(i.HAL_GPIO_Init) for HAL_GPIO_Init
@@ -673,7 +675,7 @@ Section Cross References
     stm32g4xx_hal_uart.o(i.UART_DMAError) refers to stm32g4xx_hal_uart.o(i.UART_EndTxTransfer) for UART_EndTxTransfer
     stm32g4xx_hal_uart.o(i.UART_DMAError) refers to stm32g4xx_hal_uart.o(i.UART_EndRxTransfer) for UART_EndRxTransfer
     stm32g4xx_hal_uart.o(i.UART_DMAError) refers to stm32g4xx_hal_uart.o(i.HAL_UART_ErrorCallback) for HAL_UART_ErrorCallback
-    stm32g4xx_hal_uart.o(i.UART_DMAReceiveCplt) refers to stm32g4xx_hal_uart.o(i.HAL_UART_RxCpltCallback) for HAL_UART_RxCpltCallback
+    stm32g4xx_hal_uart.o(i.UART_DMAReceiveCplt) refers to app_uart.o(i.HAL_UART_RxCpltCallback) for HAL_UART_RxCpltCallback
     stm32g4xx_hal_uart.o(i.UART_DMAReceiveCplt) refers to stm32g4xx_hal_uart.o(i.HAL_UARTEx_RxEventCallback) for HAL_UARTEx_RxEventCallback
     stm32g4xx_hal_uart.o(i.UART_DMARxAbortCallback) refers to stm32g4xx_hal_uart.o(i.HAL_UART_AbortCpltCallback) for HAL_UART_AbortCpltCallback
     stm32g4xx_hal_uart.o(i.UART_DMARxHalfCplt) refers to stm32g4xx_hal_uart.o(i.HAL_UART_RxHalfCpltCallback) for HAL_UART_RxHalfCpltCallback
@@ -683,16 +685,16 @@ Section Cross References
     stm32g4xx_hal_uart.o(i.UART_DMATxAbortCallback) refers to stm32g4xx_hal_uart.o(i.HAL_UART_AbortCpltCallback) for HAL_UART_AbortCpltCallback
     stm32g4xx_hal_uart.o(i.UART_DMATxHalfCplt) refers to stm32g4xx_hal_uart.o(i.HAL_UART_TxHalfCpltCallback) for HAL_UART_TxHalfCpltCallback
     stm32g4xx_hal_uart.o(i.UART_DMATxOnlyAbortCallback) refers to stm32g4xx_hal_uart.o(i.HAL_UART_AbortTransmitCpltCallback) for HAL_UART_AbortTransmitCpltCallback
-    stm32g4xx_hal_uart.o(i.UART_RxISR_16BIT) refers to stm32g4xx_hal_uart.o(i.HAL_UART_RxCpltCallback) for HAL_UART_RxCpltCallback
+    stm32g4xx_hal_uart.o(i.UART_RxISR_16BIT) refers to app_uart.o(i.HAL_UART_RxCpltCallback) for HAL_UART_RxCpltCallback
     stm32g4xx_hal_uart.o(i.UART_RxISR_16BIT) refers to stm32g4xx_hal_uart.o(i.HAL_UARTEx_RxEventCallback) for HAL_UARTEx_RxEventCallback
     stm32g4xx_hal_uart.o(i.UART_RxISR_16BIT_FIFOEN) refers to stm32g4xx_hal_uart.o(i.HAL_UART_ErrorCallback) for HAL_UART_ErrorCallback
-    stm32g4xx_hal_uart.o(i.UART_RxISR_16BIT_FIFOEN) refers to stm32g4xx_hal_uart.o(i.HAL_UART_RxCpltCallback) for HAL_UART_RxCpltCallback
+    stm32g4xx_hal_uart.o(i.UART_RxISR_16BIT_FIFOEN) refers to app_uart.o(i.HAL_UART_RxCpltCallback) for HAL_UART_RxCpltCallback
     stm32g4xx_hal_uart.o(i.UART_RxISR_16BIT_FIFOEN) refers to stm32g4xx_hal_uart.o(i.HAL_UARTEx_RxEventCallback) for HAL_UARTEx_RxEventCallback
     stm32g4xx_hal_uart.o(i.UART_RxISR_16BIT_FIFOEN) refers to stm32g4xx_hal_uart.o(i.UART_RxISR_16BIT) for UART_RxISR_16BIT
-    stm32g4xx_hal_uart.o(i.UART_RxISR_8BIT) refers to stm32g4xx_hal_uart.o(i.HAL_UART_RxCpltCallback) for HAL_UART_RxCpltCallback
+    stm32g4xx_hal_uart.o(i.UART_RxISR_8BIT) refers to app_uart.o(i.HAL_UART_RxCpltCallback) for HAL_UART_RxCpltCallback
     stm32g4xx_hal_uart.o(i.UART_RxISR_8BIT) refers to stm32g4xx_hal_uart.o(i.HAL_UARTEx_RxEventCallback) for HAL_UARTEx_RxEventCallback
     stm32g4xx_hal_uart.o(i.UART_RxISR_8BIT_FIFOEN) refers to stm32g4xx_hal_uart.o(i.HAL_UART_ErrorCallback) for HAL_UART_ErrorCallback
-    stm32g4xx_hal_uart.o(i.UART_RxISR_8BIT_FIFOEN) refers to stm32g4xx_hal_uart.o(i.HAL_UART_RxCpltCallback) for HAL_UART_RxCpltCallback
+    stm32g4xx_hal_uart.o(i.UART_RxISR_8BIT_FIFOEN) refers to app_uart.o(i.HAL_UART_RxCpltCallback) for HAL_UART_RxCpltCallback
     stm32g4xx_hal_uart.o(i.UART_RxISR_8BIT_FIFOEN) refers to stm32g4xx_hal_uart.o(i.HAL_UARTEx_RxEventCallback) for HAL_UARTEx_RxEventCallback
     stm32g4xx_hal_uart.o(i.UART_RxISR_8BIT_FIFOEN) refers to stm32g4xx_hal_uart.o(i.UART_RxISR_8BIT) for UART_RxISR_8BIT
     stm32g4xx_hal_uart.o(i.UART_SetConfig) refers to stm32g4xx_hal_rcc.o(i.HAL_RCC_GetPCLK1Freq) for HAL_RCC_GetPCLK1Freq
@@ -728,6 +730,15 @@ Section Cross References
     system_stm32g4xx.o(i.SystemCoreClockUpdate) refers to system_stm32g4xx.o(.constdata) for .constdata
     state_machine.o(i.StateMachine_Init) refers to state_machine.o(.data) for .data
     state_machine.o(i.StateMachine_Run) refers to state_machine.o(.data) for .data
+    app_uart.o(i.HAL_UART_RxCpltCallback) refers to stm32g4xx_hal_uart.o(i.HAL_UART_Receive_IT) for HAL_UART_Receive_IT
+    app_uart.o(i.HAL_UART_RxCpltCallback) refers to app_uart.o(.bss) for .bss
+    app_uart.o(i.HAL_UART_RxCpltCallback) refers to usart.o(.bss) for huart4
+    app_uart.o(i.restart_usart_receive) refers to stm32g4xx_hal_uart.o(i.HAL_UART_Receive_IT) for HAL_UART_Receive_IT
+    app_uart.o(i.restart_usart_receive) refers to app_uart.o(.bss) for .bss
+    app_uart.o(i.restart_usart_receive) refers to usart.o(.bss) for huart4
+    app_uart.o(i.send_message) refers to stm32g4xx_hal_uart.o(i.HAL_UART_Transmit) for HAL_UART_Transmit
+    app_uart.o(i.send_message) refers to app_uart.o(.bss) for .bss
+    app_uart.o(i.send_message) refers to usart.o(.bss) for huart4
     __main.o(!!!main) refers to __rtentry.o(.ARM.Collect$$rtentry$$00000000) for __rt_entry
     __rtentry.o(.ARM.Collect$$rtentry$$00000000) refers (Special) to __rtentry2.o(.ARM.Collect$$rtentry$$0000000A) for __rt_entry_li
     __rtentry.o(.ARM.Collect$$rtentry$$00000000) refers (Special) to __rtentry2.o(.ARM.Collect$$rtentry$$0000000D) for __rt_entry_main
@@ -1213,7 +1224,6 @@ Removing Unused input sections from the image.
     Removing stm32g4xx_hal_tim.o(i.HAL_TIM_Base_MspInit), (2 bytes).
     Removing stm32g4xx_hal_tim.o(i.HAL_TIM_Base_Start), (128 bytes).
     Removing stm32g4xx_hal_tim.o(i.HAL_TIM_Base_Start_DMA), (200 bytes).
-    Removing stm32g4xx_hal_tim.o(i.HAL_TIM_Base_Start_IT), (140 bytes).
     Removing stm32g4xx_hal_tim.o(i.HAL_TIM_Base_Stop), (38 bytes).
     Removing stm32g4xx_hal_tim.o(i.HAL_TIM_Base_Stop_DMA), (58 bytes).
     Removing stm32g4xx_hal_tim.o(i.HAL_TIM_Base_Stop_IT), (48 bytes).
@@ -1460,5 +1470,13 @@ Removing Unused input sections from the image.
     Removing system_stm32g4xx.o(.revsh_text), (4 bytes).
     Removing system_stm32g4xx.o(.rrx_text), (6 bytes).
     Removing system_stm32g4xx.o(i.SystemCoreClockUpdate), (128 bytes).
+    Removing app_uart.o(.rev16_text), (4 bytes).
+    Removing app_uart.o(.revsh_text), (4 bytes).
+    Removing app_uart.o(.rrx_text), (6 bytes).
+    Removing app_uart.o(i.HAL_UART_RxCpltCallback), (208 bytes).
+    Removing app_uart.o(i.restart_usart_receive), (104 bytes).
+    Removing app_uart.o(i.send_message), (112 bytes).
+    Removing app_uart.o(.bss), (216 bytes).
+    Removing app_uart.o(.bss), (648 bytes).
 
-620 unused section(s) (total 48950 bytes) removed from the image.
+627 unused section(s) (total 50112 bytes) removed from the image.

@@ -45,6 +45,6 @@ prx600_double\main.o: ../Inc/iwdg.h
 prx600_double\main.o: ../Inc/tim.h
 prx600_double\main.o: ../Inc/usart.h
 prx600_double\main.o: ../Inc/gpio.h
-prx600_double\main.o: ..\State\state_machine.h
-prx600_double\main.o: ..\Protect\protect.h
-prx600_double\main.o: ..\core\exposure.h
+prx600_double\main.o: ../State/state_machine.h
+prx600_double\main.o: ../Protect/protect.h
+prx600_double\main.o: ../core/exposure.h
