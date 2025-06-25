@@ -2,6 +2,8 @@
 #include "stm32g4xx_hal.h"
 //#include "update.h"
 #include <string.h>
+#include <stdio.h>
+#include <stdarg.h>
 
 volatile UART_FILE uart1 = {0};
 volatile UART_FILE uart3 = {0};
@@ -85,6 +87,19 @@ void send_message(uint8_t msg_id, uint8_t data1, uint8_t data2)
 
     memcpy((uint8_t *)uart5.uart_tx_buf, &msg_reply, MESSAGE_PACK_LENGTH);
     HAL_UART_Transmit(&huart5, (uint8_t*)uart5.uart_tx_buf, MESSAGE_PACK_LENGTH, 1000);
+}
+
+void debug_tx3(const char *format,...)
+{
+	unsigned char UartTx3Buf[128];
+	uint16_t len;
+	va_list args;
+	va_start(args,format);
+	len = vsnprintf((char*)UartTx3Buf,sizeof(UartTx3Buf)+1,(char*)format,args);
+	va_end(args);
+	HAL_UART_Transmit(&huart3, UartTx3Buf, len, 1000);
+
+	return;
 }
 
 

@@ -34,6 +34,8 @@ prx600_double\stm32g4xx_hal_msp.o: ../Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx
 prx600_double\stm32g4xx_hal_msp.o: ../Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal_iwdg.h
 prx600_double\stm32g4xx_hal_msp.o: ../Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal_pwr.h
 prx600_double\stm32g4xx_hal_msp.o: ../Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal_pwr_ex.h
+prx600_double\stm32g4xx_hal_msp.o: ../Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal_spi.h
+prx600_double\stm32g4xx_hal_msp.o: ../Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal_spi_ex.h
 prx600_double\stm32g4xx_hal_msp.o: ../Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal_tim.h
 prx600_double\stm32g4xx_hal_msp.o: ../Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal_tim_ex.h
 prx600_double\stm32g4xx_hal_msp.o: ../Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal_uart.h

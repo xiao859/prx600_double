@@ -1,6 +1,6 @@
-prx600_double\comm_protocol.o: ..\Protocol\comm_protocol.c
-prx600_double\comm_protocol.o: ..\Protocol\comm_protocol.h
-prx600_double\comm_protocol.o: D:\Program Files\UV5\ARM\ARMCC\Bin\..\include\stdio.h
+prx600_double\comm_protocol.o: ..\Comm\comm_protocol.c
+prx600_double\comm_protocol.o: ..\Comm\comm_protocol.h
+prx600_double\comm_protocol.o: D:\Program Files\UV5\ARM\ARMCC\Bin\..\include\stdint.h
 prx600_double\comm_protocol.o: ../Inc/main.h
 prx600_double\comm_protocol.o: ../Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal.h
 prx600_double\comm_protocol.o: ../Inc/stm32g4xx_hal_conf.h
@@ -9,7 +9,6 @@ prx600_double\comm_protocol.o: ../Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal
 prx600_double\comm_protocol.o: ../Drivers/CMSIS/Device/ST/STM32G4xx/Include/stm32g4xx.h
 prx600_double\comm_protocol.o: ../Drivers/CMSIS/Device/ST/STM32G4xx/Include/stm32g474xx.h
 prx600_double\comm_protocol.o: ../Drivers/CMSIS/Include/core_cm4.h
-prx600_double\comm_protocol.o: D:\Program Files\UV5\ARM\ARMCC\Bin\..\include\stdint.h
 prx600_double\comm_protocol.o: ../Drivers/CMSIS/Include/cmsis_version.h
 prx600_double\comm_protocol.o: ../Drivers/CMSIS/Include/cmsis_compiler.h
 prx600_double\comm_protocol.o: ../Drivers/CMSIS/Include/cmsis_armcc.h
@@ -36,7 +35,22 @@ prx600_double\comm_protocol.o: ../Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal
 prx600_double\comm_protocol.o: ../Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal_iwdg.h
 prx600_double\comm_protocol.o: ../Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal_pwr.h
 prx600_double\comm_protocol.o: ../Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal_pwr_ex.h
+prx600_double\comm_protocol.o: ../Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal_spi.h
+prx600_double\comm_protocol.o: ../Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal_spi_ex.h
 prx600_double\comm_protocol.o: ../Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal_tim.h
 prx600_double\comm_protocol.o: ../Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal_tim_ex.h
 prx600_double\comm_protocol.o: ../Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal_uart.h
 prx600_double\comm_protocol.o: ../Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal_uart_ex.h
+prx600_double\comm_protocol.o: ..\Comm\debug_mode.h
+prx600_double\comm_protocol.o: D:\Program Files\UV5\ARM\ARMCC\Bin\..\include\stdio.h
+prx600_double\comm_protocol.o: ../core/xray.h
+prx600_double\comm_protocol.o: ../core/exposure.h
+prx600_double\comm_protocol.o: ..\App_drivers\app_uart.h
+prx600_double\comm_protocol.o: ..\Comm\app_fun.h
+prx600_double\comm_protocol.o: D:\Program Files\UV5\ARM\ARMCC\Bin\..\include\string.h
+prx600_double\comm_protocol.o: D:\Program Files\UV5\ARM\ARMCC\Bin\..\include\math.h
+prx600_double\comm_protocol.o: ..\App_drivers\app_spi.h
+prx600_double\comm_protocol.o: ../Inc/spi.h
+prx600_double\comm_protocol.o: ../core/calibrate.h
+prx600_double\comm_protocol.o: ..\Comm\comm_string.h
+prx600_double\comm_protocol.o: ../Protect/protect.h

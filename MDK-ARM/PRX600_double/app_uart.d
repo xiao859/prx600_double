@@ -36,8 +36,11 @@ prx600_double\app_uart.o: ../Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal_flas
 prx600_double\app_uart.o: ../Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal_iwdg.h
 prx600_double\app_uart.o: ../Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal_pwr.h
 prx600_double\app_uart.o: ../Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal_pwr_ex.h
+prx600_double\app_uart.o: ../Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal_spi.h
+prx600_double\app_uart.o: ../Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal_spi_ex.h
 prx600_double\app_uart.o: ../Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal_tim.h
 prx600_double\app_uart.o: ../Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal_tim_ex.h
 prx600_double\app_uart.o: ../Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal_uart.h
 prx600_double\app_uart.o: ../Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal_uart_ex.h
 prx600_double\app_uart.o: D:\Program Files\UV5\ARM\ARMCC\Bin\..\include\string.h
+prx600_double\app_uart.o: D:\Program Files\UV5\ARM\ARMCC\Bin\..\include\stdarg.h

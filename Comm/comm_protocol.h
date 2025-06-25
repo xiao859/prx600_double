@@ -4,7 +4,7 @@
 /* 1、头文件包含 */
 #include <stdint.h>
 #include "main.h"
-
+#include "debug_mode.h"
 /* 2、宏定义 */
 /* ADC通道多次采样取平均 */
 #define ADC_SAMPLE_CYCLE_NUM            16
@@ -207,7 +207,7 @@ typedef struct {
 } adc_sampled_value;
 extern volatile adc_sampled_value sampled_data;
 extern volatile adc_sampled_value sampled_data_last;
-
+extern volatile xray_debug_data debug_data;
 /* 各种保护值，包括是采样的和配置的 */
 typedef struct {
     /* 最大值和最小值保护，采样超限报警 */

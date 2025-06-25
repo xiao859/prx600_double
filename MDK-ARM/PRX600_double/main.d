@@ -34,6 +34,8 @@ prx600_double\main.o: ../Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal_flash_ra
 prx600_double\main.o: ../Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal_iwdg.h
 prx600_double\main.o: ../Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal_pwr.h
 prx600_double\main.o: ../Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal_pwr_ex.h
+prx600_double\main.o: ../Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal_spi.h
+prx600_double\main.o: ../Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal_spi_ex.h
 prx600_double\main.o: ../Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal_tim.h
 prx600_double\main.o: ../Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal_tim_ex.h
 prx600_double\main.o: ../Drivers/STM32G4xx_HAL_Driver/Inc/stm32g4xx_hal_uart.h
@@ -42,9 +44,17 @@ prx600_double\main.o: ../Inc/adc.h
 prx600_double\main.o: ../Inc/dac.h
 prx600_double\main.o: ../Inc/dma.h
 prx600_double\main.o: ../Inc/iwdg.h
+prx600_double\main.o: ../Inc/spi.h
 prx600_double\main.o: ../Inc/tim.h
 prx600_double\main.o: ../Inc/usart.h
 prx600_double\main.o: ../Inc/gpio.h
 prx600_double\main.o: ../State/state_machine.h
 prx600_double\main.o: ../Protect/protect.h
 prx600_double\main.o: ../core/exposure.h
+prx600_double\main.o: ..\App_drivers\app_uart.h
+prx600_double\main.o: D:\Program Files\UV5\ARM\ARMCC\Bin\..\include\stdio.h
+prx600_double\main.o: ..\Comm\comm_string.h
+prx600_double\main.o: ..\Comm\comm_protocol.h
+prx600_double\main.o: ..\Comm\debug_mode.h
+prx600_double\main.o: ../core/calibrate.h
+prx600_double\main.o: ..\App_drivers\app_spi.h

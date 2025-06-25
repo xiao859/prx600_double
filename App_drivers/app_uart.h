@@ -45,7 +45,7 @@ extern volatile UART_FILE uart3;
 void restart_usart_receive(USART_TypeDef *Instance);
 
 void send_message(uint8_t msg_id, uint8_t data1, uint8_t data2);
-
+void debug_tx3(const char *format,...);
 #endif
 
 

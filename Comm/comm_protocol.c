@@ -9,18 +9,18 @@
 #include "comm_protocol.h"
 #include <stdio.h>
 #include "main.h"
-#include "xray_io_config.h"
-#include "app_usart.h"
-#include "app_funcs.h"
-#include "log.h"
+#include "xray.h"
+#include "app_uart.h"
+#include "app_fun.h"
+//#include "log.h"
 #include <string.h>
 #include "math.h"
-#include "stmflash.h"
-#include "spi_flash.h"
-#include "CT_mode.h"
+//#include "stmflash.h"
+#include "app_spi.h"
+#include "exposure.h"
 #include "debug_mode.h"
 #include "calibrate.h"
-#include "temperature.h"
+#include "protect.h"
 
 uint16_t adc_buffer2[ADC_2_CHANNEL_NUM * ADC_SAMPLE_CYCLE_NUM];
 uint16_t adc_buffer3[ADC_3_CHANNEL_NUM * ADC_SAMPLE_CYCLE_NUM];
@@ -112,46 +112,46 @@ void flash_table_init()
     config_data.expo_count_total=0;       /* 开始前将曝光周期计时清零 */
 }
 
-void parament_init(void)
-{
-    set_hv_state(HVPS_SM_ID_IDLE);
+//void parament_init(void)
+//{
+//    set_hv_state(HVPS_SM_ID_IDLE);
 
-    config_data.tube_vol  = 60;
-    config_data.tube_curr = 10;
+//    config_data.tube_vol  = 60;
+//    config_data.tube_curr = 10;
 
-    /* FLASH中参数是否擦写：
-       判断到valid_flag == 0，说明从boot擦写过来的：需要把参数重新擦写到FLASH中。（为了满足用户手动改参数）
-       否则，说明是正常的上电动作，直接把FLASH更新到参数中
-    */
-   if (stmflash_read_word(PARAM_CODE_VALID_ADDR) != PARAM_CODE_VALID_FLAG) {
-        /* 1、设置标志位 */
-        update_paraFlash();
+//    /* FLASH中参数是否擦写：
+//       判断到valid_flag == 0，说明从boot擦写过来的：需要把参数重新擦写到FLASH中。（为了满足用户手动改参数）
+//       否则，说明是正常的上电动作，直接把FLASH更新到参数中
+//    */
+//   if (stmflash_read_word(PARAM_CODE_VALID_ADDR) != PARAM_CODE_VALID_FLAG) {
+//        /* 1、设置标志位 */
+//        update_paraFlash();
 
-        /* 2、把参数擦写到FLASH中 */
-        xray_parament_table table_local;
-        /* 2.1、读取全部FLASH */
-        get_flash_parament((uint8_t *)&table_local, sizeof(xray_parament_table));
+//        /* 2、把参数擦写到FLASH中 */
+//        xray_parament_table table_local;
+//        /* 2.1、读取全部FLASH */
+//        get_flash_parament((uint8_t *)&table_local, sizeof(xray_parament_table));
 
-        /* 2.2、赋值需要的参数，曝光次数和时间不需要刷新 */
-        parm_table.expo_times_total = table_local.expo_times_total;
-        parm_table.expo_count_total = table_local.expo_count_total;
+//        /* 2.2、赋值需要的参数，曝光次数和时间不需要刷新 */
+//        parm_table.expo_times_total = table_local.expo_times_total;
+//        parm_table.expo_count_total = table_local.expo_count_total;
 
-        memcpy((uint8_t *)&table_local.currValue[0], (uint8_t *)&parm_table.currValue[0], sizeof(parm_table.currValue));
-        memcpy((uint8_t *)&table_local.currRef[0], (uint8_t *)&parm_table.currRef[0], sizeof(parm_table.currRef));
-        memcpy((uint8_t *)&table_local.currRef_c[0], (uint8_t *)&parm_table.currRef_c[0], sizeof(parm_table.currRef_c));
+//        memcpy((uint8_t *)&table_local.currValue[0], (uint8_t *)&parm_table.currValue[0], sizeof(parm_table.currValue));
+//        memcpy((uint8_t *)&table_local.currRef[0], (uint8_t *)&parm_table.currRef[0], sizeof(parm_table.currRef));
+//        memcpy((uint8_t *)&table_local.currRef_c[0], (uint8_t *)&parm_table.currRef_c[0], sizeof(parm_table.currRef_c));
 
-        /* 2.3、写入到FLASH中 */
-        wirte_flash_parament((uint8_t *)&table_local, sizeof(xray_parament_table));
+//        /* 2.3、写入到FLASH中 */
+//        wirte_flash_parament((uint8_t *)&table_local, sizeof(xray_parament_table));
 
-   } else {
-        /* 把校准过的值赋值给表 */
-        // xray_parament_table table_local;
-        get_flash_parament((uint8_t *)&parm_table, sizeof(xray_parament_table));
-        // memcpy((uint8_t *)&parm_table, (uint8_t *)&table_local, sizeof(xray_parament_table));
-   }
+//   } else {
+//        /* 把校准过的值赋值给表 */
+//        // xray_parament_table table_local;
+//        get_flash_parament((uint8_t *)&parm_table, sizeof(xray_parament_table));
+//        // memcpy((uint8_t *)&parm_table, (uint8_t *)&table_local, sizeof(xray_parament_table));
+//   }
 
-   return;
-}
+//   return;
+//}
 
 /* AA 55 33 00 00 CD */
 uint8_t message_check(USART_TypeDef *Instance)
@@ -232,170 +232,7 @@ void cmd_parser()
     return;
 }
 
-void xray_fast_protect()
-{
-    if (!Is_Exposing() || !xray_data.isCheckAvailable) {
-        return;
-    }
 
-    /* 管电压 */
-    float tube_vol_p = sampled_data.tube_vol_p_value * 2;
-    float tube_vol_n = sampled_data.tube_vol_n_value * 2;
-
-    /* 过压判断 */
-    if (tube_vol_p > para_range.tube_vol_max_protected) {
-        xray_data.tube_kv_overCount++;
-        if (xray_data.tube_kv_overCount > FAST_PROTECT_TIME_RANGE) mHVPS_Fault.FAULT_REG2.bit.KV1_OVER = 1;
-    } else {
-        xray_data.tube_kv_overCount = 0;
-    }
-
-    /* 欠压判断 */
-    if (tube_vol_p < para_range.tube_vol_min_protected) {
-        xray_data.tube_kv_underCount++;
-        if (xray_data.tube_kv_underCount > FAST_PROTECT_TIME_RANGE) mHVPS_Fault.FAULT_REG2.bit.KV1_UNDER = 1;
-    } else {
-        xray_data.tube_kv_underCount = 0;
-    }
-
-    float tube_vol_target = Is_CalibrateMode() ? CALI_HV_REF : (float)config_data.tube_vol;
-    /* 油箱打火 oil_strike_count */
-    if (((tube_vol_p > tube_vol_target - 5) && (tube_vol_n < tube_vol_target - 5)) ||
-        ((tube_vol_n > tube_vol_target - 5) && (tube_vol_p < tube_vol_target - 5))) {
-            xray_data.oil_strike_count++;
-            if (xray_data.oil_strike_count > FAST_PROTECT_TIME_RANGE) xray_data.oil_strike_times++;
-
-            if (xray_data.oil_strike_times >= STRIKE_TIEMS_RANGE) mHVPS_Fault.FAULT_REG4.bit.ARC1 = 1;
-    } else {
-        xray_data.oil_strike_count = 0;
-    }
-
-    /*  球管打火 tube_strike_count */
-    if ((tube_vol_p < tube_vol_target - 5) && (tube_vol_n < tube_vol_target - 5)) {
-            xray_data.tube_strike_count++;
-            if (xray_data.tube_strike_count > OVER_RANGE_TIME_LIMIT) xray_data.tube_strike_times++;
-            if (xray_data.tube_strike_times >= STRIKE_TIEMS_RANGE)  mHVPS_Fault.FAULT_REG4.bit.ARC2 = 1;
-    } else {
-        xray_data.tube_strike_count = 0;
-    }
-
-    /* 电压断线 */
-    if (tube_vol_p < 1 || tube_vol_n < 1) {
-        xray_data.tube_vol_broken_count++;
-        if (xray_data.tube_vol_broken_count > FAST_PROTECT_TIME_RANGE) mHVPS_Fault.FAULT_REG4.bit.HV_broken1 = 1;
-    } else {
-        xray_data.tube_vol_broken_count = 0;
-    }
-
-    /* 管电流 */
-    float tube_curr = sampled_data.tube_curr_value * 10; /* 比较时的单位：0.1mA */
-
-    /* 过流判断 */
-    if (tube_curr > para_range.tube_curr_max_protected) {
-        xray_data.tube_mA_overCount++;
-        if (xray_data.tube_mA_overCount > FAST_PROTECT_TIME_RANGE) mHVPS_Fault.FAULT_REG2.bit.MA1_OVER = 1;
-    } else {
-        xray_data.tube_mA_overCount = 0;
-    }
-
-    /* 欠流判断 */
-    if (tube_curr < para_range.tube_curr_min_protected) {
-        xray_data.tube_mA_underCount++;
-        if (xray_data.tube_mA_underCount > FAST_PROTECT_TIME_RANGE) mHVPS_Fault.FAULT_REG2.bit.MA1_UNDER = 1;
-    } else {
-        xray_data.tube_mA_underCount = 0;
-    }
-
-    /* 电流采样断线 */
-    if (tube_curr < 1) {
-        xray_data.tube_curr_broken_count++;
-        if (xray_data.tube_curr_broken_count > FAST_PROTECT_TIME_RANGE) mHVPS_Fault.FAULT_REG4.bit.current_broken1 = 1;
-    } else {
-        xray_data.tube_curr_broken_count = 0;
-    }
-
-    float fila_vol = sampled_data.filament_vol_value;
-    if (fila_vol > para_range.filament_vol_max_protected) {
-        xray_data.fila_vol_overCount++;
-        if (xray_data.fila_vol_overCount > FAST_PROTECT_TIME_RANGE) mHVPS_Fault.FAULT_REG4.bit.LAMP1_OV = 1;
-    } else {
-        xray_data.fila_vol_overCount = 0;
-    }
-
-    if (fila_vol < para_range.filament_vol_min_protected) {
-        xray_data.fila_vol_underCount++;
-        if (xray_data.fila_vol_underCount > FAST_PROTECT_TIME_RANGE) mHVPS_Fault.FAULT_REG1.bit.LAMP1_UV = 1;
-    } else {
-        xray_data.fila_vol_underCount = 0;
-    }
-
-    return;
-}
-
-void xray_parament_protect()
-{
-    /* 灯丝开启，长时间不曝光 */
-    if (config_data.fila_protect_cnt > para_range.fila_protect_cnt_max) {
-        mHVPS_Fault.FAULT_REG4.bit.lamp_wait_overtime=1;
-    }
-
-    if (ctrl_data.interlock == 0) {
-        xray_data.interLock_count++;
-        if (xray_data.interLock_count > OVER_RANGE_TIME_LIMIT) mHVPS_Fault.FAULT_REG1.bit.INTERLOCK1 = 1;
-        /* 计时，超限报警 */
-    } else {
-        xray_data.interLock_count = 0;
-    }
-
-    /* 单次曝光超过预计时间 */
-    if (config_data.expo_count > para_range.expo_time_limit) {
-        mHVPS_Fault.FAULT_REG3.bit.EXPO1_OVERTIME = 1;
-    }
-
-    if (sampled_data.power_24v_value > para_range.power_24v_max_protected) {
-        xray_data.pwr_24_overCount++;
-        if (xray_data.pwr_24_overCount > 20 * OVER_RANGE_TIME_LIMIT) mHVPS_Fault.FAULT_REG2.bit.V24_OV = 1;
-    } else {
-        xray_data.pwr_24_overCount = 0;
-        mHVPS_Fault.FAULT_REG2.bit.V24_OV = 0;
-    }
-
-    if (sampled_data.power_24v_value < para_range.power_24v_min_protected) {
-        xray_data.pwr_24_underCount++;
-        if (xray_data.pwr_24_underCount > 20 * OVER_RANGE_TIME_LIMIT) mHVPS_Fault.FAULT_REG2.bit.V24_UV = 1;
-    } else {
-        xray_data.pwr_24_underCount = 0;
-        mHVPS_Fault.FAULT_REG2.bit.V24_UV = 0;
-    }
-
-    float temp_oil = get_temp(sampled_data.temp_oil_value);
-    sampled_data.oil_temp = temp_oil;
-    if (temp_oil > para_range.temp_oil_max_protected || temp_oil < para_range.temp_oil_min_protected) {
-        mHVPS_Fault.FAULT_REG1.bit.OIL_TEMP1 = 1;
-    } else {
-        mHVPS_Fault.FAULT_REG1.bit.OIL_TEMP1 = 0;
-    }
-
-    if (temp_oil > para_range.temp_oil_warning) {
-        mHVPS_Fault.FAULT_REG1.bit.OIL_OT1 = 1;
-        // xray_data.oil_temp_errCount++;
-        // if (xray_data.oil_temp_errCount > OVER_RANGE_TIME_LIMIT) mHVPS_Fault.FAULT_REG1.bit.OIL_OT1 = 1;
-    }
-
-    mHVPS_Fault.FAULT_REG1.bit.OIL_OT1 = (mHVPS_Fault.FAULT_REG1.bit.OIL_OT1 & (temp_oil > para_range.temp_oil_recovery));
-
-    // /* 油箱直接报过来的故障 */
-    // if (ctrl_data.hv_vol_fault || ctrl_data.hv_curr_fault) {
-    //     mHVPS_Fault.FAULT_REG1.bit.HV_HARDW_FAULT = 1;
-    // }
-
-    // mHVPS_Fault.FAULT_REG2.bit.MA1_OVER = 1;
-    // mHVPS_Fault.FAULT_REG2.bit.MA1_UNDER = 1;
-    // mHVPS_Fault.FAULT_REG2.bit.KV1_OVER = 1;
-    // mHVPS_Fault.FAULT_REG2.bit.KV1_UNDER = 1;
-
-    return;
-}
 
 /* 进行一些开始前的初始化， */
 void hvState_ilde_init()

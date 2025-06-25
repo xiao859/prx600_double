@@ -22,6 +22,7 @@
 #include "dac.h"
 #include "dma.h"
 #include "iwdg.h"
+#include "spi.h"
 #include "tim.h"
 #include "usart.h"
 #include "gpio.h"
@@ -30,6 +31,9 @@
 /* USER CODE BEGIN Includes */
 #include "state_machine.h"
 #include "protect.h"
+#include "comm_protocol.h"
+#include "comm_string.h"
+#include "app_spi.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -103,24 +107,32 @@ int main(void)
   MX_IWDG_Init();
   MX_TIM6_Init();
   MX_TIM7_Init();
+  MX_SPI1_Init();
+  MX_TIM5_Init();
   /* USER CODE BEGIN 2 */
-	Load_Config_Params();          //加载配置参数
   StateMachine_Init();           //初始化状态机
-
+	
+	bsp_read_info();
+	registerFunc_init();
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
 	HAL_TIM_Base_Start_IT(&htim6);
   HAL_TIM_Base_Start_IT(&htim7);
+	
+	flash_table_init();
   while (1)
   {
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
+		cmd_parser();
+    cmd_parser_string();
+		
+		
 		StateMachine_Run();        //状态机运行
     Protect_Check_Slow();      //慢速故障检查
-    Comm_Protocol_Task();      //通信协议处理
   }
   /* USER CODE END 3 */
 }
