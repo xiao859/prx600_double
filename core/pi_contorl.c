@@ -13,22 +13,25 @@ PARAM_PID  param_pid;
 
 void pid_Init(float target, uint32_t ref_init, uint8_t isPulseMode)
 {
-    if (isPulseMode) {
+    if (isPulseMode) 
+		{
 	    user_pid.Kp = 25;
 	    user_pid.Ti = 1;
-    } else {
-        user_pid.Kp = 4;
+    } 
+		else 
+		{
+      user_pid.Kp = 4;
 	    user_pid.Ti = 0.001;
     }
 
-	user_pid.currTarget = target;
+		user_pid.currTarget = target;
 
-	param_pid.Error     = 0;
-    param_pid.lastError     = 0;
-	param_pid.integral  = 0;
-	param_pid.Out_pid   = 0;
-    param_pid.coeff     = 1;
-    param_pid.config_ref = ref_init;
+		param_pid.Error     = 0;
+		param_pid.lastError     = 0;
+		param_pid.integral  = 0;
+		param_pid.Out_pid   = 0;
+		param_pid.coeff     = 1;
+		param_pid.config_ref = ref_init;
 
     return;
 }

@@ -5,7 +5,7 @@
 #include <stdint.h>
 
 /* 2、宏定义 */
-#define LC_CMD_NUM              17
+#define LC_CMD_NUM              28
 
 /* 3、数据类型定义 */
 typedef struct

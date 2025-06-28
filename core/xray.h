@@ -15,8 +15,8 @@
 void config_ready_signal(uint16_t value);
 void config_xrayOn_signal(uint16_t value);
 void config_fault_signal(uint16_t value);
-uint16_t get_expo_pin(void);
-uint16_t get_enable_pin(void);
+uint16_t get_expo_pin(uint16_t n);
+uint16_t get_enable_pin(uint16_t n);
 uint16_t get_interLock_pin(void);
 
 void config_HVEn_signal(uint16_t value);
@@ -25,8 +25,8 @@ void config_reset_signal(uint16_t value);
 uint16_t get_tube_curr_fault_pin(void);
 uint16_t get_tube_vol_fault_pin(void);
 
-void config_filamentOn_signal(uint16_t value);
-uint16_t get_filament_pin(void);
+void config_filamentOn_signal(uint16_t value,uint16_t n);
+uint16_t get_filament_pin(uint16_t n);
 
 void heartBeat_led(void);
 void xray_on_led(uint16_t value);

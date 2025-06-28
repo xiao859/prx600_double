@@ -4,8 +4,10 @@
 /* 1、头文件包含 */
 #include <stdint.h>
 #include "main.h"
-#include "debug_mode.h"
+//#include "debug_mode.h"
 /* 2、宏定义 */
+#define XRAY_NUMS                       2
+
 /* ADC通道多次采样取平均 */
 #define ADC_SAMPLE_CYCLE_NUM            16
 
@@ -16,15 +18,15 @@
 
 #define ADDA_FULL_SCALE_VIL_VALUE       (3.3f)
 
-#define Is_Exposing()                   ((hv_state == HVPS_SM_ID_EXPOSURING) || (hv_state == HPVS_SM_ID_CAL_EXPOSURING) || (hv_state == HVPS_SM_ID_TRAIN_EXPOSURING))
+#define Is_Exposing()                   ((hv_state[0] == HVPS_SM_ID_EXPOSURING) || (hv_state[0] == HPVS_SM_ID_CAL_EXPOSURING) || (hv_state[0] == HVPS_SM_ID_TRAIN_EXPOSURING)||(hv_state[1] == HVPS_SM_ID_EXPOSURING) || (hv_state[1] == HPVS_SM_ID_CAL_EXPOSURING) || (hv_state[1] == HVPS_SM_ID_TRAIN_EXPOSURING))
 
-#define Is_FaultState()                 (hv_state == HVPS_SM_ID_FAULT)
+#define Is_FaultState()                 (hv_state[0] == HVPS_SM_ID_FAULT||hv_state[0] == HVPS_SM_ID_FAULT)
 
-#define Is_CalibrateMode()              ((hv_state >= HPVS_SM_ID_CAL_PREPARE) && (hv_state <= HPVS_SM_ID_CAL_END))
+#define Is_CalibrateMode()              ((hv_state[0] >= HPVS_SM_ID_CAL_PREPARE) && (hv_state[0] <= HPVS_SM_ID_CAL_END)|| (hv_state[1] >= HPVS_SM_ID_CAL_PREPARE) && (hv_state[1] <= HPVS_SM_ID_CAL_END))
 
-#define Is_CTMode()                     (((int)hv_state >= HVPS_SM_ID_IDLE) && (hv_state <= HVPS_SM_ID_EXPO_END))
+#define Is_CTMode()                     ((hv_state[0] >= HVPS_SM_ID_IDLE) && (hv_state[0] <= HVPS_SM_ID_EXPO_END)||(hv_state[1] >= HVPS_SM_ID_IDLE) && (hv_state[1] <= HVPS_SM_ID_EXPO_END))
 
-#define Is_DebugMode()                  ((hv_state >= HVPS_SM_ID_TRAIN_IDLE) && (hv_state <= HVPS_SM_ID_TRAIN_END))
+#define Is_DebugMode()                  ((hv_state[0] >= HVPS_SM_ID_TRAIN_IDLE) && (hv_state[0] <= HVPS_SM_ID_TRAIN_END)||(hv_state[1] >= HVPS_SM_ID_TRAIN_IDLE) && (hv_state[1] <= HVPS_SM_ID_TRAIN_END))
 
 #define IDLE_HV_REF                     0
 
@@ -59,7 +61,9 @@ typedef enum {
     SCI_MSG_INQ_LAMP_SW,
     SCI_MSG_INQ_LAMP_HW,
     SCI_MSG_INQ_EXPO_TIME1,
+	  SCI_MSG_INQ_EXPO_TIME2,
     SCI_MSG_INQ_EXPO_COUNT1,
+	  SCI_MSG_INQ_EXPO_COUNT2,
     SCI_MSG_INQ_AUTOCALIBRA,
     SCI_MSG_INQ_XSOURCE_SW,
 
@@ -67,8 +71,11 @@ typedef enum {
     SCI_MSG_SET_TUBE_V,
     SCI_MSG_SET_TUBE_I,
     SCI_MSG_SET_MAX_TIME,
-    SCI_MSG_SET_EXP_COUNTCLR,
-    SCI_MSG_SET_EXP_TIMECLR,
+    SCI_MSG_SET_EXP1_COUNTCLR,
+		SCI_MSG_SET_EXP2_COUNTCLR,
+    SCI_MSG_SET_EXP1_TIMECLR,
+		SCI_MSG_SET_EXP2_TIMECLR,
+		SCI_MSG_SET_ENABLE,
 
     SCI_MSG_CTRL_RST=0x30,
     SCI_MSG_CTRL_CAL,
@@ -126,28 +133,34 @@ typedef enum
 
     HVPS_SM_ID_FAULT = 0xFF            	// 故障，收到0x30报文清除故障后进入HVPS_SM_ID_IDLE
 } hvps_sm_state;
-extern volatile hvps_sm_state hv_state;
+extern volatile hvps_sm_state hv_state[XRAY_NUMS];
 
 /* 射源模式，脉冲或者连续 */
 typedef enum
 {
-    XRAY_MODE_PULSE      = 0x00,           /* 脉冲模式 */
-    XRAY_MODE_CONTINUOUS = 0x01,           /* 连续模式 */
+    XRAY_MODE_S_CONTINUOUS = 0x00,           /* 连续模式 */
+		XRAY_MODE_S_PULSE      = 0x01,           /* 脉冲模式 */
+	  XRAY_MODE_D_CONTINUOUS = 0x02,           /* 连续模式 */
+		XRAY_MODE_D_PULSE      = 0x03,           /* 脉冲模式 */
 } xray_mode;
-
+extern volatile xray_mode xrayMode;
 /* MCU指令控制数据 */
 typedef struct
 {
     /* input from MCU: EXIT IO */
-    uint8_t     enable;         /* 使能信号，射源从空闲转为工作状态 */
-    uint8_t     expo;           /* 曝光信号 */
+    uint8_t     enable[XRAY_NUMS];         /* 使能信号，射源从空闲转为工作状态 */
+    uint8_t     expo[XRAY_NUMS];           /* 曝光信号 */
     uint8_t     interlock;      /* 互锁开信号 */
     uint8_t     hv_vol_fault;   /* 高压电压过压故障 */
     uint8_t     hv_curr_fault;  /* 高压电流过流故障 */
 
-    uint8_t     filament_on;    /* 灯丝开启 */
+    uint8_t     filament_on[XRAY_NUMS];    /* 灯丝开启 */
 
     xray_mode   xrayMode;
+	
+    uint16_t xray_current; 
+	
+	  uint16_t xray_switch_counter;    
 
 } cmd_control_data;
 extern volatile cmd_control_data ctrl_data;
@@ -165,25 +178,25 @@ typedef struct
     uint8_t mcu_lock;       /* 高压互锁 */
     uint8_t reset;          /* 故障复位 */
 
-    int8_t  tube_vol;        /* 串口配置的管电压和管电流 */
-    float   tube_curr;       /* 管电流，单位1mA */
-    uint8_t tube_curr_index; /* 管电流查表索引 */
+    int8_t  tube_vol[XRAY_NUMS];        /* 串口配置的管电压和管电流 */
+    float   tube_curr[XRAY_NUMS];       /* 管电流，单位1mA */
+    uint8_t tube_curr_index[XRAY_NUMS]; /* 管电流查表索引 */
 
-    float   tube_vol_realtime;  /* 管电压基准实时配置值 */
-    float   tube_vol_step;      /* 管电压基准上升步长 */
+    float   tube_vol_realtime[XRAY_NUMS];  /* 管电压基准实时配置值 */
+    float   tube_vol_step[XRAY_NUMS];      /* 管电压基准上升步长 */
 
-    float   fila_ref_target;    /* 灯丝基准目标值 */
-    float   fila_ref_realtime;  /* 灯丝基准实时配置值 */
-    float   fila_ref_step;      /* 灯丝基准上升步长 */
+    float   fila_ref_target[XRAY_NUMS];    /* 灯丝基准目标值 */
+    float   fila_ref_realtime[XRAY_NUMS];  /* 灯丝基准实时配置值 */
+    float   fila_ref_step[XRAY_NUMS];      /* 灯丝基准上升步长 */
 
     /* output to filament*/
-    uint8_t filament_en;    /* 灯丝电源使能 */
+    uint8_t filament_en[XRAY_NUMS];    /* 灯丝电源使能 */
 
     /* other data */
-    uint32_t expo_count;         /* 射源曝光计时，单次的 */
-    uint32_t expo_count_total;   /* 射源总曝光计时，从上电开始计算 */
-    uint32_t expo_time_expect;   /* 曝光时间设置，换算成了周期数 */
-    uint32_t fila_protect_cnt;   /* 灯丝开启未曝光保护计数 */
+    uint32_t expo_count[XRAY_NUMS];         /* 射源曝光计时，单次的 */
+    uint32_t expo_count_total[XRAY_NUMS];   /* 射源总曝光计时，从上电开始计算 */
+    uint32_t expo_time_expect[XRAY_NUMS];   /* 曝光时间设置，换算成了周期数 */
+    uint32_t fila_protect_cnt[XRAY_NUMS];   /* 灯丝开启未曝光保护计数 */ 
 
 } xray_config_data;
 extern volatile xray_config_data config_data;
@@ -207,7 +220,7 @@ typedef struct {
 } adc_sampled_value;
 extern volatile adc_sampled_value sampled_data;
 extern volatile adc_sampled_value sampled_data_last;
-extern volatile xray_debug_data debug_data;
+//extern volatile xray_debug_data debug_data;
 /* 各种保护值，包括是采样的和配置的 */
 typedef struct {
     /* 最大值和最小值保护，采样超限报警 */
@@ -246,7 +259,7 @@ typedef struct {
 
     uint32_t fila_protect_cnt_max;       /* 灯丝开启未曝光最大计数 */
 } xray_parament_range;
-extern volatile xray_parament_range para_range;
+extern volatile xray_parament_range para_range[XRAY_NUMS];
 
 /* 电流查表 */
 typedef struct {
@@ -257,7 +270,7 @@ typedef struct {
     uint32_t    currRef[FILAMENT_CURRENT_TABLE_ORDER];        /* 电流基准表 */
     uint32_t    currRef_c[FILAMENT_CURRENT_TABLE_ORDER];        /* 电流基准表 */
 } xray_parament_table;
-extern volatile xray_parament_table parm_table;
+extern volatile xray_parament_table parm_table[XRAY_NUMS];
 
 /* 版本号 */
 typedef struct {
@@ -291,23 +304,23 @@ extern uint16_t adc_buffer2[ADC_2_CHANNEL_NUM * ADC_SAMPLE_CYCLE_NUM];
 extern uint16_t adc_buffer3[ADC_3_CHANNEL_NUM * ADC_SAMPLE_CYCLE_NUM];
 
 /* 4、函数声明 */
-hvps_sm_state get_hv_state(void);
+hvps_sm_state get_hv_state(uint16_t n);
 
-void set_hv_state(hvps_sm_state state);
+void set_hv_state(hvps_sm_state state,uint16_t n);
 void cmd_parser(void);
-void xray_parament_protect(void);
+
 void xray_system_disable(void);
 void xray_system_fault_check(void);
-uint32_t get_filamentRef(float tube_current);
+uint32_t get_filamentRef(float tube_current,uint16_t n);
 void parament_init(void);
 void save_parament_to_flash(void);
-void config_hvref_slope(void);
-void config_filament_ref_slop(void);
-void config_filamentRef(void);
+void config_hvref_slope(uint16_t n);
+void config_filament_ref_slop(uint16_t n);
+void config_filamentRef(uint16_t n);
 void disable_hvref(void);
-void disable_filamentref(void);
+void disable_filamentref(uint16_t n);
 void flash_table_init(void);
-void hvState_ilde_init(void);
-void xray_fast_protect(void);
+void hvState_ilde_init(uint16_t n);
+
 
 #endif

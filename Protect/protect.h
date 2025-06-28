@@ -13,7 +13,8 @@ extern volatile adc_sampled_value sampled_data_last;
 void Protect_Check_Quick(void);            // 中断中快速检测（互锁/过流）
 void Protect_Check_Slow(void);             // 主循环中慢速检测
 unsigned char Protect_GetTrigger(ExposureSource src);  //获取曝光状态
-
+void xray_fast_protect(uint16_t n);
+void xray_parament_protect(uint16_t n);
 
 #define Is_System_Without_Fault()       ((mHVPS_Fault.FAULT_REG1.value == 0) && \
                                          (mHVPS_Fault.FAULT_REG2.value == 0) && \

@@ -34,6 +34,7 @@
 #include "comm_protocol.h"
 #include "comm_string.h"
 #include "app_spi.h"
+#include "xray.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -110,7 +111,7 @@ int main(void)
   MX_SPI1_Init();
   MX_TIM5_Init();
   /* USER CODE BEGIN 2 */
-  StateMachine_Init();           //初始化状态机
+ // StateMachine_Init();           //初始化状态机
 	
 	bsp_read_info();
 	registerFunc_init();
@@ -131,7 +132,7 @@ int main(void)
     cmd_parser_string();
 		
 		
-		StateMachine_Run();        //状态机运行
+	//	StateMachine_Run();        //状态机运行
     Protect_Check_Slow();      //慢速故障检查
   }
   /* USER CODE END 3 */
@@ -184,7 +185,48 @@ void SystemClock_Config(void)
 }
 
 /* USER CODE BEGIN 4 */
+void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
+{
+  /* USER CODE BEGIN Callback 0 */
+  /* 1¡¢ÆØ¹âÈÎÎñ 50kHz£» 2¡¢¼ÆÊ± 10kHz; */
+  /* USER CODE END Callback 0 */
+  if (htim->Instance == TIM6) {
+    ctrl_data.hv_vol_fault  = get_tube_vol_fault_pin();
+    ctrl_data.hv_curr_fault = get_tube_curr_fault_pin();
+    ctrl_data.interlock     = get_interLock_pin();
 
+    if (Is_FaultState()) {
+      xray_CT_disable(0);
+			xray_CT_disable(1);
+    }
+
+    if (Is_CTMode()) {
+      ctrl_data.expo[0]   = get_expo_pin(0);
+      ctrl_data.enable[0] = get_enable_pin(0);
+      ct_task();
+    } else if (Is_CalibrateMode()) {
+      calibrate_task();
+    } 
+//		else if (Is_DebugMode()) {
+//      debug_task();
+//    }
+  }
+
+//  if (htim->Instance == TIM7) {
+//    xray_fast_protect();
+//  }
+
+//  if (htim->Instance == TIM16) {
+//    heartbeat_led_count++;
+//    if (heartbeat_led_count % 10000 == 0) heartBeat_led();
+//  }
+
+  if (htim->Instance == TIM17) {
+
+  }
+
+  /* USER CODE END Callback 1 */
+}
 /* USER CODE END 4 */
 
 /**

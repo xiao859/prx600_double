@@ -1650,6 +1650,16 @@
               <FileType>1</FileType>
               <FilePath>..\core\calibrate.c</FilePath>
             </File>
+            <File>
+              <FileName>lamp.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\core\lamp.c</FilePath>
+            </File>
+            <File>
+              <FileName>lamp.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\core\lamp.h</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
