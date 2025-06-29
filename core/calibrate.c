@@ -1,275 +1,152 @@
-/*
- *  calibrate.c
- *
- *  Created on: Mar 04, 2025
- *  Author: Administrator
- *
- */
+///*
+// *  calibrate.c
+// *
+// *  Created on: Mar 04, 2025
+// *  Author: Administrator
+// *
+// */
 
 #include "calibrate.h"
-#include "exposure.h"
-#include <stdio.h>
-#include "comm_string.h"
-#include "comm_protocol.h"
-#include "xray.h"
-#include "pi_control.h"
-#include "delay.h"
-#include "app_spi.h"
-#include "app_uart.h"
+#include "lamp.h"
+#include "HV_exposure.h"
+#include "adc.h"
+#include "time.h"
+//#include "comm_protocol.h"
+//#include "xray.h"
+//#include "pi_control.h"
+//#include "delay.h"
+//#include "app_spi.h"
+//#include "app_uart.h"
 
-volatile xray_calibrate_data cali_data;
-
-/* Ð£×¼²ÎÊý£º
- * µ¥µçÁ÷Ð£×¼Ê±¼ä£º3.2s
- * Âö³å£º120msÖÜÖÜÆÚ£¬15msÆØ¹â
- * */
-void calibrate_mode_config()
+#define LAMP_PREHEAT_COUNT  640000//ç¯ä¸é¢„çƒ­è®¡æ•°
+#define ENABLE_CYCLE_COUNT  656000//ä½¿èƒ½å‘¨æœŸè®¡æ•°
+#define ENABLE_EFFECT_COUNT  256000
+#define EXPO_DELAY_COUNT     128000 //æ›å…‰å»¶æ—¶è®¡æ•°
+#define EXPO_CYCLE_COUNT     9600//æ›å…‰å‘¨æœŸè®¡æ•°
+#define EXPO_EFFECT_COUNT    1200//æ›å…‰æœ‰æ•ˆè®¡æ•°
+#define EXPO_DEAD_COUNT    5400//æ›å…‰æ­»åŒºè®¡æ•°
+#define EXPO2_EFFECT_COUNT   6600
+#define STORAGE_TIME_COUNT   80000
+volatile ctrl_calibr ctrl_calibr_data;
+extern TIM_HandleTypeDef htim5;
+void Autocalibrationcount()
 {
-    if (Is_PulseMode()) {
-        cali_data.expoCycle_perCurrent[0] = (uint32_t)((CALI_SINGLE_CURR_TIME * 1000) / CALI_PULSE_SIGLE_CURR_PERIOD);
-        cali_data.expoTime_expect[0]      = CALI_PULSE_CURR_EXPO_TIME * 50;
-        cali_data.coolTime_expect[0]      = (CALI_PULSE_SIGLE_CURR_PERIOD - CALI_PULSE_CURR_EXPO_TIME) * 50;
-    } else {
-        cali_data.expoCycle_perCurrent[0] = 1;
-        cali_data.expoTime_expect[0]      = CALI_SINGLE_CURR_TIME * 1000 * 50;
-        cali_data.coolTime_expect[0]      = 0;
-    }
+    static uint16_t idex_c = 0 ;
 
-    return;
-}
+    if(ctrl_calibr_data.calibraflag == 1)
+    {
+        // æ‰“å¼€ä¸¤ä¸ªç¯ä¸çš„ Buckï¼ˆç¯ä¸1 ä»ä¸º PWM æŽ§åˆ¶ï¼‰
+        Lamp_Buck_On(0);
+        Lamp_Buck_On(1);
 
-void calibrate_para_init()
-{
-    cali_data.mode = XRAY_MODE_D_PULSE;
-    cali_data.curr_index[0]    = 0;
-    cali_data.cycle_count[0]   = 0;
-    cali_data.timmer_count[0]  = 1;
-    ctrl_data.filament_on[0]   = 1;
-    cali_data.para_save_flag[0] = 0;
+        ctrl_calibr_data.calibr_lampctrl_count++;
+        ctrl_calibr_data.calibr_expo1_count++;
 
-    cali_data.tube_vol_step[0] = ((float)(CALI_HV_REF - IDLE_HV_REF) / 100);
+        if(ctrl_calibr_data.calibr_lampctrl_count >= LAMP_PREHEAT_COUNT)
+        {
+            ctrl_calibr_data.calibr_lampctrl_count = LAMP_PREHEAT_COUNT;
+            ctrl_calibr_data.calibr_enble_count++;
 
-    config_data.fila_ref_realtime[0] = 0;
-    config_data.fila_ref_step[0] = IDLE_FILAMENT_REF / (20 * 50);          /* 20msÉÏÉýÊ±¼ä */
-	
-	  cali_data.curr_index[1]    = 0;
-    cali_data.cycle_count[1]   = 0;
-    cali_data.timmer_count[1]  = 1;
-    ctrl_data.filament_on[1]   = 1;
-    cali_data.para_save_flag[1] = 0;
-
-    cali_data.tube_vol_step[1] = ((float)(CALI_HV_REF - IDLE_HV_REF) / 100);
-
-    config_data.fila_ref_realtime[1] = 0;
-    config_data.fila_ref_step[1] = IDLE_FILAMENT_REF / (20 * 50);          /* 20msÉÏÉýÊ±¼ä */
-
-    return;
-}
-
-/* Ê¹ÄÜ¸ßÑ¹´¥·¢ÐÅºÅ */
-void xray_HV_enable(uint16_t value)
-{
-    config_HVEn_signal(value);      /* ¸ßµçÆ½¿ª */
-    config_xrayOn_signal(value);    /* µÍµçÆ½¿ª */
-
-    return;
-}
-
-/* ¸üÐÂÐ£×¼½á¹ûµ½±íÖÐ */
-void filament_ref_update(uint8_t curr_idx)
-{
-    if (Is_PulseMode()) {
-        parm_table[0].currRef[curr_idx]   = param_pid.config_ref;
-    } else {
-        parm_table[0].currRef_c[curr_idx] = param_pid.config_ref;
-    }
-
-
-    return;
-}
-
-void config_filamentRef_cali(uint8_t curr_index)
-{
-    uint32_t fila_vol_ref = (Is_PulseMode()) ?
-        parm_table[0].currRef[curr_index] : parm_table[0].currRef_c[curr_index];
-
-    /* ²âÊÔ´úÂë£¬Îª1.4v£¬¶ÔÓ¦1.4/3.3*4095 = 1737 */
-    // fila_vol_ref = 1900;
-    HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_2, DAC_ALIGN_12B_R, fila_vol_ref);
-
-    return;
-}
-
-void config_hvref_cali()
-{
-    if (get_hv_state(0) == HPVS_SM_ID_CAL_EXPOSURING) {
-        if (cali_data.tube_vol_realtime[0] < CALI_HV_REF) cali_data.tube_vol_realtime[0] += cali_data.tube_vol_step[0];
-    } else {
-        if (cali_data.tube_vol_realtime[0] > IDLE_HV_REF) cali_data.tube_vol_realtime[0] -= cali_data.tube_vol_step[0];
-    }
-
-    cali_data.tube_vol_realtime[0] = MAX(MIN(cali_data.tube_vol_realtime[0], CALI_HV_REF), IDLE_HV_REF);
-
-    uint32_t tube_vol_ref = (uint32_t)((cali_data.tube_vol_realtime[0] / 64) / ADDA_FULL_SCALE_VIL_VALUE * 4095);  /* 0~2.5V ¶ÔÓ¦ 0~160kV */
-
-    HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_1, DAC_ALIGN_12B_R, tube_vol_ref);
-
-    return;
-}
-
-void calibrate_task()
-{
-    if (cali_data.timmer_count[0] >= 1) cali_data.timmer_count[0]++;
-    xray_data.isCheckAvailable[0] = 0;
-
-    /* Ê¹ÄÜ¹Ø±ÕÖ±½ÓÍË³ö */
-    if (ctrl_data.enable[0] == 0) {
-        xray_system_disable();
-        disable_hvref();
-        disable_filamentref(0);
-        set_hv_state(HVPS_SM_ID_IDLE,0);
-        return;
-    }
-
-    if (get_hv_state(0) == HPVS_SM_ID_CAL_PREPARE) {
-        // if (ctrl_data.interlock == 1) config_mcuLock_signal(1);
-        config_mcuLock_signal(1);
-
-        /* ²ÎÊýÔ¤Éè */
-        calibrate_mode_config();
-
-        /* Ê¹ÄÜµÆË¿ */
-        config_filamentOn_signal(1,0);
-        config_filament_ref_slop(0);
-
-        /* µÆË¿Ô¤ÈÈ2.5Ãë */
-        if (cali_data.timmer_count[0] > TIMER6_2P5_SECOND_CYCLES) {
-            set_hv_state(HPVS_SM_ID_CAL_RUN,0);
-            cali_data.timmer_count[0] = 1;
-            /* PIDÏµÊýÖØÖÃ£¬×¢ÒâÃ¿´Î¿ªÊ¼RUN¶¼ÐèÒªÖØÖÃ£¬±ÜÃâÉÏ´ÎµÄÒÅÁô */
-            uint32_t currRef = (Is_PulseMode()) ?
-                parm_table[0].currRef[cali_data.curr_index[0]] : parm_table[0].currRef_c[cali_data.curr_index[0]];
-            pid_Init(parm_table[0].currValue[cali_data.curr_index[0]], currRef, Is_PulseMode());
-        }
-
-    } else if (get_hv_state(0) == HPVS_SM_ID_CAL_RUN) {
-        /* ÅäÖÃµÆË¿µçÔ´ºÍ¸ßÑ¹µçÔ´ DACÖµ */
-        config_hvref_cali();
-        config_filamentRef_cali(cali_data.curr_index[0]);
-
-        /* Ã¿¸öµçÁ÷¼äÐèÒªÓÐ5ÃëµÄ¼ä¸ôÊ±¼ä */
-        if (cali_data.timmer_count[0] >= TIMER6_5_SECOND_CYCLES) {
-            // xray_HV_enable(1);  /* ¿ªÊ¼ÆØ¹â */
-            set_hv_state(HPVS_SM_ID_CAL_EXPOSURING,0);
-            cali_data.timmer_count[0] = 1;
-        }
-    } else if (get_hv_state(0) == HPVS_SM_ID_CAL_EXPOSURING) {
-        xray_HV_enable(1);  /* ¿ªÊ¼ÆØ¹â£¬ÆØ¹âºÍ»ù×¼Ò»Æð¸ø */
-        config_hvref_cali();
-        config_data.expo_count_total[0]++;
-        /* ÆØ¹â¼ÆÊ± */
-        if (cali_data.timmer_count[0] >= cali_data.expoTime_expect[0]) {
-            set_hv_state(HPVS_SM_ID_CAL_COOLING,0);
-            cali_data.timmer_count[0] = 1;
-        }
-
-        // if (cali_data.timmer_count == (uint32_t)(cali_data.expoTime_expect * 2 / 3)) {
-        if (cali_data.timmer_count[0] == 650) {
-            user_pid.currValue = sampled_data.tube_curr_value;
-            // debug_tx3("¹ÜµçÁ÷: %f, %f\n", user_pid.currValue, sampled_data.tube_curr_value);
-        }
-
-        if (cali_data.timmer_count[0] >= TIMER6_5_MILSECOND_CYCLES) {
-            // xray_data.isCheckAvailable = 1;
-        } else {
-            xray_data.isCheckAvailable[0] = 0;
-        }
-
-        /* Á¬ÐøÄ£Ê½ÏÂ£¬Ã¿¸ô10msµ÷Ò»´Î */
-        if (Is_ContinuousMode() && (cali_data.timmer_count[0] > TIMER6_4_MILSECOND_CYCLES)) {
-            if (cali_data.timmer_count[0] % TIMER6_10_MILSECOND_CYCLES == 0) {
-                user_pid.currValue = sampled_data.tube_curr_value;
-                user_pid.Kp = 3.7;
-	            user_pid.Ti = 0.0009;
-                tube_current_piControl(1);
+            if(ctrl_calibr_data.calibr_enble_count > ENABLE_CYCLE_COUNT)
+            {
+                ctrl_calibr_data.calibr_enble_count = 0;
+                ctrl_calibr_data.calibr_enble_flag = 1;
+                ctrl_calibr_data.calibr_expo1_count = 0;
             }
-        }
-        // if (cali_data.timmer_count % 20 == 0) {
-        //     debug_tx3("%d, %f\n", cali_data.timmer_count, sampled_data.tube_curr_value);
-        // }
+            else if(ctrl_calibr_data.calibr_enble_count > ENABLE_EFFECT_COUNT)
+                ctrl_calibr_data.calibr_enble_flag = 0;
+            else
+                ctrl_calibr_data.calibr_enble_flag = 1;
 
-    } else if (get_hv_state(0) == HPVS_SM_ID_CAL_COOLING) {
-        config_hvref_cali();
-        /* Âö³åÖ®¼äµÄÊ±¼ä */
+            if(ctrl_calibr_data.calibr_expo1_count > EXPO_CYCLE_COUNT)
+            {
+                ctrl_calibr_data.calibr_expo1_flag = 1;
+                ctrl_calibr_data.calibr_expo1_count = 0;
+            }
+            else if(ctrl_calibr_data.calibr_expo1_count > EXPO_EFFECT_COUNT)
+                ctrl_calibr_data.calibr_expo1_flag = 0;
+            else
+                ctrl_calibr_data.calibr_expo1_flag = 1;
 
-        if ((Is_PulseMode()) &&
-            (cali_data.timmer_count[0] == (uint32_t)(cali_data.coolTime_expect[0] / 2))) {
-            user_pid.Kp = 20;
-	        user_pid.Ti = 1;
-            tube_current_piControl(0);
-        }
-
-        if (cali_data.timmer_count < cali_data.coolTime_expect) return;
-
-        cali_data.cycle_count[0]++;
-        hvps_sm_state next_cal_state;
-
-        if (cali_data.cycle_count >= cali_data.expoCycle_perCurrent) {
-            filament_ref_update(cali_data.curr_index[0]);
-
-            cali_data.cycle_count[0] = 0;
-            parm_table[0].expo_count_total++;
-            parm_table[0].expo_times_total += config_data.expo_count_total[0] / 3000000;
-            /* µ¥¸öµçÁ÷µÄÂö³åÐ£×¼Íê±Ï */
-            cali_data.curr_index[0]++;
-            if (cali_data.curr_index[0] >= FILAMENT_CURRENT_TABLE_ORDER) {
-            // if (cali_data.curr_index >= 1) {
-                /* ÉÏ±¨±¾´ÎµÄÐ£×¼½á¹û */
-                uint32_t last_idx = cali_data.curr_index[0] - 1;
-                debug_tx3("±Õ»·½á¹û: %f, %d, %d\n",
-                    parm_table[0].currValue[last_idx], parm_table[0].currRef[last_idx], param_pid.config_ref);
-                cali_data.curr_index[0] = 0;
-
-                /* ¸ÃÄ£Ê½ÏÂËùÓÐµçÁ÷Ð£×¼Íê±Ï£¬Âö³å»òÁ¬Ðø */
-                if (Is_PulseMode()) {
-                    next_cal_state = HPVS_SM_ID_CAL_RUN;
-                    cali_data.mode = XRAY_MODE_S_CONTINUOUS;
-                    calibrate_mode_config();
-                    uint32_t currRef = (Is_PulseMode()) ?
-                        parm_table[0].currRef[cali_data.curr_index[0]] : parm_table[0].currRef_c[cali_data.curr_index[0]];
-                    pid_Init(parm_table[0].currValue[cali_data.curr_index[0]], currRef, Is_PulseMode());
-                } else {
-                    next_cal_state = HPVS_SM_ID_CAL_END;
+            if(ctrl_calibr_data.calibr_expo1_flag == 0)
+            {
+                ctrl_calibr_data.calibr_expo2_count++;
+                if(ctrl_calibr_data.calibr_expo2_count > EXPO2_EFFECT_COUNT)
+                {
+                    ctrl_calibr_data.calibr_expo2_count = 0;
+                    ctrl_calibr_data.calibr_expo2_flag = 0;
                 }
-            } else {
-                /* ÉÏ±¨±¾´ÎµÄÐ£×¼½á¹û */
-                uint32_t last_idx = cali_data.curr_index[0] - 1;
-                debug_tx3("±Õ»·½á¹û: %f, %d, %d\n",
-                    parm_table[0].currValue[last_idx], parm_table[0].currRef[last_idx], param_pid.config_ref);
-                /* ×¼±¸ÏÂ¸öµçÁ÷µÄÐ£×¼ */
-                next_cal_state = HPVS_SM_ID_CAL_RUN;
-                uint32_t currRef = (Is_PulseMode()) ?
-                    parm_table[0].currRef[cali_data.curr_index[0]] : parm_table[0].currRef_c[cali_data.curr_index[0]];
-                pid_Init(parm_table[0].currValue[cali_data.curr_index[0]], currRef, Is_PulseMode());
+                else if(ctrl_calibr_data.calibr_expo2_count > EXPO_DEAD_COUNT)
+                    ctrl_calibr_data.calibr_expo2_flag = 1;
+                else
+                    ctrl_calibr_data.calibr_expo2_flag = 0;
             }
-        } else {
-            /* µ¥µçÁ÷µÄÂö³åÃ»ÓÐÖ´ÐÐÍê£¬¼ÌÐøÆØ¹â */
-            next_cal_state = HPVS_SM_ID_CAL_EXPOSURING;
+            else
+            {
+                ctrl_calibr_data.calibr_expo2_flag = 0;
+                ctrl_calibr_data.calibr_expo2_count = 0;
+            }
+
+            if(ctrl_calibr_data.calibr_enble_flag == 1)
+                ctrl_calibr_data.calibr_wait_count = 0;
+            else
+            {
+                ctrl_calibr_data.calibr_wait_count++;
+                if(ctrl_calibr_data.calibr_wait_count == STORAGE_TIME_COUNT && ctrl_calibr_data.calibr_enble_flag == 0)
+                {
+                    ctrl_calibr_data.store_flag = 1;
+                    idex_c++;
+
+                    if(idex_c > 9)
+                    {
+                        Lamp_Buck_Off(0);
+                        Lamp_Buck_Off(1);
+                        ctrl_calibr_data.calibraflag = 0;
+                        ctrl_calibr_data.store_flag = 1;
+                        idex_c = 0;
+                    }
+
+                    // ç”µæµå‚è€ƒå€¼æ›´æ–°
+
+                    mLamp_Control_Regs[0].mLamp_Current = parm_table[0].currValue[idex_c];
+                    mLamp_Control_Regs[1].mLamp_Current = parm_table[1].currValue[idex_c];
+                }
+
+                // ç‹¬ç«‹æŽ§åˆ¶ç¯ä¸
+                if(mLamp_Control_Regs[0].mHVPS_Lamp_State >= HVPS_LAMP_SM_ID_PREPARE && mLamp_Control_Regs[0].steady_flag == 1)
+                   	HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_2, DAC_ALIGN_12B_R, mLamp_Control_Regs[0].mLamp_Current);; // ç¯ä¸0ï¼šDAè¾“å‡º
+
+                if(mLamp_Control_Regs[1].mHVPS_Lamp_State >= HVPS_LAMP_SM_ID_PREPARE && mLamp_Control_Regs[1].steady_flag == 1)
+                    Lamp_Current_Set(mLamp_Control_Regs[1].mLamp_Current, 1); // ç¯ä¸1ï¼šPWMè¾“å‡º
+            }
         }
-        set_hv_state(next_cal_state,0);
-        cali_data.timmer_count[0] = 1;
-    } else if (get_hv_state(0) == HPVS_SM_ID_CAL_END) {
-        /* ¼ÇÂ¼Ð£×¼Êý¾Ý */
-        // save_parament_to_flash();
-        cali_data.para_save_flag[0] = 1;
-        xray_system_disable();
-        disable_hvref();
-        disable_filamentref(0);
-        cali_data.timmer_count[0] = 0;
-        set_hv_state(HVPS_SM_ID_IDLE,0);
+    }
+    else
+    {
+        idex_c = 0;
+        ctrl_calibr_data.calibr_enble_flag = 0;
+        ctrl_calibr_data.calibr_expo1_flag = 0;
+        ctrl_calibr_data.calibr_expo2_flag = 0;
+        ctrl_calibr_data.calibr_enble_count = 0;
+        ctrl_calibr_data.calibr_expo1_count = 0;
+        ctrl_calibr_data.calibr_expo2_count = 0;
+        ctrl_calibr_data.calibr_lampctrl_count = 0;
     }
 
-    (get_hv_state(0) == HPVS_SM_ID_CAL_EXPOSURING) ? xray_on_led(1) : xray_on_led(0);
-
-    return;
 }
+
+void Set_PWM_CMP()
+{
+		// ç¯ä¸0ï¼šä½¿ç”¨ DA æŽ§åˆ¶ï¼Œè·³è¿‡ PWM è®¾ç½®
+		if(ctrl_data.xray_current == 1)
+			return;
+   
+
+    // ç¯ä¸1ï¼šPWM æŽ§åˆ¶
+		mLamp_Control_Regs[1].Buck_duty = mLamp_Control_Regs[1].Buck_duty > 0.9 ? 0.9 : mLamp_Control_Regs[1].Buck_duty;
+    mLamp_Control_Regs[1].Buck_duty = mLamp_Control_Regs[1].Buck_duty < 0 ? 0 : mLamp_Control_Regs[1].Buck_duty;
+		__HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_4,(uint32_t)(mLamp_Control_Regs[1].Buck_duty * (float)500) );//50k
+
+}
+
+

@@ -1,16 +1,12 @@
 #ifndef __XRAY_H
 #define __XRAY_H
 
-#include "exposure.h"
-
+#include "stdint.h"
+//ä½Žç”µå¹³ä½¿èƒ½
 #define Calc_Gpio_State_N(value)      ((value == 1) ? (GPIO_PIN_RESET) : (GPIO_PIN_SET))
 
-/* ¸ßµçÆ½Ê¹ÄÜµÄ×ª»» */
+/* é«˜ç”µå¹³ä½¿èƒ½*/
 #define Calc_Gpio_State_P(value)      ((value == 0) ? (GPIO_PIN_RESET) : (GPIO_PIN_SET))
-
-/* 3¡¢Êý¾ÝÀàÐÍ¶¨Òå */
-
-/* 4¡¢º¯ÊýÉùÃ÷ */
 
 void config_ready_signal(uint16_t value);
 void config_xrayOn_signal(uint16_t value);
@@ -32,10 +28,10 @@ void heartBeat_led(void);
 void xray_on_led(uint16_t value);
 void falut_led(uint16_t value);
 
+void config_HV_sw(uint16_t value,uint16_t n);
 
-
-void Xray_SetVoltage(uint16_t kv);              // ÉèÖÃXray¸ßÑ¹²Î¿¼
-void Xray_Enable(ExposureSource src);           // ´ò¿ª¸ßÑ¹Í¨µÀ
-void Xray_Disable(ExposureSource src);          // ¹Ø±Õ¸ßÑ¹Í¨µÀ
+//void Xray_SetVoltage(uint16_t kv);              // ÉèÖÃXray¸ßÑ¹²Î¿¼
+//void Xray_Enable(ExposureSource src);           // ´ò¿ª¸ßÑ¹Í¨µÀ
+//void Xray_Disable(ExposureSource src);          // ¹Ø±Õ¸ßÑ¹Í¨µÀ
 
 #endif

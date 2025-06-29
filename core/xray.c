@@ -1,44 +1,44 @@
 #include "xray.h"
 #include "main.h"
 
-/* Êä³ö¸øMCU----------------------------------------------------------------------------------------*/
+/* è¾“å‡ºMCU----------------------------------------------------------------------------------------*/
 void config_ready_signal(uint16_t value)
 {
-    /* µÍµçÆ½ÓĞĞ§ */
+    //ä½ç”µå¹³æœ‰æ•ˆ 
     HAL_GPIO_WritePin(READY_GPIO_Port, READY_Pin, Calc_Gpio_State_N(value));
     return;
 }
 
 void config_xrayOn_signal(uint16_t value)
 {
-    /* µÍµçÆ½ÓĞĞ§ */
+    //ä½ç”µå¹³æœ‰æ•ˆ
     HAL_GPIO_WritePin(XRAY_ON_GPIO_Port, XRAY_ON_Pin, Calc_Gpio_State_N(value));
     return;
 }
 
 void config_fault_signal(uint16_t value)
 {
-    /* µÍµçÆ½ÓĞĞ§ */
+    //ä½ç”µå¹³æœ‰æ•ˆ
     HAL_GPIO_WritePin(FAULT_GPIO_Port, FAULT_Pin, Calc_Gpio_State_N(value));
     return;
 }
 
-/* µÍµçÆ½ÓĞĞ§ */
+    //ä½ç”µå¹³æœ‰æ•ˆ
 uint16_t get_enable_pin(uint16_t n)
 {
-	if(n)
+	if(n == 0)
     return ((HAL_GPIO_ReadPin(ENABLE_A_GPIO_Port, ENABLE_A_Pin) == GPIO_PIN_RESET) ? 1 : 0);
 	else
 		return ((HAL_GPIO_ReadPin(ENABLE_B_GPIO_Port, ENABLE_B_Pin) == GPIO_PIN_RESET) ? 1 : 0);
 }
 
-/* µÍµçÆ½ÓĞĞ§ */
+    //ä½ç”µå¹³æœ‰æ•ˆ
 uint16_t get_interLock_pin()
 {
     return ((HAL_GPIO_ReadPin(INTERLOCK_GPIO_Port, INTERLOCK_Pin) == GPIO_PIN_RESET) ? 1 : 0);
 }
 
-/* µÍµçÆ½ÓĞĞ§ */
+    //ä½ç”µå¹³æœ‰æ•ˆ
 uint16_t get_expo_pin(uint16_t n)
 {
 	if(n==0)
@@ -47,24 +47,24 @@ uint16_t get_expo_pin(uint16_t n)
 		return ((HAL_GPIO_ReadPin(EXP_B_GPIO_Port, EXP_B_Pin) == GPIO_PIN_RESET) ? 1 : 0);
 }
 
-/* Êä³ö¸ø¸ßÑ¹µçÔ´----------------------------------------------------------------------------------------*/
+/*è¾“å‡ºç»™é«˜å‹ç”µæº----------------------------------------------------------------------------------------*/
 void config_HVEn_signal(uint16_t value)
 {
-    /* ¸ßµçÆ½¿ª£¬µÍµçÆ½¹Ø */
+    //é«˜ç”µå¹³æœ‰æ•ˆ
     HAL_GPIO_WritePin(HV_EN_GPIO_Port, HV_EN_Pin, Calc_Gpio_State_P(value));
     return;
 }
 
 void config_mcuLock_signal(uint16_t value)
 {
-    /* ¸ßµçÆ½¿ª£¬µÍµçÆ½¹Ø */
+    //é«˜ç”µå¹³æœ‰æ•ˆ
     HAL_GPIO_WritePin(MCU_LOCK_GPIO_Port, MCU_LOCK_Pin, Calc_Gpio_State_P(value));
     return;
 }
 
 void config_reset_signal(uint16_t value)
 {
-    /* ¸ßµçÆ½ÓĞĞ§ */
+    //é«˜ç”µå¹³æœ‰æ•ˆ
     HAL_GPIO_WritePin(RESET_GPIO_Port, RESET_Pin, Calc_Gpio_State_P(value));
     return;
 }
@@ -72,37 +72,37 @@ void config_reset_signal(uint16_t value)
 void config_HV_sw(uint16_t value,uint16_t n)
 {
 	if(n == 0)
-    /* ¸ßµçÆ½ÓĞĞ§ */
+    /*é‡‡æ ·é€‰æ‹©å¼€å…³*/
     HAL_GPIO_WritePin(HV_SW_A_GPIO_Port, HV_SW_A_PIN, Calc_Gpio_State_P(value));
 	else
 		HAL_GPIO_WritePin(HV_SW_B_GPIO_Port, HV_SW_B_PIN, Calc_Gpio_State_P(value));
     return;
 }
 
-/* ÅäÖÃ¸ßÑ¹»ù×¼ */
+/*é…ç½®é«˜å‹åŸºå‡†*/
 void config_HV_REF(uint32_t value)
 {
 
     return;
 }
 
-/* ¸ßµçÆ½ÓĞĞ§ */
+    //é«˜ç”µå¹³æœ‰æ•ˆ
 uint16_t get_tube_curr_fault_pin()
 {
     return ((HAL_GPIO_ReadPin(HV_C_FAULT_GPIO_Port, HV_C_FAULT_Pin) == GPIO_PIN_RESET) ? 0 : 1);
 }
 
-/* ¸ßµçÆ½ÓĞĞ§ */
+    //é«˜ç”µå¹³æœ‰æ•ˆ
 uint16_t get_tube_vol_fault_pin()
 {
     return ((HAL_GPIO_ReadPin(HV_V_FAULT_GPIO_Port, HV_V_FAULT_Pin) == GPIO_PIN_RESET) ? 0 : 1);
 }
 
-/* Êä³ö¸øµÆË¿µçÔ´----------------------------------------------------------------------------------------*/
+/*è¾“å‡ºç»™ç¯ä¸ç”µæº*/
 void config_filamentOn_signal(uint16_t value,uint16_t n)
 {
 	if(n == 0)
-    /* ¸ßµçÆ½¿ª£¬µÍµçÆ½¹Ø */
+    /*é«˜ç”µå¹³å¼€ï¼Œä½ç”µå¹³å…³*/
     HAL_GPIO_WritePin(FILAMENT_A_EN_GPIO_Port, FILAMENT_A_EN_Pin, Calc_Gpio_State_P(value));
 	else
 		HAL_GPIO_WritePin(FILAMENT_B_EN_GPIO_Port, FILAMENT_B_EN_Pin, Calc_Gpio_State_P(value));
@@ -124,7 +124,7 @@ void heartBeat_led()
 
 void xray_on_led(uint16_t value)
 {
-    /* µÍµçÆ½ÓĞĞ§ */
+    //ä½ç”µå¹³æœ‰æ•ˆ
     HAL_GPIO_WritePin(XRAY_LED_GPIO_Port, XRAY_LED_Pin, Calc_Gpio_State_N(value));
 
     return;
@@ -132,6 +132,6 @@ void xray_on_led(uint16_t value)
 
 void falut_led(uint16_t value)
 {
-    /* µÍµçÆ½ÓĞĞ§ */
+    //ä½ç”µå¹³æœ‰æ•ˆ
     HAL_GPIO_WritePin(FAULT_LED_GPIO_Port, FAULT_LED_Pin, Calc_Gpio_State_N(value));
 }
