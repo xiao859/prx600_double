@@ -492,10 +492,10 @@ uint8_t bsp_write_buffer(uint8_t* _pBuf, uint32_t _uiWriteAddr, uint32_t _usWrit
 			}
 		}
 	}
-	return 1;	/* ³É¹¦ */
+	return 1;	/* æˆåŠŸÂ·*/
 }
 
-/* ¶Á²ÎÊı£¬Î»ÖÃÔÚw25q64ÉÏ */
+/* è¯»å‚æ•°*/
 void get_flash_parament(uint8_t *buff, uint32_t size)
 {
 	bsp_read_buffer((uint8_t *)buff, XRAY_PARAMENT_ADDDR, size);
@@ -503,7 +503,7 @@ void get_flash_parament(uint8_t *buff, uint32_t size)
 	return;
 }
 
-/* ¶Á²ÎÊı£¬Î»ÖÃÔÚw25q64ÉÏ */
+/* å†™å‚æ•° */
 void wirte_flash_parament(uint8_t *buff, uint32_t size)
 {
 	bsp_write_buffer((uint8_t *)buff, XRAY_PARAMENT_ADDDR, size);

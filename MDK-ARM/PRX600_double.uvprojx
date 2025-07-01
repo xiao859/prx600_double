@@ -1660,6 +1660,16 @@
               <FileType>5</FileType>
               <FilePath>..\core\lamp.h</FilePath>
             </File>
+            <File>
+              <FileName>HV_exposure.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\core\HV_exposure.h</FilePath>
+            </File>
+            <File>
+              <FileName>HV_exposure.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\core\HV_exposure.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>

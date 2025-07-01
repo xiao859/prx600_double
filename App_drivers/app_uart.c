@@ -12,7 +12,7 @@ volatile UART_FILE uart5 = {0};
 
 void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
-    if(huart->Instance == UART4) {            /* 如果是串口1 */
+    if(huart->Instance == UART4) {            /*  */
         uart4.recv_len++;
         if (uart4.uart_rx_cnt < USART_BUFFER_LEN)
         {
@@ -24,7 +24,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
         }
 
         HAL_UART_Receive_IT(&huart4, (uint8_t *)&uart4.recv_byte, 1);
-    } else if(huart->Instance == UART5) {            /* 如果是串口1 */
+    } else if(huart->Instance == UART5) {            /*  */
         uart5.recv_len++;
         if (uart5.uart_rx_cnt < USART_BUFFER_LEN)
         {

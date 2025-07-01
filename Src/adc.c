@@ -21,7 +21,7 @@
 #include "adc.h"
 
 /* USER CODE BEGIN 0 */
-
+#include "HV_exposure.h"
 /* USER CODE END 0 */
 
 ADC_HandleTypeDef hadc2;
@@ -398,5 +398,48 @@ void HAL_ADC_MspDeInit(ADC_HandleTypeDef* adcHandle)
 }
 
 /* USER CODE BEGIN 1 */
+extern float test_value;
+void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc) {
+  if (hadc->Instance == ADC2) {
+    HAL_ADC_Stop_DMA(&hadc2);
+    uint32_t sum_2[ADC_2_CHANNEL_NUM] = {0};
 
+    for (int sample = 0; sample < ADC_SAMPLE_CYCLE_NUM; sample++) {
+        for (int channel = 0; channel < ADC_2_CHANNEL_NUM; channel++) {
+          sum_2[channel] += adc_buffer2[channel + sample * ADC_2_CHANNEL_NUM];
+        }
+    }
+    sampled_data.power_24v_value        = 0.01209f *  ((float)(sum_2[0]) / ADC_SAMPLE_CYCLE_NUM);
+    sampled_data.temp_sink_value        = -0.04747f * ((float)(sum_2[1]) / ADC_SAMPLE_CYCLE_NUM) + 122.59205f;
+    if (Is_Exposing()) {
+      sampled_data.filament_vol_value[ctrl_data.xray_current-1]     = 0.00806f *  ((float)(sum_2[2]) / ADC_SAMPLE_CYCLE_NUM);
+      sampled_data.filament_curr_value[ctrl_data.xray_current-1]    = 0.00806f *  ((float)(sum_2[3]) / ADC_SAMPLE_CYCLE_NUM);
+    }
+    HAL_ADC_Start_DMA(&hadc2, (uint32_t *)&adc_buffer2, (uint32_t)(ADC_2_CHANNEL_NUM * ADC_SAMPLE_CYCLE_NUM)); 
+  }
+  if (hadc->Instance == ADC3) {
+    HAL_ADC_Stop_DMA(&hadc3);
+    uint32_t sum_3[ADC_3_CHANNEL_NUM] = {0};
+    for (int sample = 0; sample < ADC_SAMPLE_CYCLE_NUM; sample++) {
+      for (int channel = 0; channel < ADC_3_CHANNEL_NUM; channel++) {
+        sum_3[channel] += adc_buffer3[channel + sample * ADC_3_CHANNEL_NUM];
+      }
+    }
+
+    if (Is_Exposing()) {
+			
+			
+      sampled_data.tube_vol_p_value = 0.02579f *  ((float)(sum_3[0]) / ADC_SAMPLE_CYCLE_NUM);
+      sampled_data.tube_vol_n_value = 0.02579f *  ((float)(sum_3[1]) / ADC_SAMPLE_CYCLE_NUM);
+      float value_c = 0.00645f *  ((float)(sum_3[2]) / ADC_SAMPLE_CYCLE_NUM);
+      sampled_data.tube_curr_value = value_c;
+    }
+
+    // test_value = sum_3[2];
+    // sampled_data.tube_curr_value = quadraticSmooth(value_c);
+    sampled_data.temp_oil_value   = ((float)(sum_3[3]) / ADC_SAMPLE_CYCLE_NUM);
+
+    HAL_ADC_Start_DMA(&hadc3, (uint32_t *)&adc_buffer3, (uint32_t)(ADC_3_CHANNEL_NUM * ADC_SAMPLE_CYCLE_NUM));
+  }
+}
 /* USER CODE END 1 */

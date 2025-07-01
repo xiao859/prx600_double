@@ -1,20 +1,14 @@
 #ifndef __PROTECT_H
 #define __PROTECT_H
 
-#include "exposure.h"
+#include "HV_exposure.h"
 #include "app_uart.h"
 #include "comm_string.h"
-#include "comm_protocol.h"
-#include "calibrate.h"
 
-extern volatile adc_sampled_value sampled_data;
-extern volatile adc_sampled_value sampled_data_last;
-
-void Protect_Check_Quick(void);            // 中断中快速检测（互锁/过流）
-void Protect_Check_Slow(void);             // 主循环中慢速检测
-unsigned char Protect_GetTrigger(ExposureSource src);  //获取曝光状态
-void xray_fast_protect(uint16_t n);
-void xray_parament_protect(uint16_t n);
+#define OVER_RANGE_TIME_LIMIT           5000
+#define FAST_PROTECT_TIME_RANGE         40  //10khz 4ms
+#define     CALI_HV_REF                     80
+#define STRIKE_TIEMS_RANGE              5
 
 #define Is_System_Without_Fault()       ((mHVPS_Fault.FAULT_REG1.value == 0) && \
                                          (mHVPS_Fault.FAULT_REG2.value == 0) && \
@@ -22,9 +16,6 @@ void xray_parament_protect(uint16_t n);
                                          (mHVPS_Fault.FAULT_REG4.value == 0) && \
                                          (mHVPS_Fault.FAULT_REG5.value == 0) && \
                                          (mHVPS_Fault.FAULT_REG6.value == 0))
-
-
-
 
 enum HVPS_FAULT_ID {
     HVPS_FAULT_ID_OK = 0x00,            //无故障
@@ -185,7 +176,7 @@ typedef struct {
 extern HVPS_FAULT_REGS mHVPS_Fault;
 
 void InqHVPSFault(message_protocol *msg);
-
-
+void UpdateVar_CheckFaultFast(void);
+void Protect_Check_Slow(void);
 #endif
 

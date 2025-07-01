@@ -4,7 +4,7 @@
 
 /* 1、头文件包含 */
 #include "stdint.h"
-#include "comm_protocol.h"
+#include "HV_exposure.h"
 
 /* 2、宏定义 */
 /* 管电流基准值，单位0.001v */

@@ -1,51 +1,55 @@
 #include "comm_string.h"
 #include "string.h"
-#include "comm_protocol.h"
 #include "math.h"
 #include "stdlib.h"
 #include "app_uart.h"
 #include "stm32g4xx_hal.h"
-//#include "stmflash.h"
 #include "app_spi.h"
 #include "debug_mode.h"
 #include "xray.h"
 #include "calibrate.h"
 #include "pi_control.h"
 #include "app_fun.h"
+#include "HV_exposure.h"
 
 LC_Command_string cmd_pack[LC_CMD_NUM];
 
 void unpackCmd_savePara(volatile uint8_t *buff, uint8_t *cmdHead, volatile uint32_t *targetAddr, uint8_t offset)
 {
-    if (strstr((const char *)buff, (const char *)cmdHead) == NULL) {
-        debug_tx3("∏Ò Ω¥ÌŒÛ!!!\r\n");
+    if (strstr((const char *)buff, (const char *)cmdHead) == NULL)
+    {
+        debug_tx3("Ê†ºÂºèÈîôËØØ!!!\r\n");
         return;
     }
 
     volatile uint8_t *p_p = buff + offset;
-    uint32_t table_temp[FILAMENT_CURRENT_TABLE_ORDER];
+    uint32_t table_temp[FILAMENT_CURRENT_TABLE_ORDER * 2];
     uint8_t para_count = 0;
 
     char *token = strtok((char *)p_p, " ");
-    while (token != NULL) {
+    while (token != NULL)
+    {
         int num = atoi(token);
         table_temp[para_count] = num;
         para_count++;
         token = strtok(NULL, " ");
     }
 
-    if (para_count < FILAMENT_CURRENT_TABLE_ORDER) {
-        debug_tx3("≤Œ ˝≤ªπª: %d!!!\n", para_count);
-    } else {
+    if (para_count < FILAMENT_CURRENT_TABLE_ORDER * 2)
+    {
+        debug_tx3("ÂèÇÊï∞‰∏çÂ§ü: %d!!!\n", para_count);
+    }
+    else
+    {
         // save_parament_to_flash();
 
-        /* ∂¡ */
-        get_flash_parament((uint8_t *)&parm_table, sizeof(xray_parament_table));
+        /* ËØª */
+        get_flash_parament((uint8_t *)&parm_table, sizeof(xray_parament_table) * 2);
 
-        /* ∏≥ */
-        memcpy((uint8_t *)targetAddr, (uint8_t *)&table_temp[0], sizeof(table_temp));
 
-        /* ≤¡ */
+        memcpy((uint8_t *)targetAddr, (uint8_t *)&table_temp[0], sizeof(table_temp) * 2);
+
+        /*ÂÜô */
         save_parament_to_flash();
     }
 
@@ -127,49 +131,55 @@ int func_setCurrRef_c2(volatile uint8_t *buff, char *p)
 
 int func_getTable1(volatile uint8_t *buff, char *p)
 {
-    debug_tx3("A∆ÿπ‚¥Œ ˝: %d\n", parm_table[0].expo_count_total);
-    debug_tx3("A∆ÿπ‚ ±º‰: %d\n", parm_table[0].expo_times_total);
+    debug_tx3("AÊõùÂÖâÊ¨°Êï∞: %d\n", parm_table[0].expo_count_total);
+    debug_tx3("AÊõùÂÖâÊó∂Èó¥: %d\n", parm_table[0].expo_times_total);
 
-    debug_tx3("A¬ˆ≥ÂµÁ¡˜÷µ:");
-    for (int i = 0; i < FILAMENT_CURRENT_TABLE_ORDER; i++) {
+    debug_tx3("AËÑâÂÜ≤ÁîµÊµÅÂÄº:");
+    for (int i = 0; i < FILAMENT_CURRENT_TABLE_ORDER; i++)
+    {
         debug_tx3(" %d", parm_table[0].currValue[i]);
     }
     debug_tx3("\n");
 
-    debug_tx3("A¬ˆ≥ÂµÁ¡˜±Ì:");
-    for (int i = 0; i < FILAMENT_CURRENT_TABLE_ORDER; i++) {
+    debug_tx3("AËÑâÂÜ≤ÁîµÊµÅË°®:");
+    for (int i = 0; i < FILAMENT_CURRENT_TABLE_ORDER; i++)
+    {
         debug_tx3(" %d", parm_table[0].currRef[i]);
     }
     debug_tx3("\n");
 
-    debug_tx3("A¡¨–¯µÁ¡˜±Ì:");
-    for (int i = 0; i < FILAMENT_CURRENT_TABLE_ORDER; i++) {
+    debug_tx3("AËøûÁª≠ÁîµÊµÅË°®:");
+    for (int i = 0; i < FILAMENT_CURRENT_TABLE_ORDER; i++)
+    {
         debug_tx3(" %d", parm_table[0].currRef_c[i]);
     }
     debug_tx3("\n");
-		
+
     return 0;
 }
 
 int func_getTable2(volatile uint8_t *buff, char *p)
 {
-	  debug_tx3("B∆ÿπ‚¥Œ ˝: %d\n", parm_table[1].expo_count_total);
-    debug_tx3("B∆ÿπ‚ ±º‰: %d\n", parm_table[1].expo_times_total);
-		
-		debug_tx3("B¬ˆ≥ÂµÁ¡˜÷µ:");
-    for (int i = 0; i < FILAMENT_CURRENT_TABLE_ORDER; i++) {
+    debug_tx3("BÊõùÂÖâÊ¨°Êï∞: %d\n", parm_table[1].expo_count_total);
+    debug_tx3("BÊõùÂÖâÊó∂Èó¥: %d\n", parm_table[1].expo_times_total);
+
+    debug_tx3("BËÑâÂÜ≤ÁîµÊµÅÂÄº:");
+    for (int i = 0; i < FILAMENT_CURRENT_TABLE_ORDER; i++)
+    {
         debug_tx3(" %d", parm_table[0].currValue[i]);
     }
     debug_tx3("\n");
 
-    debug_tx3("B¬ˆ≥ÂµÁ¡˜±Ì:");
-    for (int i = 0; i < FILAMENT_CURRENT_TABLE_ORDER; i++) {
+    debug_tx3("BËÑâÂÜ≤ÁîµÊµÅË°®:");
+    for (int i = 0; i < FILAMENT_CURRENT_TABLE_ORDER; i++)
+    {
         debug_tx3(" %d", parm_table[0].currRef[i]);
     }
     debug_tx3("\n");
 
-    debug_tx3("B¡¨–¯µÁ¡˜±Ì:");
-    for (int i = 0; i < FILAMENT_CURRENT_TABLE_ORDER; i++) {
+    debug_tx3("BËøûÁª≠ÁîµÊµÅË°®:");
+    for (int i = 0; i < FILAMENT_CURRENT_TABLE_ORDER; i++)
+    {
         debug_tx3(" %d", parm_table[0].currRef_c[i]);
     }
     debug_tx3("\n");
@@ -177,7 +187,7 @@ int func_getTable2(volatile uint8_t *buff, char *p)
 }
 
 
-/* …Ë÷√π‹µÁ—π£∫µ•Œª «kv°£∏Ò Ωset tubeVC 60 20°£÷ª”–60kv…˙–ß */
+/* ËÆæÁΩÆÁÆ°ÁîµÂéãset tubeVC 60 20*/
 int set_tube_vol_curr1(volatile uint8_t *buff, char *p)
 {
     volatile uint8_t *p_p = buff + 11;
@@ -185,26 +195,30 @@ int set_tube_vol_curr1(volatile uint8_t *buff, char *p)
     int data[2];
 
     char *token = strtok((char *)p_p, " ");
-    while (token != NULL && para_count <=2) {
+    while (token != NULL && para_count <= 2)
+    {
         int num = atoi(token);
         data[para_count] = num;
         para_count++;
         token = strtok(NULL, " ");
     }
 
-    if (para_count == 2) {
-        config_data.tube_curr[0] = ((float)data[1])/10;
+    if (para_count == 2)
+    {
+        config_data.tube_curr[0] = ((float)data[1]) / 10;
         config_data.tube_vol[0]  = data[0];
         config_data.tube_vol_step[0] = (float)(config_data.tube_vol[0]) / (50 * 1);
-        debug_tx3("Aπ‹µÁ—π/µÁ¡˜£∫%d, %d, %f\n", config_data.tube_vol[0], config_data.tube_curr[0], config_data.tube_vol_step[0]);
-    } else {
-        debug_tx3("A≤Œ ˝∏Ò Ω¥ÌŒÛ\n");
+        debug_tx3("AÁÆ°ÁîµÂéã/ÁîµÊµÅÔºö%d, %d, %f\n", config_data.tube_vol[0], config_data.tube_curr[0], config_data.tube_vol_step[0]);
+    }
+    else
+    {
+        debug_tx3("AÂèÇÊï∞Ê†ºÂºèÈîôËØØ\n");
     }
 
     return 0;
 }
 
-/* …Ë÷√π‹µÁ—π£∫µ•Œª «kv°£∏Ò Ωset tubeVC 60 20°£÷ª”–60kv…˙–ß */
+/* ËÆæÁΩÆÁÆ°ÁîµÂéã*/
 int set_tube_vol_curr2(volatile uint8_t *buff, char *p)
 {
     volatile uint8_t *p_p = buff + 11;
@@ -212,28 +226,32 @@ int set_tube_vol_curr2(volatile uint8_t *buff, char *p)
     int data[2];
 
     char *token = strtok((char *)p_p, " ");
-    while (token != NULL && para_count <=2) {
+    while (token != NULL && para_count <= 2)
+    {
         int num = atoi(token);
         data[para_count] = num;
         para_count++;
         token = strtok(NULL, " ");
     }
 
-    if (para_count == 2) {
-        config_data.tube_curr[1] = ((float)data[1])/10;
+    if (para_count == 2)
+    {
+        config_data.tube_curr[1] = ((float)data[1]) / 10;
         config_data.tube_vol[1]  = data[0];
         config_data.tube_vol_step[1] = (float)(config_data.tube_vol[1]) / (50 * 1);
-        debug_tx3("Bπ‹µÁ—π/µÁ¡˜£∫%d, %d, %f\n", config_data.tube_vol[1], config_data.tube_curr[1], config_data.tube_vol_step[1]);
-    } else {
-        debug_tx3("B≤Œ ˝∏Ò Ω¥ÌŒÛ\n");
+        debug_tx3("BÁÆ°ÁîµÂéã/ÁîµÊµÅÔºö%d, %d, %f\n", config_data.tube_vol[1], config_data.tube_curr[1], config_data.tube_vol_step[1]);
+    }
+    else
+    {
+        debug_tx3("BÂèÇÊï∞Ê†ºÂºèÈîôËØØ\n");
     }
 
     return 0;
 }
 
-/* …Ë÷√∆ÿπ‚ ±º‰£®±ÿ–Îœ»…Ë÷√∆ÿπ‚ƒ£ Ω£©°£
- * 25ms÷‹∆⁄÷–£¨8ms∆ÿπ‚£ª¬ˆ≥Â¥Œ ˝£∫x√Î * 40°£
- * »ŒŒÒ50kHz∂‘”¶0.02ms£ª‘Ú∆ÿπ‚÷‹∆⁄£∫400£¨¿‰»¥÷‹∆⁄850
+/* ËÆæÁΩÆÊõùÂÖâÊó∂Èó¥ÔºåÂøÖÈ°ªÂÖàËÆæÁΩÆÊõùÂÖâÊ®°Âºè
+ * 25msÂë®Êúü‰∏≠Ôºå8msÔºõËÑâÂÜ≤Ê¨°Êï∞ÔºöxÁßí*40
+ * 50kHz=0.02ms ÊõùÂÖâÂë®Êúü400ÔºåÂÜ∑Âç¥Âë®Êúü850
  */
 int set_expo_time1(volatile uint8_t *buff, char *p)
 {
@@ -241,34 +259,39 @@ int set_expo_time1(volatile uint8_t *buff, char *p)
     int num = 0;
 
     char *token = strtok((char *)p_p, " ");
-    while (token != NULL) {
+    while (token != NULL)
+    {
         num = atoi(token);
         token = strtok(NULL, " ");
     }
 
-    if (num == 0) {
-        debug_tx3("A≤Œ ˝∏Ò Ω¥ÌŒÛ");
+    if (num == 0)
+    {
+        debug_tx3("AÂèÇÊï∞Ê†ºÂºèÈîôËØØ");
         return 0;
     }
 
-    if (ctrl_data.xrayMode == XRAY_MODE_S_PULSE) {
+    if (ctrl_data.xrayMode == XRAY_MODE_S_PULSE)
+    {
         debug_data.expoCycle_perCurrent[0] = num * 40;
         debug_data.expoTime_expect[0] = 400;
         debug_data.coolTime_expect[0] = 850;
-    } else {
+    }
+    else
+    {
         debug_data.expoCycle_perCurrent[0] = 1;
         debug_data.expoTime_expect[0] = num * 50000;
     }
 
-    debug_tx3("A¬ˆ≥Â∏ˆ ˝£∫%d, ∆ÿπ‚£∫%d, ¿‰»¥£∫%d\n",
-            debug_data.expoCycle_perCurrent[0], debug_data.expoTime_expect[0], debug_data.coolTime_expect[0]);
+    debug_tx3("AËÑâÂÜ≤‰∏™Êï∞Ôºö%d, ÊõùÂÖâÔºö%d, ÂÜ∑Âç¥Ôºö%d\n",
+              debug_data.expoCycle_perCurrent[0], debug_data.expoTime_expect[0], debug_data.coolTime_expect[0]);
 
     return 0;
 }
 
-/* …Ë÷√∆ÿπ‚ ±º‰£®±ÿ–Îœ»…Ë÷√∆ÿπ‚ƒ£ Ω£©°£
- * 25ms÷‹∆⁄÷–£¨8ms∆ÿπ‚£ª¬ˆ≥Â¥Œ ˝£∫x√Î * 40°£
- * »ŒŒÒ50kHz∂‘”¶0.02ms£ª‘Ú∆ÿπ‚÷‹∆⁄£∫400£¨¿‰»¥÷‹∆⁄850
+/* ËÆæÁΩÆÊõùÂÖâÊó∂Èó¥ÔºåÂøÖÈ°ªÂÖàËÆæÁΩÆÊõùÂÖâÊ®°Âºè
+ * 25msÂë®Êúü‰∏≠Ôºå8msÔºõËÑâÂÜ≤Ê¨°Êï∞ÔºöxÁßí*40
+ * 50kHz=0.02ms ÊõùÂÖâÂë®Êúü400ÔºåÂÜ∑Âç¥Âë®Êúü850
  */
 int set_expo_time2(volatile uint8_t *buff, char *p)
 {
@@ -276,32 +299,37 @@ int set_expo_time2(volatile uint8_t *buff, char *p)
     int num = 0;
 
     char *token = strtok((char *)p_p, " ");
-    while (token != NULL) {
+    while (token != NULL)
+    {
         num = atoi(token);
         token = strtok(NULL, " ");
     }
 
-    if (num == 0) {
-        debug_tx3("B≤Œ ˝∏Ò Ω¥ÌŒÛ");
+    if (num == 0)
+    {
+        debug_tx3("BÂèÇÊï∞Ê†ºÂºèÈîôËØØ");
         return 0;
     }
 
-    if (ctrl_data.xrayMode == XRAY_MODE_S_PULSE) {
+    if (ctrl_data.xrayMode == XRAY_MODE_S_PULSE)
+    {
         debug_data.expoCycle_perCurrent[1] = num * 40;
         debug_data.expoTime_expect[1] = 400;
         debug_data.coolTime_expect[1] = 850;
-    } else {
+    }
+    else
+    {
         debug_data.expoCycle_perCurrent[1] = 1;
         debug_data.expoTime_expect[1] = num * 50000;
     }
 
-    debug_tx3("B¬ˆ≥Â∏ˆ ˝£∫%d, ∆ÿπ‚£∫%d, ¿‰»¥£∫%d\n",
-            debug_data.expoCycle_perCurrent[1], debug_data.expoTime_expect[1], debug_data.coolTime_expect[1]);
+    debug_tx3("BËÑâÂÜ≤‰∏™Êï∞Ôºö%d, ÊõùÂÖâÔºö%d, ÂÜ∑Âç¥Ôºö%d\n",
+              debug_data.expoCycle_perCurrent[1], debug_data.expoTime_expect[1], debug_data.coolTime_expect[1]);
 
     return 0;
 }
 
-/* …Ë÷√∆ÿπ‚ƒ£ Ω£¨0£∫¬ˆ≥Â£ª1£∫¡¨–¯ */
+/* ËÆæÁΩÆÊõùÂÖâÊ®°Âºè */
 int set_expo_mode(volatile uint8_t *buff, char *p)
 {
     volatile uint8_t *p_p = buff + 13;
@@ -310,186 +338,198 @@ int set_expo_mode(volatile uint8_t *buff, char *p)
     config_reset_signal(1);
 
     char *token = strtok((char *)p_p, " ");
-    while (token != NULL) {
+    while (token != NULL)
+    {
         num = atoi(token);
         token = strtok(NULL, " ");
     }
-		switch(num)
-		{
-				case HVPS_MODE_S_CONTINUOUS:
-					xrayMode = XRAY_MODE_S_CONTINUOUS;
-					debug_tx3("S¡¨–¯ƒ£ Ω\n");
-					break;
-				case HVPS_MODE_S_PULSE:
-					xrayMode = XRAY_MODE_S_PULSE;					
-					debug_tx3("S¬ˆ≥Âƒ£ Ω\n");
-					break;
-				case HVPS_MODE_D_CONTINUOUS:
-					xrayMode = XRAY_MODE_D_CONTINUOUS;
-					debug_tx3("D¡¨–¯ƒ£ Ω\n");
-					break;
-				case HVPS_MODE_D_PULSE:
-					xrayMode = XRAY_MODE_D_PULSE;
-					debug_tx3("D¬ˆ≥Âƒ£ Ω\n");
-					break;
-		}
+    switch (num)
+    {
+    case HVPS_MODE_S_CONTINUOUS:
+        ctrl_data.xrayMode = XRAY_MODE_S_CONTINUOUS;
+        config_HV_sw(1, 0); // ÈÄâÂèñÂ∞ÑÊ∫ê1‰Ωú‰∏∫È´òÁ≤æÂ∫¶ÈááÊ†∑
+        //DMAÂú∞ÂùÄ
+        ctrl_data.xray_current = 1;
+        break;
+        break;
+    case HVPS_MODE_S_PULSE:
+        ctrl_data.xrayMode = XRAY_MODE_S_PULSE;
+        break;
+    case HVPS_MODE_D_CONTINUOUS:
+        ctrl_data.xrayMode = XRAY_MODE_D_CONTINUOUS;
+        break;
+    case HVPS_MODE_D_PULSE:
+        ctrl_data.xrayMode = XRAY_MODE_D_PULSE;
+        break;
+    }
     return 0;
 }
 
-/* …Ë÷√enable–≈∫≈ */
+/* ËÆæÁΩÆenable‰ø°Âè∑ */
 int set_enable(volatile uint8_t *buff, char *p)
 {
     volatile uint8_t *p_p = buff + 11;
     int num = 0;
 
     char *token = strtok((char *)p_p, " ");
-    while (token != NULL) {
+    while (token != NULL)
+    {
         num = atoi(token);
         token = strtok(NULL, " ");
     }
 
-    if (num == 1) {
-        set_hv_state(HVPS_SM_ID_TRAIN_PREPARE,0);
-				set_hv_state(HVPS_SM_ID_IDLE,1);
+    if (num == 1)
+    {
+        set_hv_state(HVPS_SM_ID_TRAIN_PREPARE, 0);
+        set_hv_state(HVPS_SM_ID_IDLE, 1);
         ctrl_data.interlock = 1;
         ctrl_data.enable[0] = 1;
-				ctrl_data.enable[1] = 0;
+        ctrl_data.enable[1] = 0;
         debug_data.timmer_count[0] = 1;
         HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_1, DAC_ALIGN_12B_R, 0);
-        debug_tx3(" πƒ‹ø™ º\n");
-    } else if(num == 2) {
-        set_hv_state(HVPS_SM_ID_TRAIN_PREPARE,1);
-			  set_hv_state(HVPS_SM_ID_IDLE,0);
+        debug_tx3(" π‰ΩøËÉΩÂºÄÂßã º\n");
+    }
+    else if (num == 2)
+    {
+        set_hv_state(HVPS_SM_ID_TRAIN_PREPARE, 1);
+        set_hv_state(HVPS_SM_ID_IDLE, 0);
         ctrl_data.interlock = 1;
         ctrl_data.enable[1] = 1;
-				ctrl_data.enable[0] = 0;
+        ctrl_data.enable[0] = 0;
         debug_data.timmer_count[1] = 1;
-				
+
 //      PWM  HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_1, DAC_ALIGN_12B_R, 0);
-        debug_tx3(" πƒ‹ø™ º\n");
-    } else if(num == 3)
-		{
-			  set_hv_state(HVPS_SM_ID_TRAIN_PREPARE,0);
-				set_hv_state(HVPS_SM_ID_TRAIN_PREPARE,1);
+        debug_tx3(" π‰ΩøËÉΩÁªìÊùü º\n");
+    }
+    else if (num == 3)
+    {
+        set_hv_state(HVPS_SM_ID_TRAIN_PREPARE, 0);
+        set_hv_state(HVPS_SM_ID_TRAIN_PREPARE, 1);
         ctrl_data.interlock = 1;
         ctrl_data.enable[0] = 1;
-				ctrl_data.enable[1] = 1;
+        ctrl_data.enable[1] = 1;
         debug_data.timmer_count[0] = 1;
-			  debug_data.timmer_count[1] = 1;
+        debug_data.timmer_count[1] = 1;
         HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_1, DAC_ALIGN_12B_R, 0);
-			//PWM
-        debug_tx3(" πƒ‹ø™ º\n");
-		
-		}else
-		{
-        set_hv_state(HVPS_SM_ID_IDLE,0);
-			  set_hv_state(HVPS_SM_ID_IDLE,1);
+        //PWM
+        debug_tx3(" π‰ΩøËÉΩÂºÄÂßã º\n");
+
+    }
+    else
+    {
+        set_hv_state(HVPS_SM_ID_IDLE, 0);
+        set_hv_state(HVPS_SM_ID_IDLE, 1);
         ctrl_data.interlock = 0;
         ctrl_data.enable[0] = 0;
-			  ctrl_data.enable[0] = 0;
-        debug_tx3(" πƒ‹Ω· ¯\n");
-		}
+        ctrl_data.enable[0] = 0;
+        debug_tx3(" π‰ΩøËÉΩÁªìÊùü\n");
+    }
     return 0;
 }
 
-/* ƒ£ƒ‚∆ÿπ‚–≈∫≈µƒø™∆Ù£¨∫Û√Êµƒ÷‹∆⁄◊‘º∫øÿ÷∆ */
+
 int set_ref_onoff(volatile uint8_t *buff, char *p)
 {
-    set_hv_state(HVPS_SM_ID_TRAIN_EXPOSURING,0);
-    // debug_data.timmer_count = 0;
-//    xray_HV_enable_debug(1);
-    ctrl_data.enable[0]    = 1;
-    debug_data.timmer_count[0] = 1;
+//    set_hv_state(HVPS_SM_ID_TRAIN_EXPOSURING,0);
+//    // debug_data.timmer_count = 0;
+////    xray_HV_enable_debug(1);
+//    ctrl_data.enable[0]    = 1;
+//    debug_data.timmer_count[0] = 1;
 
-    debug_tx3("ø™ º∏¯∏ﬂ—πª˘◊º\n");
+//    debug_tx3("ø™ º∏¯∏ﬂ—πª˘◊º\n");
 
     return 0;
 }
 
-/* ƒ£ƒ‚∆ÿπ‚–≈∫≈µƒø™∆Ù£¨∫Û√Êµƒ÷‹∆⁄◊‘º∫øÿ÷∆ */
+
 int set_ref_test(volatile uint8_t *buff, char *p)
 {
-    volatile uint8_t *p_p = buff + 8;
-    uint8_t para_count = 0;
-    int data[2];
-    set_hv_state(HVPS_SM_ID_TRAIN_DEBUG,0);
+//    volatile uint8_t *p_p = buff + 8;
+//    uint8_t para_count = 0;
+//    int data[2];
+//    set_hv_state(HVPS_SM_ID_TRAIN_DEBUG,0);
 
-    char *token = strtok((char *)p_p, " ");
-    while (token != NULL && para_count <=2) {
-        int num = atoi(token);
-        data[para_count] = num;
-        para_count++;
-        token = strtok(NULL, " ");
-    }
+//    char *token = strtok((char *)p_p, " ");
+//    while (token != NULL && para_count <=2) {
+//        int num = atoi(token);
+//        data[para_count] = num;
+//        para_count++;
+//        token = strtok(NULL, " ");
+//    }
 
-    if (para_count == 2) {
-        config_data.tube_curr[0] = data[1];
-        config_data.tube_vol[0]  = data[0];
-        uint32_t tube_vol_ref = (uint32_t)(((float)config_data.tube_vol[0] / 64) / ADDA_FULL_SCALE_VIL_VALUE * 4095);  /* 0~2.5V ∂‘”¶ 0~160kV */
-        // uint32_t tube_curr_ref = (uint32_t)((config_data.tube_curr / 64) / ADDA_FULL_SCALE_VIL_VALUE * 4095);
+//    if (para_count == 2) {
+//        config_data.tube_curr[0] = data[1];
+//        config_data.tube_vol[0]  = data[0];
+//        uint32_t tube_vol_ref = (uint32_t)(((float)config_data.tube_vol[0] / 64) / ADDA_FULL_SCALE_VIL_VALUE * 4095);  /* 0~2.5V ∂‘”¶ 0~160kV */
+//        // uint32_t tube_curr_ref = (uint32_t)((config_data.tube_curr / 64) / ADDA_FULL_SCALE_VIL_VALUE * 4095);
 
-        HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_1, DAC_ALIGN_12B_R, tube_vol_ref);
-        // HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_2, DAC_ALIGN_12B_R, tube_vol_ref);
-        debug_tx3("Aπ‹µÁ—π/µÁ¡˜£∫%d, %d, %f\n", tube_vol_ref, config_data.tube_curr[0]);
-    } else {
-        debug_tx3("A≤Œ ˝∏Ò Ω¥ÌŒÛ\n");
-    }
+//        HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_1, DAC_ALIGN_12B_R, tube_vol_ref);
+//        // HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_2, DAC_ALIGN_12B_R, tube_vol_ref);
+//        debug_tx3("Aπ‹µÁ—π/µÁ¡˜£∫%d, %d, %f\n", tube_vol_ref, config_data.tube_curr[0]);
+//    } else {
+//        debug_tx3("A≤Œ ˝∏Ò Ω¥ÌŒÛ\n");
+//    }
 
     return 0;
 }
 
-/* µ∆Àø∏¥Œª–≈∫≈ */
+/* ÁÅØ‰∏ùÂ§ç‰Ωç‰ø°Âè∑ */
 int set_reset(volatile uint8_t *buff, char *p)
-{	
+{
     config_reset_signal(1);
 
-    debug_tx3("ABµ∆Àø∏¥Œª\n");
+    debug_tx3("ABÁÅØ‰∏ùÂ§ç‰ΩçŒª\n");
 
     return 0;
 }
 
 
-/* µ∆Àøø™∆Ù */
+/* ÁÅØ‰∏ùÂºÄÂßã */
 int set_filament_onoff(volatile uint8_t *buff, char *p)
 {
     volatile uint8_t *p_p = buff + 16;
     int num = 0;
 
     char *token = strtok((char *)p_p, " ");
-    while (token != NULL) {
+    while (token != NULL)
+    {
         num = atoi(token);
         token = strtok(NULL, " ");
     }
 
-    if (num == 0) {
-        config_filamentOn_signal(1,0);
-			  ctrl_data.filament_on[0] = 0;    
-				HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_2, DAC_ALIGN_12B_R, 0);
-				debug_tx3("Aµ∆Àø πƒ‹£∫%d\n", num);
-    } else if(num == 1){
-        config_filamentOn_signal(1,1);
+    if (num == 0)
+    {
+        config_filamentOn_signal(1, 0);
+        ctrl_data.filament_on[0] = 0;
+        HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_2, DAC_ALIGN_12B_R, 0);
+        debug_tx3("AÁÅØ‰∏ùÂºÄÂßã%d\n", num);
+    }
+    else if (num == 1)
+    {
+        config_filamentOn_signal(1, 1);
         ctrl_data.filament_on[1] = 0;
-				//PWM
-				debug_tx3("Bµ∆Àø πƒ‹£∫%d\n", num);
+        //PWM
+        debug_tx3("BÁÅØ‰∏ùÂºÄÂßã%d\n", num);
     }
 
     return 0;
 }
 
-/* ∏¯µ∆Àøª˘◊º£¨µ•Œª «“˝Ω≈µÁ∆Ω¿©¥Û1000±∂ */
+/* AÁÅØ‰∏ùÂü∫ÂáÜ */
 int set_filament_ref_onoff1(volatile uint8_t *buff, char *p)
 {
     volatile uint8_t *p_p = buff + 17;
     int num = 0;
 
     char *token = strtok((char *)p_p, " ");
-    while (token != NULL) {
+    while (token != NULL)
+    {
         num = atoi(token);
         token = strtok(NULL, " ");
     }
 
     ctrl_data.filament_on[0] = 1;
-    set_hv_state(HVPS_SM_ID_TRAIN_IDLE,0);
+    set_hv_state(HVPS_SM_ID_TRAIN_IDLE, 0);
     debug_data.timmer_count[0] = 0;
 
     // uint32_t a = (uint32_t)(num * 1.2409);  /* ((num / 1000) / 3.3) * 4095 */
@@ -498,27 +538,28 @@ int set_filament_ref_onoff1(volatile uint8_t *buff, char *p)
     config_data.fila_ref_realtime[0] = IDLE_FILAMENT_REF_DEBUG;
     config_data.fila_ref_step[0] = (config_data.fila_ref_target[0] - IDLE_FILAMENT_REF_DEBUG) / (50 * 1);
 
-    debug_tx3("Aµ∆Àøª˘◊º£∫%f, %f\n", config_data.fila_ref_target[0], config_data.fila_ref_step[0]);
+    debug_tx3("AÁÅØ‰∏ùÂü∫ÂáÜÔºö%f, %f\n", config_data.fila_ref_target[0], config_data.fila_ref_step[0]);
 
     // HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_2, DAC_ALIGN_12B_R, a);
 
     return 0;
 }
 
-/* ∏¯µ∆Àøª˘◊º£¨µ•Œª «“˝Ω≈µÁ∆Ω¿©¥Û1000±∂ */
+/*BÁÅØ‰∏ùÂü∫ÂáÜ*/
 int set_filament_ref_onoff2(volatile uint8_t *buff, char *p)
 {
     volatile uint8_t *p_p = buff + 17;
     int num = 0;
 
     char *token = strtok((char *)p_p, " ");
-    while (token != NULL) {
+    while (token != NULL)
+    {
         num = atoi(token);
         token = strtok(NULL, " ");
     }
 
     ctrl_data.filament_on[1] = 1;
-    set_hv_state(HVPS_SM_ID_TRAIN_IDLE,1);
+    set_hv_state(HVPS_SM_ID_TRAIN_IDLE, 1);
     debug_data.timmer_count[1] = 0;
 
     // uint32_t a = (uint32_t)(num * 1.2409);  /* ((num / 1000) / 3.3) * 4095 */
@@ -527,14 +568,14 @@ int set_filament_ref_onoff2(volatile uint8_t *buff, char *p)
     config_data.fila_ref_realtime[1] = IDLE_FILAMENT_REF_DEBUG;
     config_data.fila_ref_step[1] = (config_data.fila_ref_target[1] - IDLE_FILAMENT_REF_DEBUG) / (50 * 1);
 
-    debug_tx3("Aµ∆Àøª˘◊º£∫%f, %f\n", config_data.fila_ref_target[1], config_data.fila_ref_step[1]);
+    debug_tx3("AÁÅØ‰∏ùÂü∫ÂáÜÔºö%f, %f\n", config_data.fila_ref_target[1], config_data.fila_ref_step[1]);
 
     // HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_2, DAC_ALIGN_12B_R, a);
 
     return 0;
 }
 
-/* ø™ º◊‘∂Ø–£◊º */
+/* ÂºÄÂßãËá™Âä®Ê†°ÂáÜ*/
 int start_calibrate(volatile uint8_t *buff, char *p)
 {
 //    volatile uint8_t *p_p = buff + 16;
@@ -551,42 +592,53 @@ int start_calibrate(volatile uint8_t *buff, char *p)
 //        set_hv_state(HPVS_SM_ID_CAL_PREPARE);
 //        ctrl_data.enable = 1;
 //        // pid_Init(1.0);
-//        debug_tx3("ø™ º–£◊º");
+//        debug_tx3("");
 //    } else {
 //        ctrl_data.enable = 0;
-//        debug_tx3("Ω· ¯–£◊º");
+//        debug_tx3("");
 //    }
 
     return 0;
 }
 
-/* ø™ º◊‘∂Ø–£◊º */
+/* ÂºÄÂßãËá™Âä®Ê†°ÂáÜ*/
 int set_hv_on(volatile uint8_t *buff, char *p)
 {
-    debug_tx3("∏ﬂ—π πƒ‹");
-//
-	xray_HV_enable_debug(1);
-    debug_data.timmer_count[0] = 1;
-	  debug_data.timmer_count[1] = 1;
+//    debug_tx3("È´òÂéã‰ΩøËÉΩ");
+////
+//      xray_HV_enable_debug(1);
+//    debug_data.timmer_count[0] = 1;
+//    debug_data.timmer_count[1] = 1;
 
     return 0;
 }
 
-/* ≥ı ºªØFLASHµƒ≤Œ ˝ */
+/* ÂàùÂßãÂåñflash‰∏≠ÂèÇÊï∞ */
 int init_para_table(volatile uint8_t *buff, char *p)
 {
-    xray_parament_table parm_table_temp = {
-        0, 0, 1,
-        {1,    2,    3,    4,    5,    6,    7,    8,    9,    10,   11,   12},
-        {1606, 1734, 1830, 1911, 1980, 2039, 2091, 2134, 2174, 2210, 2246, 2282},
-        {1500, 1660, 1770, 1850, 1920, 1980, 2030, 2080, 2120, 2160, 2200, 2250},
+    xray_parament_table parm_table_temp[2] =
+    {
+        {
+            0,
+            0,
+            1,
+            {1,    2,    3,    4,    5,    6,    7,    8,    9,    10,   11,   12},
+            {1606, 1734, 1830, 1911, 1980, 2039, 2091, 2134, 2174, 2210, 2246, 2282},
+            {1500, 1660, 1770, 1850, 1920, 1980, 2030, 2080, 2120, 2160, 2200, 2250},
+        },
+        {
+            0,
+            0,
+            0,
+            {0}, {0}, {0}
+        }
     };
 
-    wirte_flash_parament((uint8_t *)&parm_table_temp, sizeof(xray_parament_table));
+    wirte_flash_parament((uint8_t *)&parm_table_temp, sizeof(xray_parament_table) * 2);
 
-    get_flash_parament((uint8_t *)&parm_table, sizeof(xray_parament_table));
+    get_flash_parament((uint8_t *)&parm_table, sizeof(xray_parament_table) * 2);
 
-    debug_tx3("“—À¢–¬FLASH");
+    debug_tx3("Â∑≤Âà∑Êñ∞FLASH");
 
     return 0;
 }
@@ -602,69 +654,71 @@ void cmd_parser_string()
 
     char *ret;
 
-    /* 1°¢≈–∂œπ¶ƒ‹÷∏¡Ó «∑Ò‘⁄◊¢≤·±Ì÷– */
-    for (i = 0; i < LC_CMD_NUM; i++) {
+    /* Âà§Êñ≠Êåá‰ª§ÊòØÂê¶Âú®Ê≥®ÂÜåË°®‰∏≠*/
+    for (i = 0; i < LC_CMD_NUM; i++)
+    {
         ret = strstr((const char *)buff, (const char *)cmd_pack[i].cmdstr);
         if (ret != NULL) break;
     }
 
-    if (ret == NULL) {
-        debug_tx3("√ª”–∏√÷∏¡Ó£°£°£°");
+    if (ret == NULL)
+    {
+        debug_tx3("Ê≤°ÊúâËØ•Êåá‰ª§ÔºÅ");
         restart_usart_receive(USART3);
         return;
     }
 
-    /* 2°¢µ˜”√∂‘”¶µƒ∫Ø ˝ */
-    cmd_pack[i].func_ptr(buff, ret); /* retŒ™÷∏¡Ó∆ ºŒª÷√ */
+    /* 2Ë∞ÉÁî®ÂØπÂ∫îÁöÑÂáΩÊï∞*/
+    cmd_pack[i].func_ptr(buff, ret); /* ret‰∏∫Êåá‰ª§ÂàùÂßã‰ΩçÁΩÆ*/
 
     restart_usart_receive(USART3);
 
     return;
 }
 
-/* ◊¢≤·±Ì */
+/* Ê≥®ÂÜåË°®*/
 void registerFunc_init()
 {
     memcpy(cmd_pack[0].cmdstr, "set currValue1", sizeof("set currValue1"));
     cmd_pack[0].func_ptr = &func_setCurrvalue1;
-	
-	  memcpy(cmd_pack[1].cmdstr, "set currValue2", sizeof("set currValue2"));
+
+    memcpy(cmd_pack[1].cmdstr, "set currValue2", sizeof("set currValue2"));
     cmd_pack[1].func_ptr = &func_setCurrvalue2;
 
     memcpy(cmd_pack[2].cmdstr, "set currRef1", sizeof("set currRef1"));
     cmd_pack[2].func_ptr = &func_setCurrRef1;
-	
-	  memcpy(cmd_pack[3].cmdstr, "set currRef2", sizeof("set currRef2"));
+
+    memcpy(cmd_pack[3].cmdstr, "set currRef2", sizeof("set currRef2"));
     cmd_pack[3].func_ptr = &func_setCurrRef2;
 
     memcpy(cmd_pack[4].cmdstr, "set currValue_c1", sizeof("set currValue_c1"));
     cmd_pack[4].func_ptr = &func_setCurrvalue_c1;
-	
-	  memcpy(cmd_pack[5].cmdstr, "set currValue_c2", sizeof("set currValue_c2"));
+
+    memcpy(cmd_pack[5].cmdstr, "set currValue_c2", sizeof("set currValue_c2"));
     cmd_pack[5].func_ptr = &func_setCurrvalue_c2;
 
     memcpy(cmd_pack[6].cmdstr, "set currRef_c1", sizeof("set currRef_c1"));
     cmd_pack[6].func_ptr = &func_setCurrRef_c1;
-	
-	  memcpy(cmd_pack[7].cmdstr, "set currRef_c2", sizeof("set currRef_c2"));
+
+    memcpy(cmd_pack[7].cmdstr, "set currRef_c2", sizeof("set currRef_c2"));
     cmd_pack[7].func_ptr = &func_setCurrRef_c2;
 
     memcpy(cmd_pack[8].cmdstr, "get currTable1", sizeof("get currTable1"));
     cmd_pack[8].func_ptr = &func_getTable1;
-		
-		memcpy(cmd_pack[9].cmdstr, "get currTable2", sizeof("get currTable2"));
+
+    memcpy(cmd_pack[9].cmdstr, "get currTable2", sizeof("get currTable2"));
     cmd_pack[9].func_ptr = &func_getTable2;
 
     memcpy(cmd_pack[10].cmdstr, "set tubeVC1", sizeof("set tubeVC1"));
     cmd_pack[10].func_ptr = &set_tube_vol_curr1;
-		
-		memcpy(cmd_pack[11].cmdstr, "set tubeVC2", sizeof("set tubeVC2"));
+
+    memcpy(cmd_pack[11].cmdstr, "set tubeVC2", sizeof("set tubeVC2"));
     cmd_pack[11].func_ptr = &set_tube_vol_curr2;
 
     memcpy(cmd_pack[12].cmdstr, "set expotime1", sizeof("set expotime1"));
     cmd_pack[12].func_ptr = &set_expo_time1;
-		
-		memcpy(cmd_pack[13].cmdstr, "set expotime2", sizeof("set expotime2"));
+
+    memcpy(cmd_pack[13].cmdstr, "set expotime2", sizeof("set expotime2"));
     cmd_pack[13].func_ptr = &set_expo_time2;
 
     memcpy(cmd_pack[14].cmdstr, "set expomode", sizeof("set expomode"));
@@ -684,8 +738,8 @@ void registerFunc_init()
 
     memcpy(cmd_pack[19].cmdstr, "set filament ref1", sizeof("set filament ref1"));
     cmd_pack[19].func_ptr = &set_filament_ref_onoff1;
-		
-		memcpy(cmd_pack[20].cmdstr, "set filament ref2", sizeof("set filament ref2"));
+
+    memcpy(cmd_pack[20].cmdstr, "set filament ref2", sizeof("set filament ref2"));
     cmd_pack[20].func_ptr = &set_filament_ref_onoff2;
 
     memcpy(cmd_pack[21].cmdstr, "start calibrate", sizeof("start calibrate"));
@@ -702,3 +756,6 @@ void registerFunc_init()
 
     return;
 }
+
+
+
