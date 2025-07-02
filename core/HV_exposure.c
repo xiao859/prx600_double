@@ -365,33 +365,35 @@ void HVPS_SM_Control()
     switch (hv_state[xray_num])
     {
     case HVPS_SM_ID_IDLE:
+        if (xray_data.timmer_count[xray_num] == 1)
+            xray_data.timmer_count[xray_num]++;
         hvState_ilde_init(xray_num);
         config_ready_signal(1);
         config_xrayOn_signal(1);
 
-        /* ¿ªƴµƋ¿º󣬐蒪ԤȈ2.5ë */
         if ((ctrl_data.enable[xray_num] == 1) && (ctrl_data.interlock == 1) &&
-                (ctrl_data.filament_on[xray_num] == 1) && (xray_data.timmer_count[0] > TIMER6_2P5_SECOND_CYCLES))
+                (ctrl_data.filament_on[xray_num] == 1) && (xray_data.timmer_count[xray_num] > TIMER6_2P5_SECOND_CYCLES))
         {
             config_mcuLock_signal(1);
             set_hv_state(HVPS_SM_ID_PREPARE, xray_num);
-            xray_data.timmer_count[0] = 1;
+            xray_data.timmer_count[xray_num] = 1;
             config_data.expo_count[xray_num] = 0;
         }
 
         if (ctrl_data.filament_on[xray_num] == 1)
         {
+            config_HV_sw(1, xray_num);
             config_filament_ref_slop(xray_num);
         }
         break;
 
     case HVPS_SM_ID_PREPARE:
-        config_filamentRef(xray_num);     /* µƋ¿»ù׼À­µ½Ԥƚֵ */
+        config_filamentRef(xray_num);
 
         /* ֪ͨMCUґ׼±¸ºà*/
         config_ready_signal(1);
         set_hv_state(HVPS_SM_ID_READY, xray_num);
-        xray_data.timmer_count[0] = 0;
+        xray_data.timmer_count[xray_num] = 0;
         uint32_t currRef = config_data.fila_ref_realtime[xray_num];
 
         pid_Init(config_data.tube_curr[xray_num], currRef, Is_PulseMode_CT());
@@ -413,13 +415,11 @@ void HVPS_SM_Control()
         else
             config_filamentOn_signal(0, 1);
 
-        /* EXPψ¹أ¬ENABLEº󹘠*/
         if (ctrl_data.enable[xray_num] == 0)
         {
             if (config_data.expo_count_total[xray_num] > 1)
             {
                 parm_table[xray_num].expo_count_total++;
-                /* Ƙ¹ⶰs¼Ӓ»´Π*/
                 parm_table[xray_num].expo_times_total += config_data.expo_count_total[xray_num] / 3000000;
             }
             config_xrayOn_signal(0);
@@ -453,12 +453,11 @@ void HVPS_SM_Control()
             xray_data.isCheckAvailable = 0;
         }
 
-        /* ENABLEψ¹أ¬EXPº󹘠*/
         if (ctrl_data.enable[xray_num] == 0)
         {
             xray_data.isCheckAvailable = 0;
             parm_table[xray_num].expo_count_total++;
-            /* Ƙ¹ⶰs¼Ӓ»´Π*/
+
             parm_table[xray_num].expo_times_total += config_data.expo_count_total[xray_num] / 3000000;
             config_xrayOn_signal(0);
             set_hv_state(HVPS_SM_ID_EXPO_END, xray_num);
@@ -498,17 +497,18 @@ void HVPS_SM_Control()
     switch (hv_state[xray_num])
     {
     case HVPS_SM_ID_IDLE:
+        if (xray_data.timmer_count[xray_num] == 1)
+            xray_data.timmer_count[xray_num]++;
         hvState_ilde_init(xray_num);
         config_ready_signal(1);
         config_xrayOn_signal(1);
 
-        /* ¿ªƴµƋ¿º󣬐蒪ԤȈ2.5ë */
         if ((ctrl_data.enable[xray_num] == 1) && (ctrl_data.interlock == 1) &&
-                (ctrl_data.filament_on[xray_num] == 1) && (xray_data.timmer_count[1] > TIMER6_2P5_SECOND_CYCLES))
+                (ctrl_data.filament_on[xray_num] == 1) && (xray_data.timmer_count[xray_num] > TIMER6_2P5_SECOND_CYCLES))
         {
             config_mcuLock_signal(1);
             set_hv_state(HVPS_SM_ID_PREPARE, xray_num);
-            xray_data.timmer_count[1] = 1;
+            xray_data.timmer_count[xray_num] = 1;
             config_data.expo_count[xray_num] = 0;
         }
 
@@ -519,12 +519,12 @@ void HVPS_SM_Control()
         break;
 
     case HVPS_SM_ID_PREPARE:
-        config_filamentRef(xray_num);     /* µƋ¿»ù׼À­µ½Ԥƚֵ */
+        config_filamentRef(xray_num);
 
-        /* ֪ͨMCUґ׼±¸ºà*/
+
         config_ready_signal(1);
         set_hv_state(HVPS_SM_ID_READY, xray_num);
-        xray_data.timmer_count[0] = 0;
+        xray_data.timmer_count[xray_num] = 0;
         uint32_t currRef = config_data.fila_ref_realtime[xray_num];
 
         pid_Init(config_data.tube_curr[xray_num], currRef, Is_PulseMode_CT());
@@ -544,15 +544,15 @@ void HVPS_SM_Control()
             xray_data.timmer_count[xray_num] = 1;
         }
         else
-            config_filamentOn_signal(0, 1);
+            config_filamentOn_signal(0, xray_num);
 
-        /* EXPψ¹أ¬ENABLEº󹘠*/
+
         if (ctrl_data.enable[xray_num] == 0)
         {
             if (config_data.expo_count_total[xray_num] > 1)
             {
                 parm_table[xray_num].expo_count_total++;
-                /* Ƙ¹ⶰs¼Ӓ»´Π*/
+
                 parm_table[xray_num].expo_times_total += config_data.expo_count_total[xray_num] / 3000000;
             }
             config_xrayOn_signal(0);
@@ -586,12 +586,12 @@ void HVPS_SM_Control()
             xray_data.isCheckAvailable = 0;
         }
 
-        /* ENABLEψ¹أ¬EXPº󹘠*/
+
         if (ctrl_data.enable[xray_num] == 0)
         {
             xray_data.isCheckAvailable = 0;
             parm_table[xray_num].expo_count_total++;
-            /* Ƙ¹ⶰs¼Ӓ»´Π*/
+
             parm_table[xray_num].expo_times_total += config_data.expo_count_total[xray_num] / 3000000;
             config_xrayOn_signal(0);
             set_hv_state(HVPS_SM_ID_EXPO_END, xray_num);
