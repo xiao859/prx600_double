@@ -395,7 +395,7 @@ int set_enable(volatile uint8_t *buff, char *p)
         debug_data.timmer_count[1] = 1;
 
 //      PWM
-        __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_4, 0); //HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_1, DAC_ALIGN_12B_R, 0);
+        __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_4, 0); 
         debug_tx3("ʹ使能结束ʼ\n");
     }
     else if (num == 3)
@@ -409,6 +409,7 @@ int set_enable(volatile uint8_t *buff, char *p)
         debug_data.timmer_count[1] = 1;
         HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_1, DAC_ALIGN_12B_R, 0);
         //PWM
+				 __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_4, 0);
         debug_tx3("ʹ使能开始ʼ\n");
 
     }

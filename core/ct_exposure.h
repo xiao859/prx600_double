@@ -281,7 +281,7 @@ typedef struct
 
 extern PARAM_PID  param_pid;
 extern User_PID   user_pid;
-void tube_current_piControl(uint8_t conflag);
+void tube_current_piControl(uint8_t conflag,uint8_t ch);
 void pid_Init(float target, uint32_t ref_init, uint8_t isPulseMode);
 void xray_system_disable(uint16_t n);
 

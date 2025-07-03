@@ -208,7 +208,7 @@ void calibrate_task()
             user_pid.currValue = sampled_data.tube_curr_value;
             user_pid.Kp = 3.7;
             user_pid.Ti = 0.0009;
-            tube_current_piControl(cali_source);
+            tube_current_piControl(cali_source,cali_source);
         }
 
         break;
@@ -221,7 +221,7 @@ void calibrate_task()
         {
             user_pid.Kp = 20;
             user_pid.Ti = 1;
-            tube_current_piControl(cali_source);
+            tube_current_piControl(cali_source,cali_source);
         }
 
         if (cali_data.timmer_count < cali_data.coolTime_expect)
@@ -325,18 +325,5 @@ void calibrate_task()
 }
 
 
-void Set_PWM_CMP()
-{
-    // 灯丝0：使用 DA 控制，跳过 PWM 设置
-    if (ctrl_data.xray_current == 1)
-        return;
-
-
-//    // 灯丝1：PWM 控制
-//    mLamp_Control_Regs[1].Buck_duty = mLamp_Control_Regs[1].Buck_duty > 0.9 ? 0.9 : mLamp_Control_Regs[1].Buck_duty;
-//    mLamp_Control_Regs[1].Buck_duty = mLamp_Control_Regs[1].Buck_duty < 0 ? 0 : mLamp_Control_Regs[1].Buck_duty;
-//    __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_4, (uint32_t)(mLamp_Control_Regs[1].Buck_duty * (float)500));//50k
-
-}
 
 

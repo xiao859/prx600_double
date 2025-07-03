@@ -19,7 +19,6 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "usart.h"
-#include "app_uart.h"
 
 /* USER CODE BEGIN 0 */
 

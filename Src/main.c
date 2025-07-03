@@ -108,7 +108,7 @@ int main(void)
     MX_UART4_Init();
     MX_UART5_Init();
     MX_USART3_UART_Init();
-//   MX_IWDG_Init();
+    MX_IWDG_Init();
     MX_TIM6_Init();
     MX_TIM7_Init();
     MX_SPI1_Init();
@@ -130,10 +130,11 @@ int main(void)
 
     HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_1, DAC_ALIGN_12B_R, 0);
     HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_2, DAC_ALIGN_12B_R, 0);
-		
-		HAL_TIM_PWM_Start(&htim5, TIM_CHANNEL_4);
+
+    HAL_TIM_PWM_Start(&htim5, TIM_CHANNEL_4);
     //PWM输出强制为低
-		__HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_4, 0); 
+    __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_4, 0); //占空比的设置直接决定了输出电压的高低（经过滤波器后作为类DA使用）
+    //关于占空比 需定义 duty_max / duty_min  即：Vout ≈ Duty * VDD 需测试占空比关系，做类比线性关系
     HAL_ADC_Start_DMA(&hadc2, (uint32_t*)adc_buffer2, ADC_2_CHANNEL_NUM * ADC_SAMPLE_CYCLE_NUM);
     HAL_ADC_Start_DMA(&hadc3, (uint32_t*)adc_buffer3, ADC_3_CHANNEL_NUM * ADC_SAMPLE_CYCLE_NUM);
 
@@ -145,31 +146,31 @@ int main(void)
 
     for (uint16_t i = 0; i < 1000; i++)
 
-		while (1)
-		{
-				/* USER CODE END WHILE */
+        while (1)
+        {
+            /* USER CODE END WHILE */
 
-				/* USER CODE BEGIN 3 */
-				cmd_parser();
-				cmd_parser_string();
+            /* USER CODE BEGIN 3 */
+            cmd_parser();
+            cmd_parser_string();
 
-				Protect_Check_Slow();      //慢速故障检查
-				if ((get_hv_state(0) == HVPS_SM_ID_IDLE) && (get_hv_state(0) == HVPS_SM_ID_IDLE))
-				{
-						HAL_TIM_Base_Stop_IT(&htim6);
-						save_parament_to_flash();
-						HAL_TIM_Base_Start_IT(&htim6);
-				}
+            Protect_Check_Slow();      //慢速故障检查
+            if ((get_hv_state(0) == HVPS_SM_ID_IDLE) && (get_hv_state(0) == HVPS_SM_ID_IDLE))
+            {
+                HAL_TIM_Base_Stop_IT(&htim6);
+                save_parament_to_flash();
+                HAL_TIM_Base_Start_IT(&htim6);
+            }
 
-				if (ctrl_data.hv_vol_fault || ctrl_data.hv_curr_fault)
-				{
-						config_reset_signal(1);
-						falut_led(0);
-				}
-				else
-						falut_led(1);
+            if (ctrl_data.hv_vol_fault || ctrl_data.hv_curr_fault)
+            {
+                config_reset_signal(1);
+                falut_led(0);
+            }
+            else
+                falut_led(1);
 
-		}
+        }
     /* USER CODE END 3 */
 }
 
