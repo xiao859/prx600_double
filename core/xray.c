@@ -69,13 +69,23 @@ void config_reset_signal(uint16_t value)
     return;
 }
 
-void config_HV_sw(uint16_t value,uint16_t n)
+void config_enable_sw(uint16_t n)
 {
 	if(n == 0)
     /*采样选择开关*/
-    HAL_GPIO_WritePin(HV_SW_A_GPIO_Port, HV_SW_A_PIN, Calc_Gpio_State_P(value));
+    HAL_GPIO_WritePin(HV_SW_A_GPIO_Port, HV_SW_A_PIN, Calc_Gpio_State_P(1));
 	else
-		HAL_GPIO_WritePin(HV_SW_B_GPIO_Port, HV_SW_B_PIN, Calc_Gpio_State_P(value));
+		HAL_GPIO_WritePin(HV_SW_B_GPIO_Port, HV_SW_B_PIN, Calc_Gpio_State_P(1));
+    return;
+}
+
+void config_disable_sw(uint16_t n)
+{
+	if(n == 0)
+    /*采样选择开关*/
+    HAL_GPIO_WritePin(HV_SW_A_GPIO_Port, HV_SW_A_PIN, Calc_Gpio_State_P(0));
+	else
+		HAL_GPIO_WritePin(HV_SW_B_GPIO_Port, HV_SW_B_PIN, Calc_Gpio_State_P(0));
     return;
 }
 

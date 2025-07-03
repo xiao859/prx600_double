@@ -18,8 +18,9 @@
 #define APP_FUNC_NUM                    50
 
 
-typedef enum {
-    SCI_MSG_INQ_MODE=0x00,
+typedef enum
+{
+    SCI_MSG_INQ_MODE = 0x00,
     SCI_MSG_INQ_TUBE_VSET,
     SCI_MSG_INQ_TUBE_ISET,
     SCI_MSG_INQ_MAX_TIME,
@@ -34,47 +35,46 @@ typedef enum {
     SCI_MSG_INQ_LAMP_SW,
     SCI_MSG_INQ_LAMP_HW,
     SCI_MSG_INQ_EXPO_TIME1,
-	  SCI_MSG_INQ_EXPO_TIME2,
+    SCI_MSG_INQ_EXPO_TIME2,
     SCI_MSG_INQ_EXPO_COUNT1,
-	  SCI_MSG_INQ_EXPO_COUNT2,
+    SCI_MSG_INQ_EXPO_COUNT2,
     SCI_MSG_INQ_AUTOCALIBRA,
-    SCI_MSG_INQ_XSOURCE_SW,
+    SCI_MSG_INQ_XSOURCE_SW,//20
 
-    SCI_MSG_SET_MODE=0x20,
+    SCI_MSG_SET_MODE = 0x20,
     SCI_MSG_SET_TUBE_V,
     SCI_MSG_SET_TUBE_I,
     SCI_MSG_SET_MAX_TIME,
     SCI_MSG_SET_EXP1_COUNTCLR,
-		SCI_MSG_SET_EXP2_COUNTCLR,
+    SCI_MSG_SET_EXP2_COUNTCLR,
     SCI_MSG_SET_EXP1_TIMECLR,
-		SCI_MSG_SET_EXP2_TIMECLR,
-		SCI_MSG_SET_ENABLE,
+    SCI_MSG_SET_EXP2_TIMECLR,
+    SCI_MSG_SET_ENABLE,//29
 
-    SCI_MSG_CTRL_RST=0x30,
+    SCI_MSG_CTRL_RST = 0x30,
     SCI_MSG_CTRL_CAL,
     SCI_MSG_CTRL_TRAIN,
     SCI_MSG_CTRL_UPDATE,
     SCI_MSG_CTRL_STORE_TABLE,
     SCI_MSG_CTRL_STORE_TABLE_INQ,
     SCI_MSG_CTRL_STORE_STATISTICS,
-    SCI_MSG_LAMP_CONTROL,
+    SCI_MSG_LAMP_CONTROL,//37
 
-    SCI_MSG_SET_PFCTHRESHOLD=0x40,
+    SCI_MSG_SET_PFCTHRESHOLD = 0x40,
     SCI_MSG_SET_24VTHRESHOLD,
     SCI_MSG_SET_KVMATHRESHOLD,
-    SCI_MSG_SET_BUCKLLCTHRESHOLD,
+    SCI_MSG_SET_BUCKLLCTHRESHOLD,//41
 
-    SCI_MSG_DEBUG_EXPO_CTRL=0x50,
-
-    SCI_MSG_DEBUG_LAMP_I_SET=0xA0,
+    SCI_MSG_DEBUG_LAMP_I_SET = 0xA0,
     SCI_MSG_DEBUG_TUBE_VIDLE_SET,
     SCI_MSG_DEBUG_TUBE_VRISE_TIME_SET,
     SCI_MSG_DEBUG_ONLINE_PI,
-
-    SCI_MSG_TEST_1=0xB0,
+    SCI_MSG_DEBUG_EXPO_CTRL,
+		
+    SCI_MSG_TEST_1 = 0xB0,
     SCI_MSG_TEST_2,
     SCI_MSG_TEST_3,
-    SCI_MSG_TEST_4,
+    SCI_MSG_TEST_4,//51
 } SCI_MSG_ID;
 
 typedef struct
@@ -84,7 +84,8 @@ typedef struct
 } controler_cmd_funcs;
 extern controler_cmd_funcs funcs[APP_FUNC_NUM];
 
-typedef struct {
+typedef struct
+{
     //硬件版本号
     uint16_t hw_ver_high : 8;
     uint16_t hw_ver_low  : 8;
@@ -184,6 +185,14 @@ void set24vthreshold(message_protocol *msg);
 void setkvmathreshold(message_protocol *msg);
 
 void setbuckllcthreshold(message_protocol *msg);
+
+void test_func1(message_protocol *msg);
+
+void test_func2(message_protocol *msg);
+
+void test_func3(message_protocol *msg);
+
+void test_func4(message_protocol *msg);
 
 void invalid_cmd_reply(void);
 

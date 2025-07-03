@@ -56,6 +56,6 @@ void delay_ms(uint16_t nms);                /* 延时nms */
 void delay_us(uint32_t nus);                /* 延时nus */
 
 void HAL_Delay(uint32_t Delay);             /* HAL库的延时函数，SDIO等需要用到 */
-
+uint32_t get_tick_ms(void);
 #endif
 

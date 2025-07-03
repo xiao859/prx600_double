@@ -228,7 +228,7 @@ typedef struct
     uint32_t oil_strike_count;      /*油箱周期计数 */
     uint32_t oil_strike_times;      /*油箱次数*/
 
-    uint32_t isCheckAvailable;   /*管电压和管电流达到稳定后可以开始检测，稳定时间根据上升时间确定*/
+    uint32_t isCheckAvailable[XRAY_NUMS];   /*管电压和管电流达到稳定后可以开始检测，稳定时间根据上升时间确定*/
 } xray_running_data;
 
 extern volatile xray_running_data xray_data;
@@ -247,6 +247,8 @@ extern volatile adc_sampled_value sampled_data;
 
 extern volatile adc_sampled_value sampled_data_last;
 
+;
+
 hvps_sm_state get_hv_state(uint16_t n);
 void set_hv_state(hvps_sm_state state, uint16_t n);
 
@@ -254,7 +256,7 @@ void config_filament0_ref_slop(void);
 void flash_table_init(void);
 void save_parament_to_flash(void);
 void Set_PWM_CMP(void);
-void HVPS_SM_Control(void);
+void ct_task(void);
 
 
 typedef struct
@@ -275,8 +277,15 @@ typedef struct
     uint32_t config_ref;
 } PARAM_PID;
 
+extern PARAM_PID  param_pid;
+extern User_PID   user_pid;
 void tube_current_piControl(uint8_t conflag);
 void pid_Init(float target, uint32_t ref_init, uint8_t isPulseMode);
+void xray_system_disable(uint16_t n);
+
+void config_filamentRef(uint16_t n);
+void disable_hvref(uint16_t n);
+void disable_filamentref(uint16_t n);
 
 #endif
 

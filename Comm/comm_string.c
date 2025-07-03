@@ -7,10 +7,11 @@
 #include "app_spi.h"
 #include "debug_mode.h"
 #include "xray.h"
-#include "calibrate.h"
-#include "pi_control.h"
+//#include "pi_control.h"
 #include "app_fun.h"
 #include "HV_exposure.h"
+
+
 
 LC_Command_string cmd_pack[LC_CMD_NUM];
 
@@ -347,7 +348,7 @@ int set_expo_mode(volatile uint8_t *buff, char *p)
     {
     case HVPS_MODE_S_CONTINUOUS:
         ctrl_data.xrayMode = XRAY_MODE_S_CONTINUOUS;
-        config_HV_sw(1, 0); // 选取射源1作为高精度采样
+        config_enable_sw(0); // 选取射源1作为高精度采样
         //DMA地址
         ctrl_data.xray_current = 1;
         break;

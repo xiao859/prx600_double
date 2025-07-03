@@ -28,8 +28,8 @@ void heartBeat_led(void);
 void xray_on_led(uint16_t value);
 void falut_led(uint16_t value);
 
-void config_HV_sw(uint16_t value,uint16_t n);
-
+void config_enable_sw(uint16_t n);
+void config_disable_sw(uint16_t n);
 //void Xray_SetVoltage(uint16_t kv);              // 设置Xray高压参考
 //void Xray_Enable(ExposureSource src);           // 打开高压通道
 //void Xray_Disable(ExposureSource src);          // 关闭高压通道

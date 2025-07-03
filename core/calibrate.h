@@ -2,48 +2,45 @@
 #define _CALIBRATE_H
 
 #include "stdint.h"
+#include "HV_exposure.h"
 
 
-typedef struct
-{
-    uint16_t store_flag; // ä¿å­˜æ•°æ®æ ‡å¿—ï¼Œéœ€è¦å­˜å‚¨æŸ¥æ‰¾è¡¨ï¼Œæ ¹æ®éœ€è¦ç½®ä¸º1~3ï¼Œå­˜å‚¨å®Œæ¯•ï¼Œç½®ä¸º0ï¼Œåˆå§‹åŒ–ä¸º0
-    uint16_t calibraflag;//è‡ªåŠ¨è·Ÿæ–°
-    uint16_t calibr_enble_flag;//è·Ÿæ–°ä½¿èƒ½
-    uint16_t calibr_expo1_flag;
-    uint16_t calibr_expo2_flag;
-    uint32_t calibr_enble_count;
-    uint16_t calibr_expo1_count;
-    uint16_t calibr_expo2_count;
-    uint32_t calibr_lampctrl_count;
-    uint32_t calibr_wait_count;
-}ctrl_calibr;
+#define     CALI_HV_REF                     90
 
-extern volatile ctrl_calibr ctrl_calibr_data;
+#define     CALI_SINGLE_CURR_TIME           2.4 //2.04
 
-void Autocalibrationcount(void);
 
-///* 3¡¢Êı¾İÀàĞÍ¶¨Òå */
-//typedef struct {
-//    xray_mode   mode;                   /* Ğ£×¼Ä£Ê½£ºÂö³å0»òÕßÁ¬Ğø1 */
-//    uint8_t     curr_index[XRAY_NUMS];             /* Ğ£×¼½×¶Î0~9´ú±í */
-//    uint8_t     finished_flag[XRAY_NUMS];          /* ½áÊø±ê¼Ç */
+#define     CALI_PULSE_CURR_EXPO_TIME       15
 
-//    float       tube_vol_realtime[XRAY_NUMS];
-//    float       tube_vol_step[XRAY_NUMS];
+#define     CALI_PULSE_SIGLE_CURR_PERIOD    120
 
-//    uint32_t    timmer_count[XRAY_NUMS];           /* ¼ÆÊ±£¬ÓÃÓÚÀäÈ´»òÕß¿ØÖÆÆØ¹â */
-//    uint32_t    cycle_count[XRAY_NUMS];            /* ¼ÆÊı£¬µ¥ºÁ°²Ñ­»· */
+#define     Is_PulseMode()                  ((cali_data.mode) == XRAY_MODE_D_PULSE)
 
-//    uint32_t    expoTime_expect[XRAY_NUMS];        /* ÉèÖÃµÄÆØ¹âÊ±¼ä£¬µ¥¸öµçÁ÷ÏÂ£¬Ã¿¸öÂö³åµÄ³ÖĞøÊ±¼ä */
-//    uint32_t    coolTime_expect[XRAY_NUMS];        /* ÉèÖÃµÄÀäÈ´Ê±¼ä£¬µ¥¸öµçÁ÷ÏÂ£¬Ã¿¸öÂö³å¼äµÄÀäÈ´Ê±¼ä */
-//    uint32_t    expoCycle_perCurrent[XRAY_NUMS];   /* Ğ£×¼£¬µ¥ºÁ°²ÆØ¹â´ÎÊı */
+#define     Is_ContinuousMode()             ((cali_data.mode) == XRAY_MODE_D_CONTINUOUS)
 
-//    uint32_t    para_save_flag[XRAY_NUMS];
-//} xray_calibrate_data;
-//extern volatile xray_calibrate_data cali_data;
 
-///* 4¡¢º¯ÊıÉùÃ÷ */
-//void calibrate_para_init(void);
-//void calibrate_task(void);
+typedef struct {
+    xray_mode   mode;                   /*æ ¡å‡†æ¨¡å¼*/
+    uint8_t     curr_index;             /*æ ¡å‡†é˜¶æ®µ */
+    uint8_t     finished_flag;          /*ç»“æŸæ ‡è®°*/
+
+    float       tube_vol_realtime;
+    float       tube_vol_step;
+
+    uint32_t    timmer_count;           /*è®¡æ—¶ï¼Œç”¨äºå†·å´æˆ–æ§åˆ¶æ›å…‰*/
+    uint32_t    cycle_count;            /*è®¡æ—¶ï¼Œå•æ¯«å®‰å¾ªç¯*/
+
+    uint32_t    expoTime_expect;        /*è®¾ç½®çš„æ›å…‰æ—¶é—´ï¼Œå•ä¸ªç”µæµä¸‹ï¼Œæ¯ä¸ªè„‰å†²çš„æŒç»­æ—¶é—´*/
+    uint32_t    coolTime_expect;        /*è®¾ç½®çš„å†·å´æ—¶é—´ï¼Œå•ä¸ªç”µæµä¸‹ï¼Œæ¯ä¸ªè„‰å†²çš„å†·å´æ—¶é—´*/
+    uint32_t    expoCycle_perCurrent[XRAY_NUMS];   /*æ ¡å‡†ï¼Œå•æ¯«å®‰æ›å…‰æ¬¡æ•°*/
+
+    uint32_t    para_save_flag;
+} xray_calibrate_data;
+extern volatile xray_calibrate_data cali_data;
+
+
+void calibrate_para_init(void);
+void calibrate_task(void);
+
 
 #endif

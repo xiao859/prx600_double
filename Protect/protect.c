@@ -2,6 +2,7 @@
 #include "xray.h"
 #include "temperature.h"
 
+
 HVPS_FAULT_REGS mHVPS_Fault;
 
 void Protect_Check_Slow()

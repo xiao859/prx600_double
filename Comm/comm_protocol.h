@@ -148,7 +148,7 @@
 //void set_hv_state(hvps_sm_state state,uint16_t n);
 //void cmd_parser(void);
 
-//void xray_system_disable(void);
+
 //void xray_system_fault_check(void);
 //uint32_t get_filamentRef(float tube_current,uint16_t n);
 //void parament_init(void);

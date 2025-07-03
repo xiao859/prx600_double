@@ -39,6 +39,7 @@
 #include "protect.h"
 #include "stdio.h"
 #include "calibrate.h"
+#include "debug_mode.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -70,7 +71,6 @@ void SystemClock_Config(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-
 /* USER CODE END 0 */
 
 /**
@@ -109,7 +109,7 @@ int main(void)
     MX_UART4_Init();
     MX_UART5_Init();
     MX_USART3_UART_Init();
-    MX_IWDG_Init();
+//   MX_IWDG_Init();
     MX_TIM6_Init();
     MX_TIM7_Init();
     MX_SPI1_Init();
@@ -145,32 +145,31 @@ int main(void)
 
     for (uint16_t i = 0; i < 1000; i++)
 
-        while (1)
-        {
-            /* USER CODE END WHILE */
+		while (1)
+		{
+				/* USER CODE END WHILE */
 
-            /* USER CODE BEGIN 3 */
-            cmd_parser();
-            cmd_parser_string();
+				/* USER CODE BEGIN 3 */
+				cmd_parser();
+				cmd_parser_string();
 
-            Protect_Check_Slow();      //慢速故障检查
-            if (ctrl_calibr_data.store_flag && (get_hv_state(0) == HVPS_SM_ID_IDLE) && (get_hv_state(0) == HVPS_SM_ID_IDLE))
-            {
-                HAL_TIM_Base_Stop_IT(&htim6);
-                save_parament_to_flash();
-                HAL_TIM_Base_Start_IT(&htim6);
-                ctrl_calibr_data.store_flag = 0;
-            }
+				Protect_Check_Slow();      //慢速故障检查
+				if ((get_hv_state(0) == HVPS_SM_ID_IDLE) && (get_hv_state(0) == HVPS_SM_ID_IDLE))
+				{
+						HAL_TIM_Base_Stop_IT(&htim6);
+						save_parament_to_flash();
+						HAL_TIM_Base_Start_IT(&htim6);
+				}
 
-            if (ctrl_data.hv_vol_fault || ctrl_data.hv_curr_fault)
-            {
-                config_reset_signal(1);
-                falut_led(0);
-            }
-            else
-                falut_led(1);
+				if (ctrl_data.hv_vol_fault || ctrl_data.hv_curr_fault)
+				{
+						config_reset_signal(1);
+						falut_led(0);
+				}
+				else
+						falut_led(1);
 
-        }
+		}
     /* USER CODE END 3 */
 }
 
@@ -232,22 +231,25 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
         ctrl_data.hv_curr_fault = get_tube_curr_fault_pin();
         ctrl_data.interlock     = get_interLock_pin();
 
-        Autocalibrationcount();    // 自动校准流程（含灯丝控制）
-        HVPS_SM_Control();    // 高压状态机调度（控制曝光状态）
+        if (Is_CTMode())
+        {
+            ctrl_data.expo[0]   = get_expo_pin(0);
+            ctrl_data.enable[0] = get_enable_pin(0);
+            ct_task();
+        }
+        else if (Is_CalibrateMode())
+        {
+            calibrate_task();
+        }
+        else if (Is_DebugMode())
+        {
+            debug_task();
+        }
 
-//      // 计算高压误差，PI控制，更新DAC输出
-//      PI_Control_Update();
 
-        // 灯丝状态机（0：DA，1：PWM）
-        Lamp_SM_Control(0);
-        Lamp_SM_Control(1);
+//        // 更新PWM占空比（TIM5）
+//        Set_PWM_CMP();
 
-        // 更新PWM占空比（TIM5）
-        Set_PWM_CMP();
-
-        // 更新DAC输出（灯丝0、高压）
-        HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_2, DAC_ALIGN_12B_R, mLamp_Control_Regs[0].mLamp_Current);
-        HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_1, DAC_ALIGN_12B_R, (uint32_t)(((float)config_data.tube_vol[ctrl_data.xray_current - 1] / 64) / ADDA_FULL_SCALE_VIL_VALUE * 4095));
 
         // 更新状态变量及故障快速检测
         UpdateVar_CheckFaultFast();

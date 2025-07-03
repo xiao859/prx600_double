@@ -19,6 +19,7 @@
 /* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "usart.h"
+#include "app_uart.h"
 
 /* USER CODE BEGIN 0 */
 
@@ -67,7 +68,7 @@ void MX_UART4_Init(void)
     Error_Handler();
   }
   /* USER CODE BEGIN UART4_Init 2 */
-
+  HAL_UART_Receive_IT(&huart4, (uint8_t *)&uart4.recv_byte, 1);
   /* USER CODE END UART4_Init 2 */
 
 }
@@ -110,7 +111,7 @@ void MX_UART5_Init(void)
     Error_Handler();
   }
   /* USER CODE BEGIN UART5_Init 2 */
-
+  HAL_UART_Receive_IT(&huart5, (uint8_t *)&uart5.recv_byte, 1);
   /* USER CODE END UART5_Init 2 */
 
 }

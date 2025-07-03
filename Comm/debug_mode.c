@@ -8,9 +8,8 @@
 
 #include "debug_mode.h"
 #include "calibrate.h"
-#include "exposure.h"
+#include "HV_exposure.h"
 #include <stdio.h>
-#include "comm_protocol.h"
 #include "comm_string.h"
 #include "xray.h"
 #include "delay.h"
@@ -18,17 +17,16 @@
 
 volatile xray_debug_data debug_data;
 
-///*  πƒ‹∏ﬂ—π¥•∑¢–≈∫≈ */
+///**/
 //void xray_HV_enable_debug(uint16_t value)
 //{
-//    config_HVEn_signal(value);      /* ∏ﬂµÁ∆Ωø™ */
-//    config_xrayOn_signal(value);    /* µÕµÁ∆Ωø™ */
+//    config_HVEn_signal(value);      /*È´òÂéãÁîµÊ∫ê*/
+//    config_xrayOn_signal(value);    /*ÂáÜÂ§á‰ø°Âè∑*/
 //    config_mcuLock_signal(value);
 
 //    return;
 //}
 
-///* ∏ﬂ—πª˘◊º∫Õµ∆Àøª˘◊º∂ºπÿµÙ */
 //void xray_disable_ref_debug()
 //{
 //    HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_1, DAC_ALIGN_12B_R, 0);
@@ -53,80 +51,106 @@ volatile xray_debug_data debug_data;
 //    HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_2, DAC_ALIGN_12B_R, filament_ref);
 //}
 
-///* ø™∑¢’ﬂƒ£ Ω»ŒŒÒ£¨¥ÛÃÂ¡˜≥Ã∫Õ–£◊º¿‡À∆ */
-//void debug_task()
-//{
+/////**/
+void debug_task()
+{
+//    static uint8_t xray_active = 0;            // ÂΩìÂâçÊøÄÊ¥ªÂ∞ÑÊ∫êÔºö0 = Êó†, 1 = SW1, 2 = SW2
+//    static uint32_t last_switch_tick = 0;      // ‰∏äÊ¨°ÂàáÊç¢ÈááÊ†∑ÂºÄÂÖ≥Êó∂Èó¥Êà≥
+
 //    if (debug_data.timmer_count >= 1) debug_data.timmer_count++;
 
 //    config_filament_ref_slop_debug();
 
-//    /*  πƒ‹πÿ±’÷±Ω”ÕÀ≥ˆ */
-//    if (ctrl_data.enable == 0) {
+//    // Ëã•Á≥ªÁªüÂÖ≥Èó≠ÔºåÂº∫Âà∂ÈÄÄÂá∫
+//    if (ctrl_data.enable[xray_active] == 0) {
 //        xray_HV_enable_debug(0);
 //        xray_disable_ref_debug();
+//        switch_sw1(0);  // ÂÖ≥Èó≠ÈááÊ†∑ÈÄöÈÅì1
+//        switch_sw2(0);  // ÂÖ≥Èó≠ÈááÊ†∑ÈÄöÈÅì2
 //        set_hv_state(HVPS_SM_ID_IDLE);
-
 //        return;
 //    }
 
-//    if (get_hv_state() == HVPS_SM_ID_TRAIN_PREPARE) {
-//        if (ctrl_data.interlock == 1) {
-//            config_mcuLock_signal(1);
-//        }
+//    switch (get_hv_state()) {
+//        case HVPS_SM_ID_TRAIN_PREPARE:
+//            if (ctrl_data.interlock == 1) {
+//                config_mcuLock_signal(1);
+//            }
+//            if (debug_data.timmer_count > TIMER6_10_MILSECOND_CYCLES) {
+//                // ËøõÂÖ•ËøêË°åÁä∂ÊÄÅÔºåÈªòËÆ§‰ªéSW1ÂºÄÂßã
+//                xray_active = 1;
+//                switch_sw1(1);
+//                switch_sw2(0);
+//                last_switch_tick = HAL_GetTick();
+//                set_hv_state(HVPS_SM_ID_TRAIN_RUN);
+//                debug_data.timmer_count = 1;
+//            }
+//            break;
 
-//        if (debug_data.timmer_count > TIMER6_10_MILSECOND_CYCLES) {
-//            // xray_HV_enable_debug(1);
-//            // debug_data.timmer_count = 1;
-//        }
-//    } else if (get_hv_state() == HVPS_SM_ID_TRAIN_RUN) {
-//        // config_hvref_slope();
-//        set_hv_state(HVPS_SM_ID_TRAIN_EXPOSURING);
-//        debug_data.timmer_count = 1;
-//    } else if (get_hv_state() == HVPS_SM_ID_TRAIN_EXPOSURING) {
-//        config_hvref_slope();  /* ø™ º∆ÿπ‚ */
-//        config_data.expo_count_total++;
-//        /* ∆ÿπ‚º∆ ± */
-//        if (debug_data.timmer_count >= debug_data.expoTime_expect) {
-//            xray_HV_enable_debug(0);
-//            set_hv_state(HVPS_SM_ID_TRAIN_COOLING);
+//        case HVPS_SM_ID_TRAIN_RUN:
+//            set_hv_state(HVPS_SM_ID_TRAIN_EXPOSURING);
 //            debug_data.timmer_count = 1;
-//        }
-//        if (debug_data.timmer_count >= TIMER6_5_MILSECOND_CYCLES) {
-//            xray_data.isCheckAvailable = 1;
-//        } else {
-//            xray_data.isCheckAvailable = 0;
-//        }
+//            break;
 
-//    } else if (get_hv_state() == HVPS_SM_ID_TRAIN_COOLING) {
-//        // config_hvref_slope();
-//        /* ¬ˆ≥Â÷Æº‰µƒ ±º‰ */
-//        if (debug_data.timmer_count < debug_data.coolTime_expect) return;
+//        case HVPS_SM_ID_TRAIN_EXPOSURING:
+//            config_hvref_slope();
+//            xray_HV_enable_debug(1);
+//            config_data.expo_count_total++;
 
-//        debug_data.cycle_count++;
-//        hvps_sm_state next_cal_state;
+//            if (debug_data.timmer_count >= debug_data.expoTime_expect) {
+//                xray_HV_enable_debug(0);
+//                set_hv_state(HVPS_SM_ID_TRAIN_COOLING);
+//                debug_data.timmer_count = 1;
+//                last_switch_tick = HAL_GetTick();  // ËÆ∞ÂΩïÊõùÂÖâÁªìÊùüÊó∂Èó¥
+//            }
 
-//        if (debug_data.cycle_count >= debug_data.expoCycle_perCurrent) {
+//            xray_data.isCheckAvailable = (debug_data.timmer_count >= TIMER6_5_MILSECOND_CYCLES);
+//            break;
 
-//            debug_data.cycle_count = 0;
-//            parm_table.expo_count_total++;
-//            parm_table.expo_times_total += config_data.expo_count_total / 3000000;
-//            cali_data.para_save_flag = 1;
-//            /* µ•∏ˆµÁ¡˜µƒ¬ˆ≥ÂÕÍ±œ */
-//            next_cal_state = HVPS_SM_ID_TRAIN_END;
+//        case HVPS_SM_ID_TRAIN_COOLING:
+//            // ÂÜ∑Âç¥‰∏≠ÔºåÁ≠âÂæÖÊó∂Èó¥ËææÂà∞ÂàáÊç¢ÈòàÂÄº
+//            if (debug_data.timmer_count < debug_data.coolTime_expect) return;
 
-//        } else {
-//            xray_HV_enable_debug(1);      /* µ•µÁ¡˜µƒ¬ˆ≥Â√ª”–÷¥––ÕÍ£¨ºÃ–¯∆ÿπ‚ */
-//            next_cal_state = HVPS_SM_ID_TRAIN_EXPOSURING;
-//        }
-//        set_hv_state(next_cal_state);
-//        debug_data.timmer_count = 1;
-//    } else if (get_hv_state() == HVPS_SM_ID_TRAIN_END) {
-//        xray_HV_enable_debug(0);
-//        xray_disable_ref_debug();
-//        set_hv_state(HVPS_SM_ID_IDLE);
+//            debug_data.cycle_count++;
+//            if (debug_data.cycle_count >= debug_data.expoCycle_perCurrent) {
+//                parm_table.expo_count_total++;
+//                parm_table.expo_times_total += config_data.expo_count_total / 3000000;
+//                cali_data.para_save_flag = 1;
+//                set_hv_state(HVPS_SM_ID_TRAIN_END);
+//            } else {
+//                // ÂàáÊç¢Â∞ÑÊ∫êÔºöÈúÄÁ°Æ‰øùË∑ùÁ¶ª‰∏äÊ¨°ÂÖ≥Èó≠ >8ms
+//                if (HAL_GetTick() - last_switch_tick >= 8) {
+//                    if (xray_active == 1) {
+//                        switch_sw1(0);
+//                        switch_sw2(1);
+//                        xray_active = 2;
+//                    } else {
+//                        switch_sw2(0);
+//                        switch_sw1(1);
+//                        xray_active = 1;
+//                    }
+//                    last_switch_tick = HAL_GetTick();
+//                    set_hv_state(HVPS_SM_ID_TRAIN_EXPOSURING);
+//                    debug_data.timmer_count = 1;
+//                }
+//            }
+//            break;
+
+//        case HVPS_SM_ID_TRAIN_END:
+//            xray_HV_enable_debug(0);
+//            xray_disable_ref_debug();
+//            switch_sw1(0);
+//            switch_sw2(0);
+//            set_hv_state(HVPS_SM_ID_IDLE);
+//            break;
+
+//        default:
+//            set_hv_state(HVPS_SM_ID_IDLE);
+//            break;
 //    }
 
-//    (get_hv_state() == HVPS_SM_ID_TRAIN_EXPOSURING) ? xray_on_led(1) : xray_on_led(0);
+//    xray_on_led(get_hv_state() == HVPS_SM_ID_TRAIN_EXPOSURING);
+}
 
-//    return;
-//}
+
+

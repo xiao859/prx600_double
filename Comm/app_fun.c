@@ -16,7 +16,13 @@
 #include "HV_exposure.h"
 #include "lamp.h"
 
-volatile xray_version version;
+volatile  xray_version version = {
+    1, 1,
+    3, 0, 0,            /*软件版本*/
+    2, 1, 9, 0,
+    17, 18,             /*球管类型*/
+    3, 6, 0
+};
 
 void invalid_cmd_reply()
 {
@@ -75,17 +81,18 @@ controler_cmd_funcs funcs[APP_FUNC_NUM] =
     {SCI_MSG_SET_KVMATHRESHOLD,             &fun_null},
     {SCI_MSG_SET_BUCKLLCTHRESHOLD,          &fun_null},
 
-    {SCI_MSG_DEBUG_EXPO_CTRL,               &debug_expo_ctrl},
+
 
     {SCI_MSG_DEBUG_LAMP_I_SET,              &SetHVLampCurrent},
     {SCI_MSG_DEBUG_TUBE_VIDLE_SET,          &SetHVTubeIdleVoltage},
     {SCI_MSG_DEBUG_TUBE_VRISE_TIME_SET,     &SetHVTubeRisingTime},
     {SCI_MSG_DEBUG_ONLINE_PI,               &SetOnlinePI},
+    {SCI_MSG_DEBUG_EXPO_CTRL,               &debug_expo_ctrl},
 
-//    {SCI_MSG_TEST_1,                        &test_func1},
-//    {SCI_MSG_TEST_2,                        &test_func2},
-//    {SCI_MSG_TEST_3,                        &test_func3},
-//    {SCI_MSG_TEST_4,                        &test_func4},
+    {SCI_MSG_TEST_1,                        &test_func1},
+    {SCI_MSG_TEST_2,                        &test_func2},
+    {SCI_MSG_TEST_3,                        &test_func3},
+    {SCI_MSG_TEST_4,                        &test_func4},
 };
 
 void fun_null(message_protocol *msg)
@@ -209,7 +216,7 @@ void SetHVPSMode(message_protocol *msg)
             {
             case HVPS_MODE_S_CONTINUOUS:
                 ctrl_data.xrayMode = XRAY_MODE_S_CONTINUOUS;
-                config_HV_sw(1, 0); // 选取射源1作为高精度采样
+                config_enable_sw(0); // 选取射源1作为高精度采样
                 //DMA地址
                 ctrl_data.xray_current = 1;
                 break;
@@ -714,6 +721,68 @@ void debug_expo_ctrl(message_protocol *msg)
     return;
 }
 
+void test_func1(message_protocol *msg)
+{
+//    gpio_input_trigger();
+
+//    //return;
+
+//    gpio_output_set1_test();
+
+//    //return;
+//    tube_vol_ref = (uint32_t)(0 / ADDA_FULL_SCALE_VIL_VALUE * 4095);
+
+//    fila_vol_ref = (uint32_t)(1 / ADDA_FULL_SCALE_VIL_VALUE * 4095);
+
+//    HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_1, DAC_ALIGN_12B_R, tube_vol_ref);
+//    HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_2, DAC_ALIGN_12B_R, fila_vol_ref);
+
+    return;
+}
+
+void test_func2(message_protocol *msg)
+{
+//    gpio_input_nottrigger();
+
+//    //return;
+
+//    gpio_output_set2_test();
+//    //return;
+//    tube_vol_ref = (uint32_t)(1 / ADDA_FULL_SCALE_VIL_VALUE * 4095);
+
+//    fila_vol_ref = (uint32_t)(2 / ADDA_FULL_SCALE_VIL_VALUE * 4095);
+
+//    HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_1, DAC_ALIGN_12B_R, tube_vol_ref);
+//    HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_2, DAC_ALIGN_12B_R, fila_vol_ref);
+
+    return;
+}
+
+void test_func3(message_protocol *msg)
+{
+//    tube_vol_ref = (uint32_t)(3.3f / ADDA_FULL_SCALE_VIL_VALUE * 4095);
+
+//    fila_vol_ref = (uint32_t)(1 / ADDA_FULL_SCALE_VIL_VALUE * 4095);
+
+//    HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_1, DAC_ALIGN_12B_R, tube_vol_ref);
+//    HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_2, DAC_ALIGN_12B_R, fila_vol_ref);
+
+    return;
+}
+
+void test_func4(message_protocol *msg)
+{
+//    tube_vol_ref = 4095;
+
+//    fila_vol_ref = 4095;
+
+//    HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_1, DAC_ALIGN_12B_R, tube_vol_ref);
+//    HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_2, DAC_ALIGN_12B_R, fila_vol_ref);
+
+    return;
+}
+
+
 void InqHVPSFault(message_protocol *msg)
 {
     static uint16_t fault_index ;
@@ -757,29 +826,29 @@ void InqHVPSFault(message_protocol *msg)
 }
 
 
-void cmd_process(int32_t message_idx, USART_TypeDef *Instance)
+void cmd_process(int32_t message_idx, message_protocol* msg, USART_TypeDef *Instance)
 {
     uint32_t func_idx;
 
     if (message_idx >= SCI_MSG_TEST_1)
     {
-        func_idx = message_idx - SCI_MSG_TEST_1 + 40;
+        func_idx = message_idx - SCI_MSG_TEST_1 + 46;
     }
     else if (message_idx >= SCI_MSG_DEBUG_LAMP_I_SET)
     {
-        func_idx = message_idx - SCI_MSG_DEBUG_LAMP_I_SET + 36;
+        func_idx = message_idx - SCI_MSG_DEBUG_LAMP_I_SET + 41;
     }
     else if (message_idx >= SCI_MSG_SET_PFCTHRESHOLD)
     {
-        func_idx = message_idx - SCI_MSG_SET_PFCTHRESHOLD + 32;
+        func_idx = message_idx - SCI_MSG_SET_PFCTHRESHOLD + 37;
     }
     else if (message_idx >= SCI_MSG_CTRL_RST)
     {
-        func_idx = message_idx - SCI_MSG_CTRL_RST + 24;
+        func_idx = message_idx - SCI_MSG_CTRL_RST + 29;
     }
     else if (message_idx >= SCI_MSG_SET_MODE)
     {
-        func_idx = message_idx - SCI_MSG_SET_MODE + 18;
+        func_idx = message_idx - SCI_MSG_SET_MODE + 20;
     }
     else if (message_idx >= SCI_MSG_INQ_MODE)
     {
@@ -787,35 +856,18 @@ void cmd_process(int32_t message_idx, USART_TypeDef *Instance)
     }
     else
     {
-        //invalid_cmd_reply();
-        restart_usart_receive(Instance);
-
+        invalid_cmd_reply();
         return;
     }
 
-    message_protocol msg;
-    if (Instance == UART4)
-    {
-        memcpy((uint8_t *)&msg, (uint8_t *)&uart4.uart_rx_buf[0], MESSAGE_PACK_LENGTH);
-    }
-    else if (Instance == UART5)
-    {
-        memcpy((uint8_t *)&msg, (uint8_t *)&uart5.uart_rx_buf[0], MESSAGE_PACK_LENGTH);
-    }
-
-    // func_idx = 0;
-    /* check parament */
     if ((func_idx >= APP_FUNC_NUM) || (funcs[func_idx].msgId != message_idx))
     {
         invalid_cmd_reply();
     }
     else
     {
-        funcs[func_idx].func_ptr(&msg);
+        funcs[func_idx].func_ptr(msg);
     }
-
-    restart_usart_receive(Instance);
-
 }
 
 /* AA 55 33 00 00 CD */
@@ -845,20 +897,29 @@ uint8_t message_check(USART_TypeDef *Instance)
 
 void cmd_parser()
 {
-    int32_t  message_idx;
-
-    if ((uart4.recv_complete == 1) && message_check(UART4))
+    if (uart4_frame_fifo.count > 0)
     {
-        message_idx = (int32_t)uart4.uart_rx_buf[2];
-        cmd_process(message_idx, UART4);
+        uint8_t idx = uart4_frame_fifo.head;
+        message_protocol* frame = & uart4_frame_fifo.data[idx];
+
+        cmd_process(frame->msg_id, frame, UART4);
+        // 出队
+        uart4_frame_fifo.head = (uart4_frame_fifo.head + 1) % FRAME_BUF_NUM;
+        uart4_frame_fifo.count--;
     }
 
-    if ((uart5.recv_complete == 1) && message_check(UART5))
+    if (uart5_frame_fifo.count > 0)
     {
-        message_idx = (int32_t)uart5.uart_rx_buf[2];
-        cmd_process(message_idx, UART5);
-    }
+        uint8_t idx = uart5_frame_fifo.head;
+        message_protocol* frame = & uart5_frame_fifo.data[idx];
 
+        // 出队
+        uart5_frame_fifo.head = (uart5_frame_fifo.head + 1) % FRAME_BUF_NUM;
+        uart5_frame_fifo.count--;
+
+        cmd_process(frame->msg_id, frame, UART5);
+
+    }
     return;
 }
 

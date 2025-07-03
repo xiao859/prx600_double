@@ -22,6 +22,7 @@
 
 /* USER CODE BEGIN 0 */
 #include "HV_exposure.h"
+
 /* USER CODE END 0 */
 
 ADC_HandleTypeDef hadc2;

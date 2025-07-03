@@ -70,7 +70,11 @@ void HAL_Delay(uint32_t Delay)
      delay_ms(Delay);
 }
 
-
+// 获取系统启动以来的毫秒数（来自 SysTick 中断累计）
+uint32_t get_tick_ms()
+{
+    return HAL_GetTick();
+}
 
 
 
