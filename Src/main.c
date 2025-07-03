@@ -110,7 +110,7 @@ int main(void)
     MX_USART3_UART_Init();
     MX_IWDG_Init();
     MX_TIM6_Init();
-    MX_TIM7_Init();
+//    MX_TIM7_Init();
     MX_SPI1_Init();
     MX_TIM5_Init();
     /* USER CODE BEGIN 2 */
@@ -224,7 +224,7 @@ void SystemClock_Config(void)
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
     /* USER CODE BEGIN Callback 0 */
-    /* 1,TIM6 80kHz£» ; */
+    /* 1,TIM6 80kHz*/
     /* USER CODE END Callback 0 */
     if (htim->Instance == TIM6)
     {

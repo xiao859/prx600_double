@@ -399,6 +399,11 @@
               <FilePath>../Src/main.c</FilePath>
             </File>
             <File>
+              <FileName>main.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\Inc\main.h</FilePath>
+            </File>
+            <File>
               <FileName>gpio.c</FileName>
               <FileType>1</FileType>
               <FilePath>../Src/gpio.c</FilePath>
@@ -1568,9 +1573,19 @@
               <FilePath>..\App_drivers\app_uart.c</FilePath>
             </File>
             <File>
+              <FileName>app_uart.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\App_drivers\app_uart.h</FilePath>
+            </File>
+            <File>
               <FileName>app_spi.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\App_drivers\app_spi.c</FilePath>
+            </File>
+            <File>
+              <FileName>app_spi.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\App_drivers\app_spi.h</FilePath>
             </File>
             <File>
               <FileName>temperature.c</FileName>
@@ -1615,6 +1630,11 @@
               <FileType>1</FileType>
               <FilePath>..\Protect\protect.c</FilePath>
             </File>
+            <File>
+              <FileName>protect.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\Protect\protect.h</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
@@ -1626,14 +1646,29 @@
               <FilePath>..\core\xray.c</FilePath>
             </File>
             <File>
+              <FileName>xray.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\core\xray.h</FilePath>
+            </File>
+            <File>
               <FileName>calibrate.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\core\calibrate.c</FilePath>
             </File>
             <File>
+              <FileName>calibrate.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\core\calibrate.h</FilePath>
+            </File>
+            <File>
               <FileName>ct_exposure.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\core\ct_exposure.c</FilePath>
+            </File>
+            <File>
+              <FileName>ct_exposure.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\core\ct_exposure.h</FilePath>
             </File>
           </Files>
         </Group>
@@ -1646,9 +1681,19 @@
               <FilePath>..\Comm\comm_string.c</FilePath>
             </File>
             <File>
+              <FileName>comm_string.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\Comm\comm_string.h</FilePath>
+            </File>
+            <File>
               <FileName>app_fun.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\Comm\app_fun.c</FilePath>
+            </File>
+            <File>
+              <FileName>app_fun.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\Comm\app_fun.h</FilePath>
             </File>
             <File>
               <FileName>debug_mode.c</FileName>

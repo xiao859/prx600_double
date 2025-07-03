@@ -1,11 +1,8 @@
 #include "app_spi.h"
 #include "main.h"
 #include "app_uart.h"
-//#include "delay.h"
 #include <string.h>
 
-
-SPI_HandleTypeDef hspi1;
 SFLASH_T flash_parpm;
 
 #define SF_CS_0() HAL_GPIO_WritePin(SPI1_NSS_GPIO_Port, SPI1_NSS_Pin, GPIO_PIN_RESET);
@@ -13,22 +10,22 @@ SFLASH_T flash_parpm;
 
 uint8_t g_spiTxBuf[SPI_BUFFER_SIZE];
 uint8_t g_spiRxBuf[SPI_BUFFER_SIZE];
-static uint8_t spi_w_buff[4*1024];	/* ÓÃÓÚĞ´º¯Êı£¬ÏÈ¶Á³öÕû¸öÉÈÇø£¬ĞŞ¸Ä»º³åÇøºó£¬ÔÙÕû¸öÉÈÇø»ØĞ´ */
+static uint8_t spi_w_buff[4*1024];	/*ç”¨äºå†™å‡½æ•°*/
 uint32_t g_spiLen;
 __IO uint32_t wTransferState = TRANSFER_WAIT;
-#define CMD_AAI 0xAD	/* AAI Á¬Ğø±à³ÌÖ¸Áî(FOR SST25VF016B) */
-#define CMD_DISWR 0x04	/* ½ûÖ¹Ğ´, ÍË³öAAI×´Ì¬ */
-#define CMD_EWRSR 0x50	/* ÔÊĞíĞ´×´Ì¬¼Ä´æÆ÷µÄÃüÁî */
-#define CMD_WRSR 0x01	/* Ğ´×´Ì¬¼Ä´æÆ÷ÃüÁî */
-#define CMD_WREN 0x06	/* Ğ´Ê¹ÄÜÃüÁî */
-#define CMD_READ 0x03	/* ¶ÁÊı¾İÇøÃüÁî */
-#define CMD_RDSR 0x05	/* ¶Á×´Ì¬¼Ä´æÆ÷ÃüÁî */
-#define CMD_RDID 0x9F	/* ¶ÁÆ÷¼şIDÃüÁî */
-#define CMD_SE 0x20		/* ²Á³ıÉÈÇøÃüÁî */
-#define CMD_BE 0xC7		/* ÅúÁ¿²Á³ıÃüÁî */
-#define DUMMY_BYTE 0xA5 /* ÑÆÃüÁî£¬¿ÉÒÔÎªÈÎÒâÖµ£¬ÓÃÓÚ¶Á²Ù×÷ */
+#define CMD_AAI 0xAD	/* AAIè¿ç»­ç¼–ç¨‹æŒ‡ä»¤(FOR SST25VF016B) */
+#define CMD_DISWR 0x04	/*ç¦æ­¢å†™*/
+#define CMD_EWRSR 0x50	/*å…è®¸å†™*/
+#define CMD_WRSR 0x01	/*å†™çŠ¶æ€å¯„å­˜å™¨*/
+#define CMD_WREN 0x06	/*å†™ä½¿èƒ½*/
+#define CMD_READ 0x03	/*è¯»æ•°æ®åŒº*/
+#define CMD_RDSR 0x05	/*è¯»çŠ¶æ€å¯„å­˜å™¨*/
+#define CMD_RDID 0x9F	/*è¯»å™¨ä»¶id*/
+#define CMD_SE 0x20		/*æ“¦é™¤æ‰‡åŒº*/
+#define CMD_BE 0xC7		/*æ‰¹é‡æ“¦é™¤*/
+#define DUMMY_BYTE 0xA5 /*ç”¨äºè¯»æ“ä½œ*/
 
-#define WIP_FLAG 0x01 	/* ×´Ì¬¼Ä´æÆ÷ÖĞµÄÕıÔÚ±à³Ì±êÖ¾£¨WIP) */
+#define WIP_FLAG 0x01 	/*æ­£åœ¨ç¼–ç¨‹ */
 
 void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef *hspi)
 {
