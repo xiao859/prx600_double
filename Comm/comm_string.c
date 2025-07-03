@@ -7,7 +7,7 @@
 #include "app_spi.h"
 #include "debug_mode.h"
 #include "xray.h"
-//#include "pi_control.h"
+#include "tim.h"
 #include "app_fun.h"
 #include "HV_exposure.h"
 
@@ -135,21 +135,19 @@ int func_getTable1(volatile uint8_t *buff, char *p)
     debug_tx3("A曝光次数: %d\n", parm_table[0].expo_count_total);
     debug_tx3("A曝光时间: %d\n", parm_table[0].expo_times_total);
 
-    debug_tx3("A脉冲电流值:");
     for (int i = 0; i < FILAMENT_CURRENT_TABLE_ORDER; i++)
     {
-        debug_tx3(" %d", parm_table[0].currValue[i]);
+        debug_tx3("AcurrValue:%d\n", parm_table[0].currValue[i]);
     }
-    debug_tx3("\n");
 
-    debug_tx3("A脉冲电流表:");
+    debug_tx3("A currRef:");
     for (int i = 0; i < FILAMENT_CURRENT_TABLE_ORDER; i++)
     {
         debug_tx3(" %d", parm_table[0].currRef[i]);
     }
     debug_tx3("\n");
 
-    debug_tx3("A连续电流表:");
+    debug_tx3("A currRef_c:");
     for (int i = 0; i < FILAMENT_CURRENT_TABLE_ORDER; i++)
     {
         debug_tx3(" %d", parm_table[0].currRef_c[i]);
@@ -164,21 +162,19 @@ int func_getTable2(volatile uint8_t *buff, char *p)
     debug_tx3("B曝光次数: %d\n", parm_table[1].expo_count_total);
     debug_tx3("B曝光时间: %d\n", parm_table[1].expo_times_total);
 
-    debug_tx3("B脉冲电流值:");
     for (int i = 0; i < FILAMENT_CURRENT_TABLE_ORDER; i++)
     {
-        debug_tx3(" %d", parm_table[0].currValue[i]);
+        debug_tx3("B currValue: %d\n", parm_table[0].currValue[i]);
     }
-    debug_tx3("\n");
-
-    debug_tx3("B脉冲电流表:");
+		
+    debug_tx3("B currRef:");
     for (int i = 0; i < FILAMENT_CURRENT_TABLE_ORDER; i++)
     {
         debug_tx3(" %d", parm_table[0].currRef[i]);
     }
     debug_tx3("\n");
 
-    debug_tx3("B连续电流表:");
+    debug_tx3("B currRef_c:");
     for (int i = 0; i < FILAMENT_CURRENT_TABLE_ORDER; i++)
     {
         debug_tx3(" %d", parm_table[0].currRef_c[i]);
@@ -209,7 +205,7 @@ int set_tube_vol_curr1(volatile uint8_t *buff, char *p)
         config_data.tube_curr[0] = ((float)data[1]) / 10;
         config_data.tube_vol[0]  = data[0];
         config_data.tube_vol_step[0] = (float)(config_data.tube_vol[0]) / (50 * 1);
-        debug_tx3("A管电压/电流：%d, %d, %f\n", config_data.tube_vol[0], config_data.tube_curr[0], config_data.tube_vol_step[0]);
+			debug_tx3("A tube_vol:%d,tube_curr:%d, tube_vol_step:%f\n", config_data.tube_vol[0], config_data.tube_curr[0], config_data.tube_vol_step[0]);
     }
     else
     {
@@ -240,7 +236,7 @@ int set_tube_vol_curr2(volatile uint8_t *buff, char *p)
         config_data.tube_curr[1] = ((float)data[1]) / 10;
         config_data.tube_vol[1]  = data[0];
         config_data.tube_vol_step[1] = (float)(config_data.tube_vol[1]) / (50 * 1);
-        debug_tx3("B管电压/电流：%d, %d, %f\n", config_data.tube_vol[1], config_data.tube_curr[1], config_data.tube_vol_step[1]);
+        debug_tx3("B tube_vol:%d,tube_curr:%d, tube_vol_step:%f\n", config_data.tube_vol[1], config_data.tube_curr[1], config_data.tube_vol_step[1]);
     }
     else
     {
@@ -284,7 +280,7 @@ int set_expo_time1(volatile uint8_t *buff, char *p)
         debug_data.expoTime_expect[0] = num * 50000;
     }
 
-    debug_tx3("A脉冲个数：%d, 曝光：%d, 冷却：%d\n",
+    debug_tx3("A pusre count:%d, exp time:%d, cooltime:%d\n",
               debug_data.expoCycle_perCurrent[0], debug_data.expoTime_expect[0], debug_data.coolTime_expect[0]);
 
     return 0;
@@ -324,7 +320,7 @@ int set_expo_time2(volatile uint8_t *buff, char *p)
         debug_data.expoTime_expect[1] = num * 50000;
     }
 
-    debug_tx3("B脉冲个数：%d, 曝光：%d, 冷却：%d\n",
+    debug_tx3("B pusre count:%d, exp time:%d, cooltime:%d\n",
               debug_data.expoCycle_perCurrent[1], debug_data.expoTime_expect[1], debug_data.coolTime_expect[1]);
 
     return 0;
@@ -351,7 +347,6 @@ int set_expo_mode(volatile uint8_t *buff, char *p)
         config_enable_sw(0); // 选取射源1作为高精度采样
         //DMA地址
         ctrl_data.xray_current = 1;
-        break;
         break;
     case HVPS_MODE_S_PULSE:
         ctrl_data.xrayMode = XRAY_MODE_S_PULSE;
@@ -399,7 +394,8 @@ int set_enable(volatile uint8_t *buff, char *p)
         ctrl_data.enable[0] = 0;
         debug_data.timmer_count[1] = 1;
 
-//      PWM  HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_1, DAC_ALIGN_12B_R, 0);
+//      PWM
+        __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_4, 0); //HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_1, DAC_ALIGN_12B_R, 0);
         debug_tx3("ʹ使能结束ʼ\n");
     }
     else if (num == 3)
@@ -503,14 +499,15 @@ int set_filament_onoff(volatile uint8_t *buff, char *p)
         config_filamentOn_signal(1, 0);
         ctrl_data.filament_on[0] = 0;
         HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_2, DAC_ALIGN_12B_R, 0);
-        debug_tx3("A灯丝开始%d\n", num);
+        debug_tx3("A lam on");
     }
     else if (num == 1)
     {
         config_filamentOn_signal(1, 1);
         ctrl_data.filament_on[1] = 0;
         //PWM
-        debug_tx3("B灯丝开始%d\n", num);
+        __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_4, 0);
+        debug_tx3("B lam on");
     }
 
     return 0;
@@ -539,7 +536,7 @@ int set_filament_ref_onoff1(volatile uint8_t *buff, char *p)
     config_data.fila_ref_realtime[0] = IDLE_FILAMENT_REF_DEBUG;
     config_data.fila_ref_step[0] = (config_data.fila_ref_target[0] - IDLE_FILAMENT_REF_DEBUG) / (50 * 1);
 
-    debug_tx3("A灯丝基准：%f, %f\n", config_data.fila_ref_target[0], config_data.fila_ref_step[0]);
+    debug_tx3("A lam ref:%f,%f\n", config_data.fila_ref_target[0], config_data.fila_ref_step[0]);
 
     // HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_2, DAC_ALIGN_12B_R, a);
 
@@ -569,7 +566,7 @@ int set_filament_ref_onoff2(volatile uint8_t *buff, char *p)
     config_data.fila_ref_realtime[1] = IDLE_FILAMENT_REF_DEBUG;
     config_data.fila_ref_step[1] = (config_data.fila_ref_target[1] - IDLE_FILAMENT_REF_DEBUG) / (50 * 1);
 
-    debug_tx3("A灯丝基准：%f, %f\n", config_data.fila_ref_target[1], config_data.fila_ref_step[1]);
+    debug_tx3("B lam ref:%f,%f\n", config_data.fila_ref_target[1], config_data.fila_ref_step[1]);
 
     // HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_2, DAC_ALIGN_12B_R, a);
 
@@ -605,7 +602,7 @@ int start_calibrate(volatile uint8_t *buff, char *p)
 /* 开始自动校准*/
 int set_hv_on(volatile uint8_t *buff, char *p)
 {
-//    debug_tx3("高压使能");
+//    debug_tx3("CALIBRATE START");
 ////
 //      xray_HV_enable_debug(1);
 //    debug_data.timmer_count[0] = 1;

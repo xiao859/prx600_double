@@ -3,6 +3,8 @@
 
 #include "stdint.h"
 
+#define IDLE_FILAMENT_REF               1000
+
 #define XRAY_NUMS 2
 #define IDLE_HV_REF                     0
 #define FILAMENT_CURRENT_TABLE_ORDER    12
@@ -57,11 +59,11 @@ typedef enum
 
 #define Is_FaultState()                 (hv_state[0] == HVPS_SM_ID_FAULT||hv_state[1] == HVPS_SM_ID_FAULT)
 
-#define Is_CalibrateMode()              ((hv_state[0] >= HPVS_SM_ID_CAL_PREPARE) && (hv_state[0] <= HPVS_SM_ID_CAL_END)|| (hv_state[1] >= HPVS_SM_ID_CAL_PREPARE) && (hv_state[1] <= HPVS_SM_ID_CAL_END))
+#define Is_CalibrateMode()              (((hv_state[0] >= HPVS_SM_ID_CAL_PREPARE) && (hv_state[0] <= HPVS_SM_ID_CAL_END))|| ((hv_state[1] >= HPVS_SM_ID_CAL_PREPARE) && (hv_state[1] <= HPVS_SM_ID_CAL_END)))
 
-#define Is_CTMode()                     ((hv_state[0] >= HVPS_SM_ID_IDLE) && (hv_state[0] <= HVPS_SM_ID_EXPO_END)||(hv_state[1] >= HVPS_SM_ID_IDLE) && (hv_state[1] <= HVPS_SM_ID_EXPO_END))
+#define Is_CTMode()                     ((((int)hv_state[0] >= HVPS_SM_ID_IDLE) && (int)(hv_state[0] <= HVPS_SM_ID_EXPO_END))||(((int)hv_state[1] >= HVPS_SM_ID_IDLE) && ((int)hv_state[1] <= HVPS_SM_ID_EXPO_END)))
 
-#define Is_DebugMode()                  ((hv_state[0] >= HVPS_SM_ID_TRAIN_IDLE) && (hv_state[0] <= HVPS_SM_ID_TRAIN_END)||(hv_state[1] >= HVPS_SM_ID_TRAIN_IDLE) && (hv_state[1] <= HVPS_SM_ID_TRAIN_END))
+#define Is_DebugMode()                  (((hv_state[0] >= HVPS_SM_ID_TRAIN_IDLE) && (hv_state[0] <= HVPS_SM_ID_TRAIN_END))||((hv_state[1] >= HVPS_SM_ID_TRAIN_IDLE) && (hv_state[1] <= HVPS_SM_ID_TRAIN_END)))
 
 
 
@@ -136,7 +138,7 @@ typedef struct
     uint32_t    rising_time;       //管电压上升时间
     float       currValue[FILAMENT_CURRENT_TABLE_ORDER];      //电流表值
     uint32_t    currRef[FILAMENT_CURRENT_TABLE_ORDER];        //脉冲电流基准表
-    uint32_t    currRef_c[FILAMENT_CURRENT_TABLE_ORDER];        //连续电流基准表
+    uint32_t    currRef_c[FILAMENT_CURRENT_TABLE_ORDER];      //连续电流基准表
 } xray_parament_table;
 
 /* ADC2:4\5\11\12  adc3:14\2\4\6 */
@@ -286,6 +288,7 @@ void xray_system_disable(uint16_t n);
 void config_filamentRef(uint16_t n);
 void disable_hvref(uint16_t n);
 void disable_filamentref(uint16_t n);
+void config_filament_ref_slop(uint16_t n);
 
 #endif
 

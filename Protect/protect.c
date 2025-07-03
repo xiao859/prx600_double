@@ -1,7 +1,7 @@
 #include "protect.h"
 #include "xray.h"
 #include "temperature.h"
-
+#include "calibrate.h"
 
 HVPS_FAULT_REGS mHVPS_Fault;
 

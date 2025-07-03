@@ -14,9 +14,10 @@
 #include "protect.h"
 #include <string.h>
 #include "HV_exposure.h"
-#include "lamp.h"
+#include "calibrate.h"
 
-volatile  xray_version version = {
+volatile  xray_version version =
+{
     1, 1,
     3, 0, 0,            /*软件版本*/
     2, 1, 9, 0,
@@ -479,10 +480,12 @@ void Lampcontrol(message_protocol *msg)
     switch (combined)
     {
     case 0x0001:  // data2=0x00, data1=0x01
-        if (get_hv_state(0) == HVPS_SM_ID_IDLE && get_hv_state(1) == HVPS_SM_ID_IDLE)
+        if ((get_hv_state(0) == HVPS_SM_ID_IDLE) && (get_hv_state(1) == HVPS_SM_ID_IDLE))
         {
-            Lamp_Buck_Off(0);
-            Lamp_Buck_On(1);
+            config_filamentOn_signal(1, 1);
+            ctrl_data.filament_on[1] = 1;
+            xray_data.timmer_count[1] = 1;
+            config_data.fila_ref_step[1] = (float)IDLE_FILAMENT_REF / (20 * 50); /* 20ms上升时间*/
             msg->data1 = SETUP_SUCCESS;  // 明确设置成功码
         }
         else
@@ -492,11 +495,12 @@ void Lampcontrol(message_protocol *msg)
         break;
 
     case 0x0100:  // data2=0x01, data1=0x00
-        if (get_hv_state(0) == HVPS_SM_ID_IDLE && get_hv_state(1) == HVPS_SM_ID_IDLE)
+        if ((get_hv_state(0) == HVPS_SM_ID_IDLE) && (get_hv_state(1) == HVPS_SM_ID_IDLE))
         {
-            Lamp_Buck_Off(1);
-            Lamp_Buck_On(0);
-            msg->data1 = SETUP_SUCCESS;
+            config_filamentOn_signal(1, 0);
+            ctrl_data.filament_on[0] = 1;
+            xray_data.timmer_count[0] = 1;
+            config_data.fila_ref_step[0] = (float)IDLE_FILAMENT_REF / (20 * 50); /* 20ms上升时间*/
         }
         else
         {
@@ -505,10 +509,16 @@ void Lampcontrol(message_protocol *msg)
         break;
 
     case 0x0101:  // data2=0x01, data1=0x01
-        if (get_hv_state(0) == HVPS_SM_ID_IDLE && get_hv_state(1) == HVPS_SM_ID_IDLE)
+        if ((get_hv_state(0) == HVPS_SM_ID_IDLE) && (get_hv_state(1) == HVPS_SM_ID_IDLE))
         {
-            Lamp_Buck_On(0);
-            Lamp_Buck_On(1);
+            config_filamentOn_signal(1, 0);
+            ctrl_data.filament_on[0] = 1;
+            xray_data.timmer_count[0] = 1;
+            config_data.fila_ref_step[0] = (float)IDLE_FILAMENT_REF / (20 * 50); /* 20ms上升时间*/
+            config_filamentOn_signal(1, 1);
+            ctrl_data.filament_on[1] = 1;
+            xray_data.timmer_count[1] = 1;
+            config_data.fila_ref_step[1] = (float)IDLE_FILAMENT_REF / (20 * 50); /* 20ms上升时间*/
             msg->data1 = SETUP_SUCCESS;
         }
         else
@@ -518,8 +528,10 @@ void Lampcontrol(message_protocol *msg)
         break;
 
     default:
-        Lamp_Buck_Off(0);
-        Lamp_Buck_Off(1);
+        config_filamentOn_signal(0, 0);
+        ctrl_data.filament_on[0] = 0;
+        config_filamentOn_signal(0, 1);
+        ctrl_data.filament_on[1] = 0;
         msg->data1 = SETUP_OUT_LIMIT;  // 默认错误码
         break;
     }
@@ -530,26 +542,25 @@ void Lampcontrol(message_protocol *msg)
 
 void Autocalibra(message_protocol *msg)
 {
-//  if ((get_hv_state(0) == HVPS_SM_ID_IDLE)&& (get_hv_state(1) == HVPS_SM_ID_IDLE)) {
-//      if (msg->data2 == 0)
-//      {
-//          ctrl_data.enable[0] = 1;
-//          ctrl_data.enable[1] = 1;
-//          calibrate_para_init();
-//          set_hv_state(HPVS_SM_ID_CAL_PREPARE,0);
-//          set_hv_state(HPVS_SM_ID_CAL_PREPARE,1);
-//          send_message(msg->msg_id, 0, 0);
-//      }
-//      else if((msg->data2 == 1) && (Is_CalibrateMode()))
-//      {
-//              ctrl_data.enable[0] = 0;
-//              ctrl_data.enable[1] = 0;
-//        send_message(msg->msg_id, 0, 1);
-//      }
-//      else {
-//        send_message(msg->msg_id, msg->data1, msg->data2);
-//    }
-//      }
+  if ((get_hv_state(0) == HVPS_SM_ID_IDLE)&& (get_hv_state(1) == HVPS_SM_ID_IDLE)) {
+      if (msg->data2 == 0)
+      {
+          ctrl_data.enable[0] = 1;
+          ctrl_data.enable[1] = 1;
+          calibrate_para_init();
+          set_hv_state(HPVS_SM_ID_CAL_PREPARE,0);
+          send_message(msg->msg_id, 0, 0);
+      }
+      else if((msg->data2 == 1) && (Is_CalibrateMode()))
+      {
+              ctrl_data.enable[0] = 0;
+              ctrl_data.enable[1] = 0;
+        send_message(msg->msg_id, 0, 1);
+      }
+      else {
+        send_message(msg->msg_id, msg->data1, msg->data2);
+    }
+      }
     return;
 }
 
@@ -567,18 +578,18 @@ void xsourcetype(message_protocol *msg)
 
 void Inqautocalibra(message_protocol *msg)
 {
-//    uint8_t reply;
+    uint8_t reply;
 
-//    if (Is_CalibrateMode()) {
-//        reply = 0;
-//    } else if ((get_hv_state(0) == HVPS_SM_ID_FAULT) && (get_hv_state(0) == HVPS_SM_ID_FAULT))
-//      {
-//        reply = 2;
-//    } else {
-//        reply = 1;
-//    }
+    if (Is_CalibrateMode()) {
+        reply = 0;
+    } else if ((get_hv_state(0) == HVPS_SM_ID_FAULT) && (get_hv_state(0) == HVPS_SM_ID_FAULT))
+      {
+        reply = 2;
+    } else {
+        reply = 1;
+    }
 
-//    send_message(msg->msg_id, 0, reply);
+    send_message(msg->msg_id, 0, reply);
 
     return;
 }

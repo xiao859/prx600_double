@@ -7,7 +7,6 @@
 
 #define OVER_RANGE_TIME_LIMIT           5000
 #define FAST_PROTECT_TIME_RANGE         40  //10khz 4ms
-#define CALI_HV_REF                     80
 #define STRIKE_TIEMS_RANGE              5
 
 #define Is_System_Without_Fault()       ((mHVPS_Fault.FAULT_REG1.value == 0) && \

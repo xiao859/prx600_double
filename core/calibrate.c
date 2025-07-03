@@ -7,7 +7,7 @@
 // */
 
 #include "calibrate.h"
-#include "lamp.h"
+//#include "lamp.h"
 #include "HV_exposure.h"
 #include "adc.h"
 #include "time.h"
@@ -64,6 +64,7 @@ void config_filamentRef_cali(uint8_t curr_index, uint16_t n)
         HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_2, DAC_ALIGN_12B_R, fila_vol_ref);
     else //PWM
     {
+			__HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_4, fila_vol_ref); 
     }
     return;
 }
@@ -85,6 +86,23 @@ void config_hvref_cali(uint16_t n)
 
 
     HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_1, DAC_ALIGN_12B_R, tube_vol_ref);
+
+    return;
+}
+
+void calibrate_para_init()
+{
+    cali_data.mode = XRAY_MODE_D_PULSE;
+    cali_data.curr_index    = 0;
+    cali_data.cycle_count   = 0;
+    cali_data.timmer_count  = 1;
+    ctrl_data.filament_on[0]   = 1;
+    cali_data.para_save_flag = 0;
+
+    cali_data.tube_vol_step = ((float)(CALI_HV_REF - IDLE_HV_REF) / 100);
+
+    config_data.fila_ref_realtime[0] = 0;
+    config_data.fila_ref_step[0] = IDLE_FILAMENT_REF / (20 * 50);          /* 20msÉÏÉýÊ±¼ä */
 
     return;
 }
@@ -317,10 +335,10 @@ void Set_PWM_CMP()
         return;
 
 
-    // 灯丝1：PWM 控制
-    mLamp_Control_Regs[1].Buck_duty = mLamp_Control_Regs[1].Buck_duty > 0.9 ? 0.9 : mLamp_Control_Regs[1].Buck_duty;
-    mLamp_Control_Regs[1].Buck_duty = mLamp_Control_Regs[1].Buck_duty < 0 ? 0 : mLamp_Control_Regs[1].Buck_duty;
-    __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_4, (uint32_t)(mLamp_Control_Regs[1].Buck_duty * (float)500));//50k
+//    // 灯丝1：PWM 控制
+//    mLamp_Control_Regs[1].Buck_duty = mLamp_Control_Regs[1].Buck_duty > 0.9 ? 0.9 : mLamp_Control_Regs[1].Buck_duty;
+//    mLamp_Control_Regs[1].Buck_duty = mLamp_Control_Regs[1].Buck_duty < 0 ? 0 : mLamp_Control_Regs[1].Buck_duty;
+//    __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_4, (uint32_t)(mLamp_Control_Regs[1].Buck_duty * (float)500));//50k
 
 }
 

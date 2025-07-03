@@ -30,7 +30,6 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include "HV_exposure.h"
-#include "lamp.h"
 #include "app_uart.h"
 #include "comm_string.h"
 #include "app_spi.h"
@@ -131,12 +130,13 @@ int main(void)
 
     HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_1, DAC_ALIGN_12B_R, 0);
     HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_2, DAC_ALIGN_12B_R, 0);
-    //PWM输出
-
+		
+		HAL_TIM_PWM_Start(&htim5, TIM_CHANNEL_4);
+    //PWM输出强制为低
+		__HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_4, 0); 
     HAL_ADC_Start_DMA(&hadc2, (uint32_t*)adc_buffer2, ADC_2_CHANNEL_NUM * ADC_SAMPLE_CYCLE_NUM);
     HAL_ADC_Start_DMA(&hadc3, (uint32_t*)adc_buffer3, ADC_3_CHANNEL_NUM * ADC_SAMPLE_CYCLE_NUM);
 
-    Lamp_Control_Regs_Init();           //初始化灯丝状态机
     flash_table_init();
 
     //默认单源模式
@@ -245,11 +245,6 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
         {
             debug_task();
         }
-
-
-//        // 更新PWM占空比（TIM5）
-//        Set_PWM_CMP();
-
 
         // 更新状态变量及故障快速检测
         UpdateVar_CheckFaultFast();
