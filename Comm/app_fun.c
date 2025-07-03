@@ -13,7 +13,7 @@
 #include "delay.h"
 #include "protect.h"
 #include <string.h>
-#include "HV_exposure.h"
+#include "ct_exposure.h"
 #include "calibrate.h"
 
 volatile  xray_version version =

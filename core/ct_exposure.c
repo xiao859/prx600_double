@@ -1,4 +1,4 @@
-#include "HV_exposure.h"
+#include "ct_exposure.h"
 #include "adc.h"
 #include <math.h>
 #include "string.h"

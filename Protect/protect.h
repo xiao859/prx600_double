@@ -1,7 +1,7 @@
 #ifndef __PROTECT_H
 #define __PROTECT_H
 
-#include "HV_exposure.h"
+#include "ct_exposure.h"
 #include "app_uart.h"
 #include "comm_string.h"
 

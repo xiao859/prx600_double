@@ -4,7 +4,7 @@
 
 #include <stdint.h>
 #include "app_uart.h"
-#include "HV_exposure.h"
+#include "ct_exposure.h"
 
 #define SETUP_SUCCESS               0x00
 #define SETUP_SM_ERROR              0x01

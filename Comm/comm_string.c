@@ -9,7 +9,7 @@
 #include "xray.h"
 #include "tim.h"
 #include "app_fun.h"
-#include "HV_exposure.h"
+#include "ct_exposure.h"
 
 
 

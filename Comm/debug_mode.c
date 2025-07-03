@@ -8,7 +8,7 @@
 
 #include "debug_mode.h"
 #include "calibrate.h"
-#include "HV_exposure.h"
+#include "ct_exposure.h"
 #include <stdio.h>
 #include "comm_string.h"
 #include "xray.h"

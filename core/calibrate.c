@@ -7,13 +7,10 @@
 // */
 
 #include "calibrate.h"
-//#include "lamp.h"
-#include "HV_exposure.h"
+#include "ct_exposure.h"
 #include "adc.h"
 #include "time.h"
-//#include "comm_protocol.h"
 #include "xray.h"
-//#include "pi_control.h"
 #include "delay.h"
 #include "app_spi.h"
 #include "app_uart.h"

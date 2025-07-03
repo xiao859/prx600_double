@@ -2,7 +2,7 @@
 #define _CALIBRATE_H
 
 #include "stdint.h"
-#include "HV_exposure.h"
+#include "ct_exposure.h"
 
 
 #define     CALI_HV_REF                     90

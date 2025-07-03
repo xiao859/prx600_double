@@ -21,7 +21,7 @@
 #include "adc.h"
 
 /* USER CODE BEGIN 0 */
-#include "HV_exposure.h"
+#include "ct_exposure.h"
 
 /* USER CODE END 0 */
 

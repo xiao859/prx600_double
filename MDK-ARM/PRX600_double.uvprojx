@@ -1560,16 +1560,6 @@
           </Files>
         </Group>
         <Group>
-          <GroupName>Application/State</GroupName>
-          <Files>
-            <File>
-              <FileName>state_machine.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\State\state_machine.c</FilePath>
-            </File>
-          </Files>
-        </Group>
-        <Group>
           <GroupName>Application/Drivers</GroupName>
           <Files>
             <File>
@@ -1631,16 +1621,6 @@
           <GroupName>Application/core</GroupName>
           <Files>
             <File>
-              <FileName>exposure.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\core\exposure.c</FilePath>
-            </File>
-            <File>
-              <FileName>pi_contorl.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\core\pi_contorl.c</FilePath>
-            </File>
-            <File>
               <FileName>xray.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\core\xray.c</FilePath>
@@ -1651,35 +1631,15 @@
               <FilePath>..\core\calibrate.c</FilePath>
             </File>
             <File>
-              <FileName>lamp.c</FileName>
+              <FileName>ct_exposure.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\core\lamp.c</FilePath>
-            </File>
-            <File>
-              <FileName>lamp.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>..\core\lamp.h</FilePath>
-            </File>
-            <File>
-              <FileName>HV_exposure.h</FileName>
-              <FileType>5</FileType>
-              <FilePath>..\core\HV_exposure.h</FilePath>
-            </File>
-            <File>
-              <FileName>HV_exposure.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\core\HV_exposure.c</FilePath>
+              <FilePath>..\core\ct_exposure.c</FilePath>
             </File>
           </Files>
         </Group>
         <Group>
           <GroupName>Application/comm</GroupName>
           <Files>
-            <File>
-              <FileName>comm_protocol.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\Comm\comm_protocol.c</FilePath>
-            </File>
             <File>
               <FileName>comm_string.c</FileName>
               <FileType>1</FileType>

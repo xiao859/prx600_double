@@ -29,7 +29,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include "HV_exposure.h"
+#include "ct_exposure.h"
 #include "app_uart.h"
 #include "comm_string.h"
 #include "app_spi.h"
