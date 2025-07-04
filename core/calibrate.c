@@ -154,8 +154,10 @@ void calibrate_task()
     case HPVS_SM_ID_CAL_PREPARE:
         config_mcuLock_signal(1);                          // 启用互锁
         calibrate_mode_config(cali_source);                           // 初始化参数
-        config_filamentOn_signal(1, cali_source);                      // 打开灯丝
-        config_filament_ref_slop(cali_source);                        // 控制灯丝DA软启动
+        config_filamentOn_signal(1, 0);                     // 打开灯丝0
+        config_filament_ref_slop(0);                        // 控制灯丝DA软启动
+		    config_filamentOn_signal(1, 1);                     // 打开灯丝1
+        config_filament_ref_slop(1);                        // 控制灯丝PWM软启动
         config_enable_sw(cali_source);
         config_disable_sw((cali_source == 0) ? 1 : 0);
 

@@ -39,6 +39,7 @@
 #include "stdio.h"
 #include "calibrate.h"
 #include "debug_mode.h"
+#include "delay.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -101,6 +102,8 @@ int main(void)
 
     /* Initialize all configured peripherals */
     MX_GPIO_Init();
+		static uint16_t rely_time = 0;
+		static uint8_t rely_state=0;
     MX_DMA_Init();
     MX_ADC2_Init();
     MX_ADC3_Init();
@@ -134,7 +137,7 @@ int main(void)
     HAL_TIM_PWM_Start(&htim5, TIM_CHANNEL_4);
     //PWM输出强制为低
     __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_4, 0); //占空比的设置直接决定了输出电压的高低（经过滤波器后作为类DA使用）
-    //关于占空比 需定义 duty_max / duty_min  即：Vout ≈ Duty * VDD 需测试占空比关系，做类比线性关系
+    //关于占空比 需定义 duty_max / duty_min  Vout ≈ Duty * VDD 需测试占空比关系，做类比线性关系
     HAL_ADC_Start_DMA(&hadc2, (uint32_t*)adc_buffer2, ADC_2_CHANNEL_NUM * ADC_SAMPLE_CYCLE_NUM);
     HAL_ADC_Start_DMA(&hadc3, (uint32_t*)adc_buffer3, ADC_3_CHANNEL_NUM * ADC_SAMPLE_CYCLE_NUM);
 
@@ -144,13 +147,19 @@ int main(void)
     tmp_msg.data1 = HVPS_MODE_S_CONTINUOUS;
     send_message(SCI_MSG_SET_MODE, tmp_msg.data1, 0);
 
-    for (uint16_t i = 0; i < 1000; i++)
 
         while (1)
         {
+					
             /* USER CODE END WHILE */
 
             /* USER CODE BEGIN 3 */
+						if(rely_state == 0)
+						{
+							if(get_tick_ms()- rely_time>2000)
+							{HAL_GPIO_WritePin(FILAMENT_A_EN_GPIO_Port, FILAMENT_A_EN_Pin, Calc_Gpio_State_P(1));
+							rely_state=1;}
+						}
             cmd_parser();
             cmd_parser_string();
 
