@@ -227,7 +227,8 @@ void tube_current_piControl_2(uint8_t conflag, uint8_t ct_source)
 
 void save_parament_to_flash()
 {
-    wirte_flash_parament((uint8_t *)&parm_table, sizeof(xray_parament_table) * 2);
+		bsp_erase_sector(0x80000000);
+    wirte_flash_parament((uint8_t *)&parm_table, sizeof(xray_parament_table));
 
     return;
 }

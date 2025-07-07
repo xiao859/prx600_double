@@ -542,25 +542,28 @@ void Lampcontrol(message_protocol *msg)
 
 void Autocalibra(message_protocol *msg)
 {
-  if ((get_hv_state(0) == HVPS_SM_ID_IDLE)&& (get_hv_state(1) == HVPS_SM_ID_IDLE)) {
-      if (msg->data2 == 0)
-      {
-          ctrl_data.enable[0] = 1;
-          ctrl_data.enable[1] = 1;
-          calibrate_para_init();
-          set_hv_state(HPVS_SM_ID_CAL_PREPARE,0);
-          send_message(msg->msg_id, 0, 0);
-      }
-      else if((msg->data2 == 1) && (Is_CalibrateMode()))
-      {
-              ctrl_data.enable[0] = 0;
-              ctrl_data.enable[1] = 0;
-        send_message(msg->msg_id, 0, 1);
-      }
-      else {
-        send_message(msg->msg_id, msg->data1, msg->data2);
+    if ((get_hv_state(0) == HVPS_SM_ID_IDLE) && (get_hv_state(1) == HVPS_SM_ID_IDLE))
+    {
+        if (msg->data2 == 0)
+        {
+            ctrl_data.enable[0] = 1;
+            ctrl_data.enable[1] = 1;
+            calibrate_para_init();
+            set_hv_state(HPVS_SM_ID_CAL_PREPARE, 0);
+            set_hv_state(HPVS_SM_ID_CAL_PREPARE, 1);
+            send_message(msg->msg_id, 0, 0);
+        }
+        else if ((msg->data2 == 1) && (Is_CalibrateMode()))
+        {
+            ctrl_data.enable[0] = 0;
+            ctrl_data.enable[1] = 0;
+            send_message(msg->msg_id, 0, 1);
+        }
+        else
+        {
+            send_message(msg->msg_id, msg->data1, msg->data2);
+        }
     }
-      }
     return;
 }
 
@@ -580,12 +583,16 @@ void Inqautocalibra(message_protocol *msg)
 {
     uint8_t reply;
 
-    if (Is_CalibrateMode()) {
+    if (Is_CalibrateMode())
+    {
         reply = 0;
-    } else if ((get_hv_state(0) == HVPS_SM_ID_FAULT) && (get_hv_state(0) == HVPS_SM_ID_FAULT))
-      {
+    }
+    else if ((get_hv_state(0) == HVPS_SM_ID_FAULT) && (get_hv_state(0) == HVPS_SM_ID_FAULT))
+    {
         reply = 2;
-    } else {
+    }
+    else
+    {
         reply = 1;
     }
 

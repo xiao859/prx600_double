@@ -80,48 +80,48 @@ void SystemClock_Config(void);
 int main(void)
 {
 
-    /* USER CODE BEGIN 1 */
+  /* USER CODE BEGIN 1 */
 
-    /* USER CODE END 1 */
+  /* USER CODE END 1 */
 
-    /* MCU Configuration--------------------------------------------------------*/
+  /* MCU Configuration--------------------------------------------------------*/
 
-    /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
-    HAL_Init();
+  /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
+  HAL_Init();
 
-    /* USER CODE BEGIN Init */
+  /* USER CODE BEGIN Init */
 
-    /* USER CODE END Init */
+  /* USER CODE END Init */
 
-    /* Configure the system clock */
-    SystemClock_Config();
+  /* Configure the system clock */
+  SystemClock_Config();
 
-    /* USER CODE BEGIN SysInit */
+  /* USER CODE BEGIN SysInit */
 
-    /* USER CODE END SysInit */
+  /* USER CODE END SysInit */
 
-    /* Initialize all configured peripherals */
-    MX_GPIO_Init();
-		static uint16_t rely_time = 0;
-		static uint8_t rely_state=0;
-    MX_DMA_Init();
-    MX_ADC2_Init();
-    MX_ADC3_Init();
-    MX_DAC1_Init();
-    MX_UART4_Init();
-    MX_UART5_Init();
-    MX_USART3_UART_Init();
-    MX_IWDG_Init();
-    MX_TIM6_Init();
-//    MX_TIM7_Init();
-    MX_SPI1_Init();
-    MX_TIM5_Init();
-    /* USER CODE BEGIN 2 */
+  /* Initialize all configured peripherals */
+  MX_GPIO_Init();
+  MX_DMA_Init();
+  MX_ADC2_Init();
+  MX_ADC3_Init();
+  MX_DAC1_Init();
+  MX_UART4_Init();
+  MX_UART5_Init();
+  MX_USART3_UART_Init();
+//  MX_IWDG_Init();
+  MX_TIM6_Init();
+//  MX_TIM7_Init();
+  MX_SPI1_Init();
+  MX_TIM5_Init();
+  /* USER CODE BEGIN 2 */
     message_protocol tmp_msg;
-    /* USER CODE END 2 */
+  /* USER CODE END 2 */
 
-    /* Infinite loop */
-    /* USER CODE BEGIN WHILE */
+  /* Infinite loop */
+  /* USER CODE BEGIN WHILE */
+	  uint8_t rely_state =0;
+		uint32_t rely_time = 0;
     HAL_TIM_Base_Start_IT(&htim6);
     HAL_TIM_Base_Start_IT(&htim7);
     bsp_read_info();
@@ -137,11 +137,11 @@ int main(void)
     HAL_TIM_PWM_Start(&htim5, TIM_CHANNEL_4);
     //PWM输出强制为低
     __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_4, 0); //占空比的设置直接决定了输出电压的高低（经过滤波器后作为类DA使用）
-    //关于占空比 需定义 duty_max / duty_min  Vout ≈ Duty * VDD 需测试占空比关系，做类比线性关系
+    //关于占空比 需定义 duty_max / duty_min  Vout ≈ Duty * VDD 需测试做类比线性关系
     HAL_ADC_Start_DMA(&hadc2, (uint32_t*)adc_buffer2, ADC_2_CHANNEL_NUM * ADC_SAMPLE_CYCLE_NUM);
     HAL_ADC_Start_DMA(&hadc3, (uint32_t*)adc_buffer3, ADC_3_CHANNEL_NUM * ADC_SAMPLE_CYCLE_NUM);
 
-    flash_table_init();
+ //   flash_table_init();
 
     //默认单源模式
     tmp_msg.data1 = HVPS_MODE_S_CONTINUOUS;
@@ -151,25 +151,26 @@ int main(void)
         while (1)
         {
 					
-            /* USER CODE END WHILE */
+    /* USER CODE END WHILE */
 
-            /* USER CODE BEGIN 3 */
+    /* USER CODE BEGIN 3 */
 						if(rely_state == 0)
 						{
-							if(get_tick_ms()- rely_time>2000)
+							if((get_tick_ms()- rely_time)>2000)
 							{HAL_GPIO_WritePin(FILAMENT_A_EN_GPIO_Port, FILAMENT_A_EN_Pin, Calc_Gpio_State_P(1));
-							rely_state=1;}
+							rely_state=1;
+							}
 						}
             cmd_parser();
             cmd_parser_string();
 
-            Protect_Check_Slow();      //慢速故障检查
-            if ((get_hv_state(0) == HVPS_SM_ID_IDLE) && (get_hv_state(0) == HVPS_SM_ID_IDLE))
-            {
-                HAL_TIM_Base_Stop_IT(&htim6);
-                save_parament_to_flash();
-                HAL_TIM_Base_Start_IT(&htim6);
-            }
+//          //  Protect_Check_Slow();      //慢速故障检查
+//            if ((get_hv_state(0) == HVPS_SM_ID_IDLE) && (get_hv_state(0) == HVPS_SM_ID_IDLE)&&( cali_data.para_save_flag == 1))
+//            {
+//                HAL_TIM_Base_Stop_IT(&htim6);
+//                save_parament_to_flash();
+//                HAL_TIM_Base_Start_IT(&htim6);
+//            }
 
             if (ctrl_data.hv_vol_fault || ctrl_data.hv_curr_fault)
             {
@@ -180,7 +181,7 @@ int main(void)
                 falut_led(1);
 
         }
-    /* USER CODE END 3 */
+  /* USER CODE END 3 */
 }
 
 /**
@@ -189,44 +190,44 @@ int main(void)
   */
 void SystemClock_Config(void)
 {
-    RCC_OscInitTypeDef RCC_OscInitStruct = {0};
-    RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
+  RCC_OscInitTypeDef RCC_OscInitStruct = {0};
+  RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
 
-    /** Configure the main internal regulator output voltage
-    */
-    HAL_PWREx_ControlVoltageScaling(PWR_REGULATOR_VOLTAGE_SCALE1_BOOST);
+  /** Configure the main internal regulator output voltage
+  */
+  HAL_PWREx_ControlVoltageScaling(PWR_REGULATOR_VOLTAGE_SCALE1_BOOST);
 
-    /** Initializes the RCC Oscillators according to the specified parameters
-    * in the RCC_OscInitTypeDef structure.
-    */
-    RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_LSI | RCC_OSCILLATORTYPE_HSE;
-    RCC_OscInitStruct.HSEState = RCC_HSE_ON;
-    RCC_OscInitStruct.LSIState = RCC_LSI_ON;
-    RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
-    RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
-    RCC_OscInitStruct.PLL.PLLM = RCC_PLLM_DIV3;
-    RCC_OscInitStruct.PLL.PLLN = 40;
-    RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV2;
-    RCC_OscInitStruct.PLL.PLLQ = RCC_PLLQ_DIV2;
-    RCC_OscInitStruct.PLL.PLLR = RCC_PLLR_DIV2;
-    if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
-    {
-        Error_Handler();
-    }
+  /** Initializes the RCC Oscillators according to the specified parameters
+  * in the RCC_OscInitTypeDef structure.
+  */
+  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_LSI|RCC_OSCILLATORTYPE_HSE;
+  RCC_OscInitStruct.HSEState = RCC_HSE_ON;
+  RCC_OscInitStruct.LSIState = RCC_LSI_ON;
+  RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
+  RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
+  RCC_OscInitStruct.PLL.PLLM = RCC_PLLM_DIV3;
+  RCC_OscInitStruct.PLL.PLLN = 40;
+  RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV2;
+  RCC_OscInitStruct.PLL.PLLQ = RCC_PLLQ_DIV2;
+  RCC_OscInitStruct.PLL.PLLR = RCC_PLLR_DIV2;
+  if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
+  {
+    Error_Handler();
+  }
 
-    /** Initializes the CPU, AHB and APB buses clocks
-    */
-    RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK | RCC_CLOCKTYPE_SYSCLK
-                                  | RCC_CLOCKTYPE_PCLK1 | RCC_CLOCKTYPE_PCLK2;
-    RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
-    RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
-    RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV2;
-    RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV2;
+  /** Initializes the CPU, AHB and APB buses clocks
+  */
+  RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
+                              |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
+  RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
+  RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
+  RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV2;
+  RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV2;
 
-    if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_4) != HAL_OK)
-    {
-        Error_Handler();
-    }
+  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_4) != HAL_OK)
+  {
+    Error_Handler();
+  }
 }
 
 /* USER CODE BEGIN 4 */
@@ -257,13 +258,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
         }
 
         // 更新状态变量及故障快速检测
-        UpdateVar_CheckFaultFast();
-    }
-
-
-    if (htim->Instance == TIM17)
-    {
-
+     //   UpdateVar_CheckFaultFast();
     }
 
     /* USER CODE END Callback 1 */
@@ -276,13 +271,13 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
   */
 void Error_Handler(void)
 {
-    /* USER CODE BEGIN Error_Handler_Debug */
+  /* USER CODE BEGIN Error_Handler_Debug */
     /* User can add his own implementation to report the HAL error return state */
     __disable_irq();
     while (1)
     {
     }
-    /* USER CODE END Error_Handler_Debug */
+  /* USER CODE END Error_Handler_Debug */
 }
 
 #ifdef  USE_FULL_ASSERT
@@ -295,9 +290,9 @@ void Error_Handler(void)
   */
 void assert_failed(uint8_t *file, uint32_t line)
 {
-    /* USER CODE BEGIN 6 */
+  /* USER CODE BEGIN 6 */
     /* User can add his own implementation to report the file name and line number,
        ex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
-    /* USER CODE END 6 */
+  /* USER CODE END 6 */
 }
 #endif /* USE_FULL_ASSERT */

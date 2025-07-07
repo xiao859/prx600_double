@@ -61,7 +61,7 @@ void config_filamentRef_cali(uint8_t curr_index, uint16_t n)
         HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_2, DAC_ALIGN_12B_R, fila_vol_ref);
     else //PWM
     {
-			__HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_4, fila_vol_ref); 
+        __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_4, fila_vol_ref);
     }
     return;
 }
@@ -136,9 +136,6 @@ void calibrate_task()
     static uint32_t last_expo_end_time = 0;
     static uint32_t last_sw_end_time = 0;
 
-    if (cali_data.timmer_count >= 1)
-        cali_data.timmer_count++;
-
     // 如果关闭使能，则强制回到IDLE
     if (ctrl_data.enable[cali_source] == 0)
     {
@@ -149,22 +146,27 @@ void calibrate_task()
         return;
     }
 
+    if (cali_data.timmer_count >= 1)
+        cali_data.timmer_count++;
     switch (get_hv_state(cali_source))
     {
     case HPVS_SM_ID_CAL_PREPARE:
         config_mcuLock_signal(1);                          // 启用互锁
-        calibrate_mode_config(cali_source);                           // 初始化参数
-        config_filamentOn_signal(1, 0);                     // 打开灯丝0
-        config_filament_ref_slop(0);                        // 控制灯丝DA软启动
-		    config_filamentOn_signal(1, 1);                     // 打开灯丝1
-        config_filament_ref_slop(1);                        // 控制灯丝PWM软启动
+        calibrate_mode_config(cali_source);                // 初始化参数
         config_enable_sw(cali_source);
         config_disable_sw((cali_source == 0) ? 1 : 0);
+        config_filamentOn_signal(1, 0);                     // 打开灯丝0
+        config_filament_ref_slop(0);                        // 控制灯丝DA软启动
+        config_filamentOn_signal(1, 1);                     // 打开灯丝1
+        config_filament_ref_slop(1);                        // 控制灯丝PWM软启动
+
+
 
         if (cali_data.timmer_count > TIMER6_2P5_SECOND_CYCLES)
-        {
+        {       
+ 			 		cali_data.timmer_count = 1;
             set_hv_state(HPVS_SM_ID_CAL_RUN, cali_source);
-            cali_data.timmer_count = 1;
+
             uint32_t currRef = (Is_PulseMode()) ?
                                parm_table[cali_source].currRef[cali_data.curr_index] : parm_table[cali_source].currRef_c[cali_data.curr_index];
             pid_Init(parm_table[cali_source].currValue[cali_data.curr_index], currRef, Is_PulseMode());
@@ -210,7 +212,7 @@ void calibrate_task()
             user_pid.currValue = sampled_data.tube_curr_value;
             user_pid.Kp = 3.7;
             user_pid.Ti = 0.0009;
-            tube_current_piControl(cali_source,cali_source);
+            tube_current_piControl(cali_source, cali_source);
         }
 
         break;
@@ -223,7 +225,7 @@ void calibrate_task()
         {
             user_pid.Kp = 20;
             user_pid.Ti = 1;
-            tube_current_piControl(cali_source,cali_source);
+            tube_current_piControl(cali_source, cali_source);
         }
 
         if (cali_data.timmer_count < cali_data.coolTime_expect)
@@ -247,7 +249,7 @@ void calibrate_task()
             parm_table[cali_source].expo_times_total += config_data.expo_count_total[cali_source] / 3000000;
 
             cali_data.curr_index++;
-            if ((cali_data.curr_index >= FILAMENT_CURRENT_TABLE_ORDER) & (cali_source))
+            if ((cali_data.curr_index >= FILAMENT_CURRENT_TABLE_ORDER) && (cali_source))
             {
                 uint32_t last_idx = cali_data.curr_index - 1;
                 debug_tx3("闭环结果: %f, %f, %d, %d\n",
@@ -262,6 +264,7 @@ void calibrate_task()
                     // 重新开始 RUN 状态
                     set_hv_state(HPVS_SM_ID_CAL_RUN, cali_source);
                     cali_data.timmer_count = 1;
+                    //cali_data.curr_index=0;
 
                     cali_data.mode = XRAY_MODE_D_CONTINUOUS;
                     calibrate_mode_config(cali_source);
@@ -270,10 +273,6 @@ void calibrate_task()
                     pid_Init(parm_table[cali_source].currValue[cali_data.curr_index], currRef, Is_PulseMode());
                 }
                 else
-                {
-                    set_hv_state(HPVS_SM_ID_CAL_RUN, cali_source);
-                }
-                if ((cali_data.mode == XRAY_MODE_D_CONTINUOUS) & (cali_source == 1))
                 {
                     cali_data.para_save_flag = 1;              // 标记保存参数
                     set_hv_state(HPVS_SM_ID_CAL_END, cali_source);
