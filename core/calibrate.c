@@ -264,7 +264,6 @@ void calibrate_task()
                     // 重新开始 RUN 状态
                     set_hv_state(HPVS_SM_ID_CAL_RUN, cali_source);
                     cali_data.timmer_count = 1;
-                    //cali_data.curr_index=0;
 
                     cali_data.mode = XRAY_MODE_D_CONTINUOUS;
                     calibrate_mode_config(cali_source);

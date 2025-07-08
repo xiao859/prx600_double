@@ -11,7 +11,7 @@
 
 
 typedef struct {
-    uint32_t    timmer_count[XRAY_NUMS];           
+    uint32_t    timmer_count;           
     uint32_t    cycle_count[XRAY_NUMS];            
 
     uint32_t    expoTime_expect[XRAY_NUMS];        

@@ -10,6 +10,7 @@
 #include "tim.h"
 #include "app_fun.h"
 #include "ct_exposure.h"
+#include "calibrate.h"
 
 
 
@@ -23,20 +24,23 @@ void unpackCmd_savePara(volatile uint8_t *buff, uint8_t *cmdHead, volatile uint3
         return;
     }
 
-    volatile uint8_t *p_p = buff + offset;
-    uint32_t table_temp[FILAMENT_CURRENT_TABLE_ORDER * 2];
+    uint32_t table_temp[FILAMENT_CURRENT_TABLE_ORDER];
+
+    char temp_buf[128];  // 临时缓冲区，根据串口数据长度调整
+    strncpy(temp_buf, (char *)(buff + offset), sizeof(temp_buf) - 1);
+    temp_buf[sizeof(temp_buf) - 1] = '\0';  // 保证结尾有 \0
     uint8_t para_count = 0;
 
-    char *token = strtok((char *)p_p, " ");
-    while (token != NULL)
+    char *token = strtok(temp_buf, " ");
+
+    while (token != NULL && para_count < FILAMENT_CURRENT_TABLE_ORDER)
     {
-        int num = atoi(token);
-        table_temp[para_count] = num;
-        para_count++;
+        int num = atoi(token);  // 将字符串转为整数
+        table_temp[para_count++] = (uint32_t)num;
         token = strtok(NULL, " ");
     }
 
-    if (para_count < FILAMENT_CURRENT_TABLE_ORDER * 2)
+    if (para_count < FILAMENT_CURRENT_TABLE_ORDER)
     {
         debug_tx3("参数不够: %d!!!\n", para_count);
     }
@@ -45,10 +49,10 @@ void unpackCmd_savePara(volatile uint8_t *buff, uint8_t *cmdHead, volatile uint3
         // save_parament_to_flash();
 
         /* 读 */
-        get_flash_parament((uint8_t *)&parm_table, sizeof(xray_parament_table) * 2);
+        get_flash_parament((uint8_t *)&parm_table, sizeof(xray_parament_table));
 
 
-        memcpy((uint8_t *)targetAddr, (uint8_t *)&table_temp[0], sizeof(table_temp) * 2);
+        memcpy((uint8_t *)targetAddr, (uint8_t *)&table_temp[0], sizeof(table_temp));
 
         /*写 */
         save_parament_to_flash();
@@ -61,7 +65,7 @@ int func_setCurrvalue1(volatile uint8_t *buff, char *p)
 {
 //    uint8_t cmdHead[] = "set currValue1 ";
 
-    // unpackCmd_savePara(buff, cmdHead, &parm_table.currValue[0], 14);
+    //unpackCmd_savePara(buff, cmdHead, &parm_table[0].currValue, 14);
 
     return 0;
 }
@@ -70,7 +74,7 @@ int func_setCurrvalue2(volatile uint8_t *buff, char *p)
 {
 //    uint8_t cmdHead[] = "set currValue2 ";
 
-    // unpackCmd_savePara(buff, cmdHead, &parm_table[1].currValue[0], 14);
+    // unpackCmd_savePara(buff, cmdHead, &parm_table[1].currValue, 14);
 
     return 0;
 }
@@ -166,7 +170,7 @@ int func_getTable2(volatile uint8_t *buff, char *p)
     {
         debug_tx3("B currValue: %d\n", parm_table[0].currValue[i]);
     }
-		
+
     debug_tx3("B currRef:");
     for (int i = 0; i < FILAMENT_CURRENT_TABLE_ORDER; i++)
     {
@@ -205,7 +209,7 @@ int set_tube_vol_curr1(volatile uint8_t *buff, char *p)
         config_data.tube_curr[0] = ((float)data[1]) / 10;
         config_data.tube_vol[0]  = data[0];
         config_data.tube_vol_step[0] = (float)(config_data.tube_vol[0]) / (50 * 1);
-			debug_tx3("A tube_vol:%d,tube_curr:%d, tube_vol_step:%f\n", config_data.tube_vol[0], config_data.tube_curr[0], config_data.tube_vol_step[0]);
+        debug_tx3("A tube_vol:%d,tube_curr:%d, tube_vol_step:%f\n", config_data.tube_vol[0], config_data.tube_curr[0], config_data.tube_vol_step[0]);
     }
     else
     {
@@ -230,6 +234,7 @@ int set_tube_vol_curr2(volatile uint8_t *buff, char *p)
         para_count++;
         token = strtok(NULL, " ");
     }
+
 
     if (para_count == 2)
     {
@@ -381,7 +386,7 @@ int set_enable(volatile uint8_t *buff, char *p)
         ctrl_data.interlock = 1;
         ctrl_data.enable[0] = 1;
         ctrl_data.enable[1] = 0;
-        debug_data.timmer_count[0] = 1;
+        debug_data.timmer_count = 1;
         HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_1, DAC_ALIGN_12B_R, 0);
         debug_tx3("ʹ使能开始ʼ\n");
     }
@@ -392,10 +397,10 @@ int set_enable(volatile uint8_t *buff, char *p)
         ctrl_data.interlock = 1;
         ctrl_data.enable[1] = 1;
         ctrl_data.enable[0] = 0;
-        debug_data.timmer_count[1] = 1;
+        debug_data.timmer_count = 1;
 
 //      PWM
-        __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_4, 0); 
+        __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_4, 0);
         debug_tx3("ʹ使能结束ʼ\n");
     }
     else if (num == 3)
@@ -405,11 +410,10 @@ int set_enable(volatile uint8_t *buff, char *p)
         ctrl_data.interlock = 1;
         ctrl_data.enable[0] = 1;
         ctrl_data.enable[1] = 1;
-        debug_data.timmer_count[0] = 1;
-        debug_data.timmer_count[1] = 1;
+        debug_data.timmer_count = 1;
         HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_1, DAC_ALIGN_12B_R, 0);
         //PWM
-				 __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_4, 0);
+        __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_4, 0);
         debug_tx3("ʹ使能开始ʼ\n");
 
     }
@@ -428,13 +432,13 @@ int set_enable(volatile uint8_t *buff, char *p)
 
 int set_ref_onoff(volatile uint8_t *buff, char *p)
 {
-//    set_hv_state(HVPS_SM_ID_TRAIN_EXPOSURING,0);
-//    // debug_data.timmer_count = 0;
-////    xray_HV_enable_debug(1);
-//    ctrl_data.enable[0]    = 1;
-//    debug_data.timmer_count[0] = 1;
+    set_hv_state(HVPS_SM_ID_TRAIN_EXPOSURING, 0);
+    // debug_data.timmer_count = 0;
+//    xray_HV_enable_debug(1);
+    ctrl_data.enable[0]    = 1;
+    debug_data.timmer_count = 1;
 
-//    debug_tx3("��ʼ����ѹ��׼\n");
+    debug_tx3("开始给高压基准\n");
 
     return 0;
 }
@@ -442,31 +446,35 @@ int set_ref_onoff(volatile uint8_t *buff, char *p)
 
 int set_ref_test(volatile uint8_t *buff, char *p)
 {
-//    volatile uint8_t *p_p = buff + 8;
-//    uint8_t para_count = 0;
-//    int data[2];
-//    set_hv_state(HVPS_SM_ID_TRAIN_DEBUG,0);
+    volatile uint8_t *p_p = buff + 8;
+    uint8_t para_count = 0;
+    int data[2];
+    set_hv_state(HVPS_SM_ID_TRAIN_DEBUG, 0);
 
-//    char *token = strtok((char *)p_p, " ");
-//    while (token != NULL && para_count <=2) {
-//        int num = atoi(token);
-//        data[para_count] = num;
-//        para_count++;
-//        token = strtok(NULL, " ");
-//    }
+    char *token = strtok((char *)p_p, " ");
+    while (token != NULL && para_count <= 2)
+    {
+        int num = atoi(token);
+        data[para_count] = num;
+        para_count++;
+        token = strtok(NULL, " ");
+    }
 
-//    if (para_count == 2) {
-//        config_data.tube_curr[0] = data[1];
-//        config_data.tube_vol[0]  = data[0];
-//        uint32_t tube_vol_ref = (uint32_t)(((float)config_data.tube_vol[0] / 64) / ADDA_FULL_SCALE_VIL_VALUE * 4095);  /* 0~2.5V ��Ӧ 0~160kV */
-//        // uint32_t tube_curr_ref = (uint32_t)((config_data.tube_curr / 64) / ADDA_FULL_SCALE_VIL_VALUE * 4095);
+    if (para_count == 2)
+    {
+        config_data.tube_curr[0] = data[1];
+        config_data.tube_vol[0]  = data[0];
+        uint32_t tube_vol_ref = (uint32_t)(((float)config_data.tube_vol[0] / 64) / ADDA_FULL_SCALE_VIL_VALUE * 4095);  /* 0~2.5V 0~160kV */
+        // uint32_t tube_curr_ref = (uint32_t)((config_data.tube_curr / 64) / ADDA_FULL_SCALE_VIL_VALUE * 4095);
 
-//        HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_1, DAC_ALIGN_12B_R, tube_vol_ref);
-//        // HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_2, DAC_ALIGN_12B_R, tube_vol_ref);
-//        debug_tx3("A�ܵ�ѹ/������%d, %d, %f\n", tube_vol_ref, config_data.tube_curr[0]);
-//    } else {
-//        debug_tx3("A������ʽ����\n");
-//    }
+        HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_1, DAC_ALIGN_12B_R, tube_vol_ref);
+        // HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_2, DAC_ALIGN_12B_R, tube_vol_ref);
+        debug_tx3("Atube_vol/tube_curr:%d, %d\n", tube_vol_ref, config_data.tube_curr[0]);
+    }
+    else
+    {
+        debug_tx3("A参数格式错误\n");
+    }
 
     return 0;
 }
@@ -529,7 +537,7 @@ int set_filament_ref_onoff1(volatile uint8_t *buff, char *p)
 
     ctrl_data.filament_on[0] = 1;
     set_hv_state(HVPS_SM_ID_TRAIN_IDLE, 0);
-    debug_data.timmer_count[0] = 0;
+    debug_data.timmer_count = 0;
 
     // uint32_t a = (uint32_t)(num * 1.2409);  /* ((num / 1000) / 3.3) * 4095 */
 
@@ -559,7 +567,7 @@ int set_filament_ref_onoff2(volatile uint8_t *buff, char *p)
 
     ctrl_data.filament_on[1] = 1;
     set_hv_state(HVPS_SM_ID_TRAIN_IDLE, 1);
-    debug_data.timmer_count[1] = 0;
+    debug_data.timmer_count = 0;
 
     // uint32_t a = (uint32_t)(num * 1.2409);  /* ((num / 1000) / 3.3) * 4095 */
 
@@ -577,25 +585,32 @@ int set_filament_ref_onoff2(volatile uint8_t *buff, char *p)
 /* 开始自动校准*/
 int start_calibrate(volatile uint8_t *buff, char *p)
 {
-//    volatile uint8_t *p_p = buff + 16;
-//    int num = 0;
+    volatile uint8_t *p_p = buff + 16;
+    int num = 0;
 
-//    char *token = strtok((char *)p_p, " ");
-//    while (token != NULL) {
-//        num = atoi(token);
-//        token = strtok(NULL, " ");
-//    }
+    char *token = strtok((char *)p_p, " ");
+    while (token != NULL)
+    {
+        num = atoi(token);
+        token = strtok(NULL, " ");
+    }
 
-//    if (num == 1) {
-//        calibrate_para_init();
-//        set_hv_state(HPVS_SM_ID_CAL_PREPARE);
-//        ctrl_data.enable = 1;
-//        // pid_Init(1.0);
-//        debug_tx3("");
-//    } else {
-//        ctrl_data.enable = 0;
-//        debug_tx3("");
-//    }
+    if (num == 1)
+    {
+        calibrate_para_init();
+        set_hv_state(HPVS_SM_ID_CAL_PREPARE, 0);
+        set_hv_state(HPVS_SM_ID_CAL_PREPARE, 1);
+        ctrl_data.enable[0] = 1;
+        ctrl_data.enable[1] = 1;
+        // pid_Init(1.0);
+        debug_tx3("");
+    }
+    else
+    {
+        ctrl_data.enable[0] = 0;
+        ctrl_data.enable[1] = 0;
+        debug_tx3("");
+    }
 
     return 0;
 }
@@ -603,11 +618,10 @@ int start_calibrate(volatile uint8_t *buff, char *p)
 /* 开始自动校准*/
 int set_hv_on(volatile uint8_t *buff, char *p)
 {
-//    debug_tx3("CALIBRATE START");
-////
-//      xray_HV_enable_debug(1);
-//    debug_data.timmer_count[0] = 1;
-//    debug_data.timmer_count[1] = 1;
+    debug_tx3("CALIBRATE START");
+
+    xray_HV_enable_debug(1);
+    debug_data.timmer_count = 1;
 
     return 0;
 }
@@ -638,6 +652,33 @@ int init_para_table(volatile uint8_t *buff, char *p)
     get_flash_parament((uint8_t *)&parm_table, sizeof(xray_parament_table) * 2);
 
     debug_tx3("已刷新FLASH");
+
+    return 0;
+}
+
+int ray_source(volatile uint8_t *buff, char *p)
+{
+    volatile uint8_t *p_p = buff + 16;
+    int num = 0;
+
+    char *token = strtok((char *)p_p, " ");
+    while (token != NULL)
+    {
+        num = atoi(token);
+        token = strtok(NULL, " ");
+    }
+
+    if (num == 1)
+    {
+        ctrl_data.xray_current = 1;
+        // pid_Init(1.0);
+        debug_tx3("A select");
+    }
+    else
+    {
+        ctrl_data.xray_current = 2;
+        debug_tx3("B select");
+    }
 
     return 0;
 }
@@ -752,6 +793,9 @@ void registerFunc_init()
 
     memcpy(cmd_pack[24].cmdstr, "init table", sizeof("init table"));
     cmd_pack[24].func_ptr = &init_para_table;
+
+    memcpy(cmd_pack[25].cmdstr, "ray source", sizeof("ray source"));
+    cmd_pack[25].func_ptr = &ray_source;
 
     return;
 }

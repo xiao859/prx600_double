@@ -289,6 +289,7 @@ void config_filamentRef(uint16_t n);
 void disable_hvref(uint16_t n);
 void disable_filamentref(uint16_t n);
 void config_filament_ref_slop(uint16_t n);
+void config_hvref_slope(uint16_t n);
 
 #endif
 
