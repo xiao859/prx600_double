@@ -135,7 +135,8 @@ void calibrate_task()
     static uint8_t cali_source = 0; // 当前射源通道，0表示射源1，1表示射源2
     static uint32_t last_expo_end_time = 0;
     static uint32_t last_sw_end_time = 0;
-
+    static uint8_t sw_changed = 0;
+	
     // 如果关闭使能，则强制回到IDLE
     if (ctrl_data.enable[cali_source] == 0)
     {
@@ -163,8 +164,8 @@ void calibrate_task()
 
 
         if (cali_data.timmer_count > TIMER6_2P5_SECOND_CYCLES)
-        {       
- 			 		cali_data.timmer_count = 1;
+        {
+            cali_data.timmer_count = 1;
             set_hv_state(HPVS_SM_ID_CAL_RUN, cali_source);
 
             uint32_t currRef = (Is_PulseMode()) ?
@@ -233,10 +234,11 @@ void calibrate_task()
 
         cali_data.cycle_count++;
 
-        if ((get_tick_ms() - last_sw_end_time) >= 8)
+        if (((get_tick_ms() - last_sw_end_time) >= 8) && (sw_changed == 0))
         {
             config_disable_sw(cali_source);
             config_enable_sw((cali_source == 0) ? 1 : 0);
+            sw_changed = 1;
         }
 
 
@@ -261,6 +263,7 @@ void calibrate_task()
                 {
                     // 切换下一个射源交替运行
                     cali_source ^= 1;
+                    sw_changed = 0;
                     // 重新开始 RUN 状态
                     set_hv_state(HPVS_SM_ID_CAL_RUN, cali_source);
                     cali_data.timmer_count = 1;
@@ -289,6 +292,7 @@ void calibrate_task()
                                    parm_table[cali_source].currRef[cali_data.curr_index] : parm_table[cali_source].currRef_c[cali_data.curr_index];
                 // 切换下一个射源交替运行
                 cali_source ^= 1;
+                sw_changed = 0;
                 set_hv_state(HPVS_SM_ID_CAL_RUN, cali_source);
                 pid_Init(parm_table[cali_source].currValue[cali_data.curr_index], currRef, Is_PulseMode());//PID系数重置
             }
@@ -296,7 +300,7 @@ void calibrate_task()
             {
                 // 切换下一个射源交替运行
                 cali_source ^= 1;
-
+                sw_changed = 0;
                 // 重新开始 RUN 状态
                 set_hv_state(HPVS_SM_ID_CAL_RUN, cali_source);
                 cali_data.timmer_count = 1;
@@ -309,16 +313,16 @@ void calibrate_task()
         break;
 
     case HPVS_SM_ID_CAL_END:
-        xray_system_disable(0);
-        xray_system_disable(1);
-        cali_data.timmer_count = 0;
-        set_hv_state(HVPS_SM_ID_IDLE, 0);
-        set_hv_state(HVPS_SM_ID_IDLE, 1);
-        break;
+            xray_system_disable(0);
+            xray_system_disable(1);
+            cali_data.timmer_count = 0;
+            set_hv_state(HVPS_SM_ID_IDLE, 0);
+            set_hv_state(HVPS_SM_ID_IDLE, 1);
+            break;
 
-    default:
-        break;
-    }
+        default:
+                break;
+            }
 
     // 指示灯
     xray_on_led((get_hv_state(cali_source) == HPVS_SM_ID_CAL_EXPOSURING) ? 1 : 0);

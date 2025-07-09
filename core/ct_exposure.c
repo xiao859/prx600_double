@@ -591,7 +591,7 @@ void ct_task()
         break;
 
     default:
-        set_hv_state(HVPS_SM_ID_IDLE, ct_source);
+        //set_hv_state(HVPS_SM_ID_IDLE, ct_source);
         break;
     }
 

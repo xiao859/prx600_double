@@ -248,11 +248,11 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
             ctrl_data.enable[0] = get_enable_pin(0);
             ct_task();
         }
-        else if (Is_CalibrateMode())
+        if (Is_CalibrateMode())
         {
             calibrate_task();
         }
-        else if (Is_DebugMode())
+        if (Is_DebugMode())
         {
             debug_task();
         }

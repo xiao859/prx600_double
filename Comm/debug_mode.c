@@ -158,7 +158,6 @@ void debug_task()
             }
             else  //单源模式
             {
-								if(i==0) i=2;
                 parm_table[i].expo_count_total++;
                 parm_table[i].expo_times_total += config_data.expo_count_total[i] / 3000000;
                 cali_data.para_save_flag = 1;
