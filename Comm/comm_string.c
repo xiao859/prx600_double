@@ -63,7 +63,7 @@ void unpackCmd_savePara(volatile uint8_t *buff, uint8_t *cmdHead, volatile uint3
 
 int func_setCurrvalue1(volatile uint8_t *buff, char *p)
 {
-//    uint8_t cmdHead[] = "set currValue1 ";
+    // uint8_t cmdHead[] = "set currValue1 ";
 
     //unpackCmd_savePara(buff, cmdHead, &parm_table[0].currValue, 14);
 
@@ -84,7 +84,7 @@ int func_setCurrRef1(volatile uint8_t *buff, char *p)
 {
     uint8_t cmdHead[] = "set currRef1 ";
 
-    unpackCmd_savePara(buff, cmdHead, &parm_table[0].currRef[0], 12);
+    unpackCmd_savePara(buff, cmdHead, &parm_table[0].currRef[0], 13);
 
     return 0;
 }
@@ -93,7 +93,7 @@ int func_setCurrRef2(volatile uint8_t *buff, char *p)
 {
     uint8_t cmdHead[] = "set currRef2 ";
 
-    unpackCmd_savePara(buff, cmdHead, &parm_table[1].currRef[0], 12);
+    unpackCmd_savePara(buff, cmdHead, &parm_table[1].currRef[0], 13);
 
     return 0;
 }
@@ -102,7 +102,7 @@ int func_setCurrvalue_c1(volatile uint8_t *buff, char *p)
 {
 //    uint8_t cmdHead[] = "set currValue_c1 ";
 
-    // unpackCmd_savePara(buff, cmdHead, &parm_table[0].currValue_c[0], 16);
+//    unpackCmd_savePara(buff, cmdHead, &parm_table[0].currValue[0], 17);
 
     return 0;
 }
@@ -111,7 +111,7 @@ int func_setCurrvalue_c2(volatile uint8_t *buff, char *p)
 {
 //    uint8_t cmdHead[] = "set currValue_c2 ";
 
-    // unpackCmd_savePara(buff, cmdHead, &parm_table[1].currValue_c[0], 16);
+//    unpackCmd_savePara(buff, cmdHead, &parm_table[1].currValue[0], 17);
 
     return 0;
 }
@@ -120,7 +120,7 @@ int func_setCurrRef_c1(volatile uint8_t *buff, char *p)
 {
     uint8_t cmdHead[] = "set currRef_c1 ";
 
-    unpackCmd_savePara(buff, cmdHead, &parm_table[0].currRef_c[0], 14);
+    unpackCmd_savePara(buff, cmdHead, &parm_table[0].currRef_c[0], 15);
 
     return 0;
 }
@@ -129,7 +129,7 @@ int func_setCurrRef_c2(volatile uint8_t *buff, char *p)
 {
     uint8_t cmdHead[] = "set currRef_c2 ";
 
-    unpackCmd_savePara(buff, cmdHead, &parm_table[1].currRef_c[0], 14);
+    unpackCmd_savePara(buff, cmdHead, &parm_table[1].currRef_c[0], 15);
 
     return 0;
 }
@@ -273,7 +273,7 @@ int set_expo_time1(volatile uint8_t *buff, char *p)
         return 0;
     }
 
-    if (ctrl_data.xrayMode == XRAY_MODE_S_PULSE)
+    if ((ctrl_data.xrayMode == XRAY_MODE_S_PULSE)||(ctrl_data.xrayMode == XRAY_MODE_D_PULSE))
     {
         debug_data.expoCycle_perCurrent[0] = num * 40;
         debug_data.expoTime_expect[0] = 400;
@@ -313,7 +313,7 @@ int set_expo_time2(volatile uint8_t *buff, char *p)
         return 0;
     }
 
-    if (ctrl_data.xrayMode == XRAY_MODE_S_PULSE)
+    if ((ctrl_data.xrayMode == XRAY_MODE_S_PULSE)||(ctrl_data.xrayMode == XRAY_MODE_D_PULSE))
     {
         debug_data.expoCycle_perCurrent[1] = num * 40;
         debug_data.expoTime_expect[1] = 400;
@@ -349,9 +349,6 @@ int set_expo_mode(volatile uint8_t *buff, char *p)
     {
     case HVPS_MODE_S_CONTINUOUS:
         ctrl_data.xrayMode = XRAY_MODE_S_CONTINUOUS;
-        config_enable_sw(0); // 选取射源1作为高精度采样
-        //DMA地址
-        ctrl_data.xray_current = 1;
         break;
     case HVPS_MODE_S_PULSE:
         ctrl_data.xrayMode = XRAY_MODE_S_PULSE;
@@ -365,6 +362,7 @@ int set_expo_mode(volatile uint8_t *buff, char *p)
     }
     return 0;
 }
+
 
 /* 设置enable信号 */
 int set_enable(volatile uint8_t *buff, char *p)
@@ -387,6 +385,8 @@ int set_enable(volatile uint8_t *buff, char *p)
         ctrl_data.enable[0] = 1;
         ctrl_data.enable[1] = 0;
         debug_data.timmer_count = 1;
+				config_enable_sw(0); // 选取射源0采样
+				config_disable_sw(1); // 关闭射源1采样
         HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_1, DAC_ALIGN_12B_R, 0);
         debug_tx3("ʹ使能开始ʼ\n");
     }
@@ -398,7 +398,8 @@ int set_enable(volatile uint8_t *buff, char *p)
         ctrl_data.enable[1] = 1;
         ctrl_data.enable[0] = 0;
         debug_data.timmer_count = 1;
-
+				config_enable_sw(1); // 选取射源1采样
+				config_disable_sw(0); // 关闭射源0采样
 //      PWM
         __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_4, 0);
         debug_tx3("ʹ使能结束ʼ\n");
@@ -411,6 +412,8 @@ int set_enable(volatile uint8_t *buff, char *p)
         ctrl_data.enable[0] = 1;
         ctrl_data.enable[1] = 1;
         debug_data.timmer_count = 1;
+				config_enable_sw(0); // 选取射源0采样
+				config_disable_sw(1); // 关闭射源1采样
         HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_1, DAC_ALIGN_12B_R, 0);
         //PWM
         __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_4, 0);
@@ -642,8 +645,10 @@ int init_para_table(volatile uint8_t *buff, char *p)
         {
             0,
             0,
-            0,
-            {0}, {0}, {0}
+            1,
+            {1,    2,    3,    4,    5,    6,    7,    8,    9,    10,   11,   12},
+            {1606, 1734, 1830, 1911, 1980, 2039, 2091, 2134, 2174, 2210, 2246, 2282},
+            {1500, 1660, 1770, 1850, 1920, 1980, 2030, 2080, 2120, 2160, 2200, 2250},
         }
     };
 

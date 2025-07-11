@@ -247,6 +247,8 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
         {
             ctrl_data.expo[0]   = get_expo_pin(0);
             ctrl_data.enable[0] = get_enable_pin(0);
+					  ctrl_data.expo[1]   = get_expo_pin(1);
+            ctrl_data.enable[1] = get_enable_pin(1);
             ct_task();
         }
         if (Is_CalibrateMode())

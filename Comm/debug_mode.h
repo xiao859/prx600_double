@@ -16,7 +16,7 @@ typedef struct {
 
     uint32_t    expoTime_expect[XRAY_NUMS];        
     uint32_t    coolTime_expect[XRAY_NUMS];       
-    uint32_t    expoCycle_perCurrent[XRAY_NUMS];   /**/
+    uint32_t    expoCycle_perCurrent[XRAY_NUMS];   /*单毫安曝光次数*/
 } xray_debug_data;
 extern volatile xray_debug_data debug_data;
 
