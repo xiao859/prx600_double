@@ -26,10 +26,11 @@ void config_fault_signal(uint16_t value)
     //低电平有效
 uint16_t get_enable_pin(uint16_t n)
 {
-	if(n == 0)
-    return ((HAL_GPIO_ReadPin(ENABLE_A_GPIO_Port, ENABLE_A_Pin) == GPIO_PIN_RESET) ? 1 : 0);
-	else
-		return ((HAL_GPIO_ReadPin(ENABLE_B_GPIO_Port, ENABLE_B_Pin) == GPIO_PIN_RESET) ? 1 : 0);
+//	if(n == 0)
+//    return ((HAL_GPIO_ReadPin(ENABLE_A_GPIO_Port, ENABLE_A_Pin) == GPIO_PIN_RESET) ? 1 : 0);
+//	else
+//		return ((HAL_GPIO_ReadPin(ENABLE_B_GPIO_Port, ENABLE_B_Pin) == GPIO_PIN_RESET) ? 1 : 0);
+	return 0;
 }
 
     //低电平有效
@@ -73,9 +74,9 @@ void config_enable_sw(uint16_t n)
 {
 	if(n == 0)
     /*采样选择开关*/
-    HAL_GPIO_WritePin(HV_SW_A_GPIO_Port, HV_SW_A_PIN, Calc_Gpio_State_P(1));
+    HAL_GPIO_WritePin(HV_SW_A_GPIO_Port, HV_SW_A_PIN, Calc_Gpio_State_P(0));
 	else
-		HAL_GPIO_WritePin(HV_SW_B_GPIO_Port, HV_SW_B_PIN, Calc_Gpio_State_P(1));
+		HAL_GPIO_WritePin(HV_SW_B_GPIO_Port, HV_SW_B_PIN, Calc_Gpio_State_P(0));
     return;
 }
 
@@ -83,9 +84,9 @@ void config_disable_sw(uint16_t n)
 {
 	if(n == 0)
     /*采样选择开关*/
-    HAL_GPIO_WritePin(HV_SW_A_GPIO_Port, HV_SW_A_PIN, Calc_Gpio_State_P(0));
+    HAL_GPIO_WritePin(HV_SW_A_GPIO_Port, HV_SW_A_PIN, Calc_Gpio_State_P(1));
 	else
-		HAL_GPIO_WritePin(HV_SW_B_GPIO_Port, HV_SW_B_PIN, Calc_Gpio_State_P(0));
+		HAL_GPIO_WritePin(HV_SW_B_GPIO_Port, HV_SW_B_PIN, Calc_Gpio_State_P(1));
     return;
 }
 

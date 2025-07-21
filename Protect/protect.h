@@ -186,5 +186,7 @@ extern HVPS_FAULT_REGS mHVPS_Fault;
 void InqHVPSFault(message_protocol *msg);
 void UpdateVar_CheckFaultFast(void);
 void Protect_Check_Slow(void);
+
+void transform_adc_values(void);
 #endif
 

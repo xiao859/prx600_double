@@ -182,7 +182,7 @@ void UpdateVar_CheckFaultFast()
         xray_data.tube_curr_broken_count = 0;
     }
 
-    float fila_vol = sampled_data.filament_vol_value[ctrl_data.xray_current - 1];
+    float fila_vol = sampled_data.filament_vol_value;
     if (fila_vol > para_range.filament_vol_max_protected)
     {
         xray_data.fila_vol_overCount++;
@@ -206,4 +206,17 @@ void UpdateVar_CheckFaultFast()
     return;
 }
 
+void transform_adc_values()
+{
+    sampled_data.power_24v_value        = 0.01209f *  ((float)(adc_buffer2[0]));//0.01209f
+    // sampled_data.temp_sink_value        = -0.04747f * ((float)(adc_buffer2[1])) + 122.59205f;
 
+    sampled_data.filament_vol_value     = 0.00806f *  ((float)(adc_buffer2[2]));
+    sampled_data.filament_curr_value    = 0.00806f *  ((float)(adc_buffer2[3]));
+		sampled_data.tube_vol_p_value       = 0.02579f *  ((float)(adc_buffer3[0])*1.08f);
+    sampled_data.tube_vol_n_value       = 0.02579f *  ((float)(adc_buffer3[1])*1.08f);
+    sampled_data.tube_curr_value        = 0.00645f *  ((float)(adc_buffer3[2]));
+    sampled_data.temp_oil_value         = ((float)(adc_buffer3[3]));
+
+	
+}

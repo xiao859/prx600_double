@@ -59,26 +59,26 @@ void Error_Handler(void);
 /* Private defines -----------------------------------------------------------*/
 
 /* USER CODE BEGIN Private defines */
-#define XRAY_LED_Pin GPIO_PIN_2
-#define XRAY_LED_GPIO_Port GPIOE
-#define FAULT_LED_Pin GPIO_PIN_3
-#define FAULT_LED_GPIO_Port GPIOE
-#define HEART_LED_Pin GPIO_PIN_4
-#define HEART_LED_GPIO_Port GPIOE
+#define XRAY_LED_Pin GPIO_PIN_9
+#define XRAY_LED_GPIO_Port GPIOD
+#define FAULT_LED_Pin GPIO_PIN_11
+#define FAULT_LED_GPIO_Port GPIOD
+#define HEART_LED_Pin GPIO_PIN_13
+#define HEART_LED_GPIO_Port GPIOD
 
-#define HV_V_FAULT_Pin GPIO_PIN_5
-#define HV_V_FAULT_GPIO_Port GPIOE
-#define HV_V_FAULT_EXTI_IRQn EXTI9_5_IRQn
-#define RESET_Pin GPIO_PIN_6
-#define RESET_GPIO_Port GPIOE
-#define HV_C_FAULT_Pin GPIO_PIN_9
+#define HV_V_FAULT_Pin GPIO_PIN_1
+#define HV_V_FAULT_GPIO_Port GPIOA
+#define HV_V_FAULT_EXTI_IRQn EXTI3_IRQn
+#define RESET_Pin GPIO_PIN_0
+#define RESET_GPIO_Port GPIOA
+#define HV_C_FAULT_Pin GPIO_PIN_2
 #define HV_C_FAULT_GPIO_Port GPIOF
-#define HV_EN_Pin GPIO_PIN_1
+#define HV_EN_Pin GPIO_PIN_3
 #define HV_EN_GPIO_Port GPIOC
 #define HV_SW_A_PIN GPIO_PIN_0
-#define HV_SW_A_GPIO_Port GPIOA
+#define HV_SW_A_GPIO_Port GPIOC
 #define HV_SW_B_PIN GPIO_PIN_1
-#define HV_SW_B_GPIO_Port GPIOA
+#define HV_SW_B_GPIO_Port GPIOC
 #define HV_RE_PIN GPIO_PIN_2
 #define HV_RE_GPIO_Port GPIOA
 #define MCU_LOCK_Pin GPIO_PIN_2
@@ -99,10 +99,10 @@ void Error_Handler(void);
 #define HV_P_Pin GPIO_PIN_10
 #define HV_P_GPIO_Port GPIOE
 
-#define FILAMENT_A_EN_Pin GPIO_PIN_3
-#define FILAMENT_A_EN_GPIO_Port GPIOC
-#define FILAMENT_B_EN_Pin GPIO_PIN_2
-#define FILAMENT_B_EN_GPIO_Port GPIOF
+#define FILAMENT_A_EN_Pin GPIO_PIN_13
+#define FILAMENT_A_EN_GPIO_Port GPIOB
+#define FILAMENT_B_EN_Pin GPIO_PIN_14
+#define FILAMENT_B_EN_GPIO_Port GPIOB
 #define FILA_A_REF_Pin GPIO_PIN_5
 #define FILA_A_REF_GPIO_Port GPIOA
 #define FILA_B_REF_Pin GPIO_PIN_3
@@ -129,27 +129,27 @@ void Error_Handler(void);
 #define DEBUG_RX_Pin GPIO_PIN_7
 #define DEBUG_RX_GPIO_Port GPIOB
 
-#define EXP_A_Pin GPIO_PIN_9
-#define EXP_A_GPIO_Port GPIOD
-#define EXP_A_EXTI_IRQn EXTI9_5_IRQn
-#define EXP_B_Pin GPIO_PIN_15
-#define EXP_B_GPIO_Port GPIOB
-#define EXP_B_EXTI_IRQn EXTI15_10_IRQn
+#define EXP_A_Pin GPIO_PIN_2
+#define EXP_A_GPIO_Port GPIOE
+#define EXP_A_EXTI_IRQn EXTI2_IRQn
+#define EXP_B_Pin GPIO_PIN_0
+#define EXP_B_GPIO_Port GPIOE
+#define EXP_B_EXTI_IRQn EXTI0_IRQn
 
-#define ENABLE_A_Pin GPIO_PIN_10
-#define ENABLE_A_GPIO_Port GPIOD
-#define ENABLE_B_Pin GPIO_PIN_8
-#define ENABLE_B_GPIO_Port GPIOD
+//#define ENABLE_A_Pin GPIO_PIN_10
+//#define ENABLE_A_GPIO_Port GPIOD
+//#define ENABLE_B_Pin GPIO_PIN_8
+//#define ENABLE_B_GPIO_Port GPIOD
 
-#define INTERLOCK_Pin GPIO_PIN_11
-#define INTERLOCK_GPIO_Port GPIOD
-#define INTERLOCK_EXTI_IRQn EXTI15_10_IRQn
-#define READY_Pin GPIO_PIN_12
-#define READY_GPIO_Port GPIOD
-#define XRAY_ON_Pin GPIO_PIN_13
-#define XRAY_ON_GPIO_Port GPIOD
-#define FAULT_Pin GPIO_PIN_14
-#define FAULT_GPIO_Port GPIOD
+#define INTERLOCK_Pin GPIO_PIN_3
+#define INTERLOCK_GPIO_Port GPIOE
+#define INTERLOCK_EXTI_IRQn EXTI3_IRQn
+#define READY_Pin GPIO_PIN_4
+#define READY_GPIO_Port GPIOE
+#define XRAY_ON_Pin GPIO_PIN_5
+#define XRAY_ON_GPIO_Port GPIOE
+#define FAULT_Pin GPIO_PIN_6
+#define FAULT_GPIO_Port GPIOE
 
 #define SWDIO_Pin GPIO_PIN_13
 #define SWDIO_GPIO_Port GPIOA

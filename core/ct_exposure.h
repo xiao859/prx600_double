@@ -9,7 +9,7 @@
 #define IDLE_HV_REF                     0
 #define FILAMENT_CURRENT_TABLE_ORDER    12
 
-#define ADC_SAMPLE_CYCLE_NUM            16
+#define ADC_SAMPLE_CYCLE_NUM            1
 #define ADC_2_CHANNEL_NUM               4
 #define ADC_3_CHANNEL_NUM               4
 #define ADDA_FULL_SCALE_VIL_VALUE       (3.3f)
@@ -153,8 +153,8 @@ typedef struct
     /* ADC2 */
     float power_24v_value;       /* 24V供电*/
     float temp_sink_value;       /*散热器温度*/
-    float filament_vol_value[XRAY_NUMS];    /*灯丝电压 */
-    float filament_curr_value[XRAY_NUMS];   /* 灯丝电流 */
+    float filament_vol_value;    /*灯丝电压 */
+    float filament_curr_value;   /* 灯丝电流 */
 
     float oil_temp;              /*油箱温度转换值*/
 

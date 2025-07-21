@@ -66,6 +66,7 @@ controler_cmd_funcs funcs[APP_FUNC_NUM] =
     {SCI_MSG_SET_EXP2_COUNTCLR,             &exp2countclr},
     {SCI_MSG_SET_EXP1_TIMECLR,              &exp1timeclr},
     {SCI_MSG_SET_EXP2_TIMECLR,              &exp2timeclr},
+    {SCI_MSG_SET_NULL,                                           &fun_null},
     {SCI_MSG_SET_ENABLE,                    &Setenable},
 
     {SCI_MSG_CTRL_RST,                      &FaultReset},
@@ -217,7 +218,6 @@ void SetHVPSMode(message_protocol *msg)
             {
             case HVPS_MODE_S_CONTINUOUS:
                 ctrl_data.xrayMode = XRAY_MODE_S_CONTINUOUS;
-                config_enable_sw(0); // 选取射源1作为高精度采样
                 //DMA地址
                 ctrl_data.xray_current = 1;
                 break;
@@ -233,13 +233,15 @@ void SetHVPSMode(message_protocol *msg)
             default:
                 msg->data2 = SETUP_SM_ERROR;
             }
+            config_enable_sw(0); // 选取射源0作为采样
+            config_disable_sw(1);
             msg->data2 = SETUP_SUCCESS;
         }
         else
-            msg->data2 = SETUP_SM_ERROR;
+            msg->data2 = SETUP_OUT_LIMIT;
     }
     else
-        msg->data2 = SETUP_OUT_LIMIT;
+        msg->data2 = SETUP_SM_ERROR;
 
     send_message(msg->msg_id, msg->data1, msg->data2);
 
@@ -487,6 +489,8 @@ void Lampcontrol(message_protocol *msg)
             xray_data.timmer_count[1] = 1;
             config_data.fila_ref_step[1] = (float)IDLE_FILAMENT_REF / (20 * 50); /* 20ms上升时间*/
             msg->data1 = SETUP_SUCCESS;  // 明确设置成功码
+						config_disable_sw(1);
+						config_enable_sw(0);
         }
         else
         {
@@ -501,6 +505,9 @@ void Lampcontrol(message_protocol *msg)
             ctrl_data.filament_on[0] = 1;
             xray_data.timmer_count[0] = 1;
             config_data.fila_ref_step[0] = (float)IDLE_FILAMENT_REF / (20 * 50); /* 20ms上升时间*/
+            msg->data2 = SETUP_SUCCESS;  // 明确设置成功码
+						config_disable_sw(0);
+						config_enable_sw(1);
         }
         else
         {
@@ -520,20 +527,29 @@ void Lampcontrol(message_protocol *msg)
             xray_data.timmer_count[1] = 1;
             config_data.fila_ref_step[1] = (float)IDLE_FILAMENT_REF / (20 * 50); /* 20ms上升时间*/
             msg->data1 = SETUP_SUCCESS;
+            msg->data2 = SETUP_SUCCESS;
+						config_disable_sw(1);
+						config_enable_sw(0);
         }
         else
         {
             msg->data1 = SETUP_SM_ERROR;
         }
         break;
-
-    default:
+    case 0x0000:
         config_filamentOn_signal(0, 0);
         ctrl_data.filament_on[0] = 0;
         config_filamentOn_signal(0, 1);
         ctrl_data.filament_on[1] = 0;
-        msg->data1 = SETUP_OUT_LIMIT;  // 默认错误码
-        break;
+		    msg->data1 = SETUP_SUCCESS;
+        msg->data2 = SETUP_SUCCESS;
+				config_disable_sw(1);
+				config_enable_sw(0);
+        break;	
+		default:
+			   msg->data1 = SETUP_SUCCESS;
+         msg->data2 = SETUP_SUCCESS;
+			
     }
 
     send_message(msg->msg_id, msg->data1, msg->data2);
@@ -656,7 +672,7 @@ void exp1timeclr(message_protocol *msg)
         msg->data1 = SETUP_SUCCESS;
         msg->data2 = SETUP_SM_ERROR;
     }
-    send_message(msg->msg_id, msg->data1, msg->data1);
+    send_message(msg->msg_id, msg->data1, msg->data2);
 
     return;
 }
@@ -674,7 +690,7 @@ void exp2timeclr(message_protocol *msg)
         msg->data1 = SETUP_SM_ERROR;
         msg->data2 = SETUP_SUCCESS;
     }
-    send_message(msg->msg_id, msg->data1, msg->data1);
+    send_message(msg->msg_id, msg->data1, msg->data2);
 
     return;
 }
@@ -850,19 +866,19 @@ void cmd_process(int32_t message_idx, message_protocol* msg, USART_TypeDef *Inst
 
     if (message_idx >= SCI_MSG_TEST_1)
     {
-        func_idx = message_idx - SCI_MSG_TEST_1 + 46;
+        func_idx = message_idx - SCI_MSG_TEST_1 + 47;
     }
     else if (message_idx >= SCI_MSG_DEBUG_LAMP_I_SET)
     {
-        func_idx = message_idx - SCI_MSG_DEBUG_LAMP_I_SET + 41;
+        func_idx = message_idx - SCI_MSG_DEBUG_LAMP_I_SET + 42;
     }
     else if (message_idx >= SCI_MSG_SET_PFCTHRESHOLD)
     {
-        func_idx = message_idx - SCI_MSG_SET_PFCTHRESHOLD + 37;
+        func_idx = message_idx - SCI_MSG_SET_PFCTHRESHOLD + 38;
     }
     else if (message_idx >= SCI_MSG_CTRL_RST)
     {
-        func_idx = message_idx - SCI_MSG_CTRL_RST + 29;
+        func_idx = message_idx - SCI_MSG_CTRL_RST + 30;
     }
     else if (message_idx >= SCI_MSG_SET_MODE)
     {

@@ -57,15 +57,11 @@ void MX_ADC2_Init(void)
   hadc2.Init.ContinuousConvMode = DISABLE;
   hadc2.Init.NbrOfConversion = 4;
   hadc2.Init.DiscontinuousConvMode = DISABLE;
-  hadc2.Init.ExternalTrigConv = ADC_SOFTWARE_START;
-  hadc2.Init.ExternalTrigConvEdge = ADC_EXTERNALTRIGCONVEDGE_NONE;
-  hadc2.Init.DMAContinuousRequests = DISABLE;
-  hadc2.Init.Overrun = ADC_OVR_DATA_PRESERVED;
-  hadc2.Init.OversamplingMode = ENABLE;
-  hadc2.Init.Oversampling.Ratio = ADC_OVERSAMPLING_RATIO_16;
-  hadc2.Init.Oversampling.RightBitShift = ADC_RIGHTBITSHIFT_4;
-  hadc2.Init.Oversampling.TriggeredMode = ADC_TRIGGEREDMODE_SINGLE_TRIGGER;
-  hadc2.Init.Oversampling.OversamplingStopReset = ADC_REGOVERSAMPLING_CONTINUED_MODE;
+  hadc2.Init.ExternalTrigConv = ADC_EXTERNALTRIG_T2_TRGO;
+  hadc2.Init.ExternalTrigConvEdge = ADC_EXTERNALTRIGCONVEDGE_RISING;
+  hadc2.Init.DMAContinuousRequests = ENABLE;
+  hadc2.Init.Overrun = ADC_OVR_DATA_OVERWRITTEN;
+  hadc2.Init.OversamplingMode = DISABLE;
   if (HAL_ADC_Init(&hadc2) != HAL_OK)
   {
     Error_Handler();
@@ -75,7 +71,7 @@ void MX_ADC2_Init(void)
   */
   sConfig.Channel = ADC_CHANNEL_4;
   sConfig.Rank = ADC_REGULAR_RANK_1;
-  sConfig.SamplingTime = ADC_SAMPLETIME_2CYCLES_5;
+  sConfig.SamplingTime = ADC_SAMPLETIME_24CYCLES_5;
   sConfig.SingleDiff = ADC_SINGLE_ENDED;
   sConfig.OffsetNumber = ADC_OFFSET_NONE;
   sConfig.Offset = 0;
@@ -111,7 +107,7 @@ void MX_ADC2_Init(void)
     Error_Handler();
   }
   /* USER CODE BEGIN ADC2_Init 2 */
-
+ HAL_ADC_Start_DMA(&hadc2, (uint32_t*)adc_buffer2, ADC_2_CHANNEL_NUM * ADC_SAMPLE_CYCLE_NUM);
   /* USER CODE END ADC2_Init 2 */
 
 }
@@ -140,13 +136,13 @@ void MX_ADC3_Init(void)
   hadc3.Init.ScanConvMode = ADC_SCAN_ENABLE;
   hadc3.Init.EOCSelection = ADC_EOC_SINGLE_CONV;
   hadc3.Init.LowPowerAutoWait = DISABLE;
-  hadc3.Init.ContinuousConvMode = ENABLE;
+  hadc3.Init.ContinuousConvMode = DISABLE;
   hadc3.Init.NbrOfConversion = 4;
   hadc3.Init.DiscontinuousConvMode = DISABLE;
-  hadc3.Init.ExternalTrigConv = ADC_SOFTWARE_START;
-  hadc3.Init.ExternalTrigConvEdge = ADC_EXTERNALTRIGCONVEDGE_NONE;
+  hadc3.Init.ExternalTrigConv = ADC_EXTERNALTRIG_T2_TRGO;
+  hadc3.Init.ExternalTrigConvEdge = ADC_EXTERNALTRIGCONVEDGE_RISING;
   hadc3.Init.DMAContinuousRequests = ENABLE;
-  hadc3.Init.Overrun = ADC_OVR_DATA_PRESERVED;
+  hadc3.Init.Overrun = ADC_OVR_DATA_OVERWRITTEN;
   hadc3.Init.OversamplingMode = DISABLE;
   if (HAL_ADC_Init(&hadc3) != HAL_OK)
   {
@@ -201,7 +197,7 @@ void MX_ADC3_Init(void)
     Error_Handler();
   }
   /* USER CODE BEGIN ADC3_Init 2 */
-
+ 
   /* USER CODE END ADC3_Init 2 */
 
 }
@@ -260,9 +256,9 @@ void HAL_ADC_MspInit(ADC_HandleTypeDef* adcHandle)
     hdma_adc2.Init.Direction = DMA_PERIPH_TO_MEMORY;
     hdma_adc2.Init.PeriphInc = DMA_PINC_DISABLE;
     hdma_adc2.Init.MemInc = DMA_MINC_ENABLE;
-    hdma_adc2.Init.PeriphDataAlignment = DMA_PDATAALIGN_BYTE;
+    hdma_adc2.Init.PeriphDataAlignment = DMA_PDATAALIGN_HALFWORD;
     hdma_adc2.Init.MemDataAlignment = DMA_MDATAALIGN_HALFWORD;
-    hdma_adc2.Init.Mode = DMA_NORMAL;
+    hdma_adc2.Init.Mode = DMA_CIRCULAR;
     hdma_adc2.Init.Priority = DMA_PRIORITY_LOW;
     if (HAL_DMA_Init(&hdma_adc2) != HAL_OK)
     {
@@ -271,9 +267,6 @@ void HAL_ADC_MspInit(ADC_HandleTypeDef* adcHandle)
 
     __HAL_LINKDMA(adcHandle,DMA_Handle,hdma_adc2);
 
-    /* ADC2 interrupt Init */
-    HAL_NVIC_SetPriority(ADC1_2_IRQn, 0, 0);
-    HAL_NVIC_EnableIRQ(ADC1_2_IRQn);
   /* USER CODE BEGIN ADC2_MspInit 1 */
 
   /* USER CODE END ADC2_MspInit 1 */
@@ -315,7 +308,7 @@ void HAL_ADC_MspInit(ADC_HandleTypeDef* adcHandle)
     hdma_adc3.Init.Direction = DMA_PERIPH_TO_MEMORY;
     hdma_adc3.Init.PeriphInc = DMA_PINC_DISABLE;
     hdma_adc3.Init.MemInc = DMA_MINC_ENABLE;
-    hdma_adc3.Init.PeriphDataAlignment = DMA_PDATAALIGN_BYTE;
+    hdma_adc3.Init.PeriphDataAlignment = DMA_PDATAALIGN_HALFWORD;
     hdma_adc3.Init.MemDataAlignment = DMA_MDATAALIGN_HALFWORD;
     hdma_adc3.Init.Mode = DMA_CIRCULAR;
     hdma_adc3.Init.Priority = DMA_PRIORITY_LOW;
@@ -326,11 +319,8 @@ void HAL_ADC_MspInit(ADC_HandleTypeDef* adcHandle)
 
     __HAL_LINKDMA(adcHandle,DMA_Handle,hdma_adc3);
 
-    /* ADC3 interrupt Init */
-    HAL_NVIC_SetPriority(ADC3_IRQn, 0, 0);
-    HAL_NVIC_EnableIRQ(ADC3_IRQn);
   /* USER CODE BEGIN ADC3_MspInit 1 */
-
+ HAL_ADC_Start_DMA(&hadc3, (uint32_t*)adc_buffer3, ADC_3_CHANNEL_NUM * ADC_SAMPLE_CYCLE_NUM);
   /* USER CODE END ADC3_MspInit 1 */
   }
 }
@@ -360,9 +350,6 @@ void HAL_ADC_MspDeInit(ADC_HandleTypeDef* adcHandle)
 
     /* ADC2 DMA DeInit */
     HAL_DMA_DeInit(adcHandle->DMA_Handle);
-
-    /* ADC2 interrupt Deinit */
-    HAL_NVIC_DisableIRQ(ADC1_2_IRQn);
   /* USER CODE BEGIN ADC2_MspDeInit 1 */
 
   /* USER CODE END ADC2_MspDeInit 1 */
@@ -385,9 +372,6 @@ void HAL_ADC_MspDeInit(ADC_HandleTypeDef* adcHandle)
 
     /* ADC3 DMA DeInit */
     HAL_DMA_DeInit(adcHandle->DMA_Handle);
-
-    /* ADC3 interrupt Deinit */
-    HAL_NVIC_DisableIRQ(ADC3_IRQn);
   /* USER CODE BEGIN ADC3_MspDeInit 1 */
 
   /* USER CODE END ADC3_MspDeInit 1 */
@@ -400,48 +384,48 @@ void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc)
 {
     if (hadc->Instance == ADC2)
     {
-        HAL_ADC_Stop_DMA(&hadc2);
-        uint32_t sum_2[ADC_2_CHANNEL_NUM] = {0};
+       HAL_ADC_Stop_DMA(&hadc2);
+//        uint32_t sum_2[ADC_2_CHANNEL_NUM] = {0};
 
-        for (int sample = 0; sample < ADC_SAMPLE_CYCLE_NUM; sample++)
-        {
-            for (int channel = 0; channel < ADC_2_CHANNEL_NUM; channel++)
-            {
-                sum_2[channel] += adc_buffer2[channel + sample * ADC_2_CHANNEL_NUM];
-            }
-        }
-        sampled_data.power_24v_value        = 0.01209f * ((float)(sum_2[0]) / ADC_SAMPLE_CYCLE_NUM);
-        sampled_data.temp_sink_value        = -0.04747f * ((float)(sum_2[1]) / ADC_SAMPLE_CYCLE_NUM) + 122.59205f;
-        if (Is_Exposing())
-        {
-            sampled_data.filament_vol_value[ctrl_data.xray_current - 1]     = 0.00806f * ((float)(sum_2[2]) / ADC_SAMPLE_CYCLE_NUM);
-            sampled_data.filament_curr_value[ctrl_data.xray_current - 1]    = 0.00806f * ((float)(sum_2[3]) / ADC_SAMPLE_CYCLE_NUM);
-        }
-        HAL_ADC_Start_DMA(&hadc2, (uint32_t *)&adc_buffer2, (uint32_t)(ADC_2_CHANNEL_NUM * ADC_SAMPLE_CYCLE_NUM));
+//        for (int sample = 0; sample < ADC_SAMPLE_CYCLE_NUM; sample++)
+//        {
+//            for (int channel = 0; channel < ADC_2_CHANNEL_NUM; channel++)
+//            {
+//                sum_2[channel] += adc_buffer2[channel + sample * ADC_2_CHANNEL_NUM];
+//            }
+//        }
+//        sampled_data.power_24v_value        = 0.01209f * ((float)(sum_2[0]) / ADC_SAMPLE_CYCLE_NUM);
+//        sampled_data.temp_sink_value        = -0.04747f * ((float)(sum_2[1]) / ADC_SAMPLE_CYCLE_NUM) + 122.59205f;
+//        if (Is_Exposing())
+//        {
+//            sampled_data.filament_vol_value[ctrl_data.xray_current - 1]     = 0.00806f * ((float)(sum_2[2]) / ADC_SAMPLE_CYCLE_NUM);
+//            sampled_data.filament_curr_value[ctrl_data.xray_current - 1]    = 0.00806f * ((float)(sum_2[3]) / ADC_SAMPLE_CYCLE_NUM);
+//        }
+       HAL_ADC_Start_DMA(&hadc2, (uint32_t *)&adc_buffer2, (uint32_t)(ADC_2_CHANNEL_NUM * ADC_SAMPLE_CYCLE_NUM));
     }
     if (hadc->Instance == ADC3)
     {
         HAL_ADC_Stop_DMA(&hadc3);
-        uint32_t sum_3[ADC_3_CHANNEL_NUM] = {0};
-        for (int sample = 0; sample < ADC_SAMPLE_CYCLE_NUM; sample++)
-        {
-            for (int channel = 0; channel < ADC_3_CHANNEL_NUM; channel++)
-            {
-                sum_3[channel] += adc_buffer3[channel + sample * ADC_3_CHANNEL_NUM];
-            }
-        }
-
-//        if (Is_Exposing())
+//        uint32_t sum_3[ADC_3_CHANNEL_NUM] = {0};
+//        for (int sample = 0; sample < ADC_SAMPLE_CYCLE_NUM; sample++)
 //        {
-            sampled_data.tube_vol_p_value = 0.02579f * ((float)(sum_3[0]) / ADC_SAMPLE_CYCLE_NUM);
-            sampled_data.tube_vol_n_value = 0.02579f * ((float)(sum_3[1]) / ADC_SAMPLE_CYCLE_NUM);
-            float value_c = 0.00645f * ((float)(sum_3[2]) / ADC_SAMPLE_CYCLE_NUM);
-            sampled_data.tube_curr_value = value_c;
+//            for (int channel = 0; channel < ADC_3_CHANNEL_NUM; channel++)
+//            {
+//                sum_3[channel] += adc_buffer3[channel + sample * ADC_3_CHANNEL_NUM];
+//            }
 //        }
 
-        // test_value = sum_3[2];
-        // sampled_data.tube_curr_value = quadraticSmooth(value_c);
-        sampled_data.temp_oil_value   = ((float)(sum_3[3]) / ADC_SAMPLE_CYCLE_NUM);
+////        if (Is_Exposing())
+////        {
+//            sampled_data.tube_vol_p_value = 0.02579f * ((float)(sum_3[0]) / ADC_SAMPLE_CYCLE_NUM);
+//            sampled_data.tube_vol_n_value = 0.02579f * ((float)(sum_3[1]) / ADC_SAMPLE_CYCLE_NUM);
+//            float value_c = 0.00645f * ((float)(sum_3[2]) / ADC_SAMPLE_CYCLE_NUM);
+//            sampled_data.tube_curr_value = value_c;
+////        }
+
+//        // test_value = sum_3[2];
+//        // sampled_data.tube_curr_value = quadraticSmooth(value_c);
+//        sampled_data.temp_oil_value   = ((float)(sum_3[3]) / ADC_SAMPLE_CYCLE_NUM);
 
         HAL_ADC_Start_DMA(&hadc3, (uint32_t *)&adc_buffer3, (uint32_t)(ADC_3_CHANNEL_NUM * ADC_SAMPLE_CYCLE_NUM));
     }

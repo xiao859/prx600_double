@@ -1,0 +1,23 @@
+TF918 000:188.613   SEGGER J-Link V7.22b Log File
+TF918 000:188.739   DLL Compiled: Jun 17 2021 17:22:49
+TF918 000:188.744   Logging started @ 2025-07-04 07:21
+TF918 000:188.748 - 188.750ms
+TF918 000:188.756 JLINK_SetWarnOutHandler(...)
+TF918 000:188.762 - 0.007ms
+TF918 000:188.768 JLINK_OpenEx(...)
+TF918 030:219.452   Out of sync , resynchronizing...
+TF918 030:219.802   Out of sync , resynchronizing...
+TF918 030:220.138   Out of sync , resynchronizing...
+TF918 030:220.266   
+  ***** Error: 
+TF918 030:220.292   Cannot connect to J-Link
+TF918 030:300.796 - 30112.073ms returns "Cannot connect to J-Link"
+TF918 030:303.038 
+  ***** 
+TF918 030:303.085 API Error: API JLINK_GetHardwareVersion function called before JLINKARM_Open()
+TF918 030:303.108 JLINK_GetHardwareVersion()
+TF918 030:377.458 - 74.385ms
+TF918 046:876.921 JLINK_Close()
+TF918 046:876.995 - 0.077ms
+TF918 046:877.002   
+TF918 046:877.006   Closed
