@@ -146,7 +146,7 @@ int main(void)
     tmp_msg.data1 = HVPS_MODE_S_CONTINUOUS;
     send_message(SCI_MSG_SET_MODE, tmp_msg.data1, 0);
 
-
+ debug_tx3("123\n");
     while (1)
     {
 //        HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_1, DAC_ALIGN_12B_R, 0);
@@ -154,10 +154,12 @@ int main(void)
 //           __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_4, 0);
 //
 //          HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_2, DAC_ALIGN_12B_R, 1700);
-//          HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_1, DAC_ALIGN_12B_R, 2485);
-//
-         __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_4, 1499);
-//
+//          HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_2, DAC_ALIGN_12B_R, 1100);
+//			    HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_2, DAC_ALIGN_12B_R, 0);
+////
+//         __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_4, 999);
+//			         __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_4, 0);
+////
 //        uint32_t temp1 = get_tick_ms();
 //				for(uint32_t i=0;i <10000000;i++);
 //        uint32_t temp2 = get_tick_ms();
@@ -268,10 +270,10 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
         {
             calibrate_task();
         }
-//        if (Is_DebugMode())
-//        {
-//            debug_task();
-//        }
+        if (Is_DebugMode())
+        {
+            debug_task();
+        }
 
         // 更新状态变量及故障快速检测
         //   UpdateVar_CheckFaultFast();

@@ -17,43 +17,18 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 {
     if (huart->Instance == UART4)             /*  */
     {
-        uint8_t d = uart4.recv_byte;
 
-        if (!uart4.receiving)
-        {
-            if (d == 0xAA)
-            {
-                uart4.uart_rx_buf[0] = d;
-                uart4.uart_rx_cnt = 1;
-                uart4.receiving = 1;
-            }
-        }
-        else
-        {
-            uart4.uart_rx_buf[uart4.uart_rx_cnt++] = d;
+			  uart4.recv_len++;
+        if (uart4.recv_byte == 0x0A) 
+					uart4.recv_complete  = 1;
 
-            if (uart4.uart_rx_cnt == 6)
-            {
-                // 校验
-                uint8_t check_recv = uart_check(&(uart4.uart_rx_buf[2]), 4);
-                if (check_recv == 1)
-                {
-                    // 放入FIFO
-                    if (uart4_frame_fifo.count < FRAME_BUF_NUM)
-                    {
-                        uint8_t idx = uart4_frame_fifo.tail;
-                        memcpy(&uart4_frame_fifo.data[idx], uart4.uart_rx_buf, 6);
-                        uart4_frame_fifo.tail = (uart4_frame_fifo.tail + 1) % FRAME_BUF_NUM;
-                        uart4_frame_fifo.count++;
-                    }
-                }
-                // 重置状态
-                uart4.receiving = 0;
-                uart4.uart_rx_cnt = 0;
-            }
+        if (uart4.uart_rx_cnt < USART_BUFFER_LEN)
+        {
+            uart4.uart_rx_buf[uart4.uart_rx_cnt] = uart4.recv_byte;
+            uart4.uart_rx_cnt++;
         }
-        // 再次开启下一字节接收
-        HAL_UART_Receive_IT(&huart4, &uart4.recv_byte, 1);
+
+        HAL_UART_Receive_IT(&huart4, (uint8_t *)&uart4.recv_byte, 1);
     }
 
     else if (huart->Instance == UART5)               /*  */
@@ -96,29 +71,29 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
         // 再次开启下一字节接收
         HAL_UART_Receive_IT(&huart5, &uart5.recv_byte, 1);
     }
-    else if (huart->Instance == USART3)
-    {
-        uart3.recv_len++;
-        if (uart3.recv_byte == '\n') uart3.recv_complete  = 1;
+//    else if (huart->Instance == USART3)
+//    {
+//        uart3.recv_len++;
+//        if (uart3.recv_byte == '\n') uart3.recv_complete  = 1;
 
-        if (uart3.uart_rx_cnt < USART_BUFFER_LEN)
-        {
-            uart3.uart_rx_buf[uart3.uart_rx_cnt] = uart3.recv_byte;
-            uart3.uart_rx_cnt++;
-        }
+//        if (uart3.uart_rx_cnt < USART_BUFFER_LEN)
+//        {
+//            uart3.uart_rx_buf[uart3.uart_rx_cnt] = uart3.recv_byte;
+//            uart3.uart_rx_cnt++;
+//        }
 
-        HAL_UART_Receive_IT(&huart3, (uint8_t *)&uart3.recv_byte, 1);
-    }
+//        HAL_UART_Receive_IT(&huart3, (uint8_t *)&uart3.recv_byte, 1);
+//    }
 }
 
 void restart_usart_receive(USART_TypeDef *Instance)
 {
-    if (Instance == USART3)
+    if (Instance == UART4)
     {
-        uart3.recv_complete = 0;
-        uart3.recv_len = 0;
-        uart3.uart_rx_cnt = 0;
-        HAL_UART_Receive_IT(&huart3, (uint8_t *)&uart3.recv_byte, 1);
+        uart4.recv_complete = 0;
+        uart4.recv_len = 0;
+        uart4.uart_rx_cnt = 0;
+        HAL_UART_Receive_IT(&huart3, (uint8_t *)&uart4.recv_byte, 1);
     }
 
     return;
@@ -134,8 +109,8 @@ void send_message(uint8_t msg_id, uint8_t data1, uint8_t data2)
     msg_reply.data2  = data2;
     msg_reply.checksum = (0 - (msg_reply.msg_id + msg_reply.data1 + msg_reply.data2)) & 0xFF;
 
-    memcpy((uint8_t *)uart4.uart_tx_buf, &msg_reply, MESSAGE_PACK_LENGTH);
-    HAL_UART_Transmit(&huart4, (uint8_t*)uart4.uart_tx_buf, MESSAGE_PACK_LENGTH, 1000);
+//    memcpy((uint8_t *)uart4.uart_tx_buf, &msg_reply, MESSAGE_PACK_LENGTH);
+//    HAL_UART_Transmit(&huart4, (uint8_t*)uart4.uart_tx_buf, MESSAGE_PACK_LENGTH, 1000);
 
     memcpy((uint8_t *)uart5.uart_tx_buf, &msg_reply, MESSAGE_PACK_LENGTH);
     HAL_UART_Transmit(&huart5, (uint8_t*)uart5.uart_tx_buf, MESSAGE_PACK_LENGTH, 1000);
@@ -156,13 +131,13 @@ uint8_t uart_check(uint8_t* data, uint8_t len)
 
 void debug_tx3(const char *format, ...)
 {
-    unsigned char UartTx3Buf[128];
+    unsigned char UartTx4Buf[128];
     uint16_t len;
     va_list args;
     va_start(args, format);
-    len = vsnprintf((char*)UartTx3Buf, sizeof(UartTx3Buf) +1, (char*)format, args);
+    len = vsnprintf((char*)UartTx4Buf, sizeof(UartTx4Buf) +1, (char*)format, args);
     va_end(args);
-    HAL_UART_Transmit(&huart3, UartTx3Buf, len, 1000);
+    HAL_UART_Transmit(&huart4, UartTx4Buf, len, 1000);
 
     return;
 }

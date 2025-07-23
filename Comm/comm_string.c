@@ -209,7 +209,7 @@ int set_tube_vol_curr1(volatile uint8_t *buff, char *p)
         config_data.tube_curr[0] = ((float)data[1]) / 10;
         config_data.tube_vol[0]  = data[0];
         config_data.tube_vol_step[0] = (float)(config_data.tube_vol[0]) / (50 * 1);
-        debug_tx3("A tube_vol:%d,tube_curr:%d, tube_vol_step:%f\n", config_data.tube_vol[0], config_data.tube_curr[0], config_data.tube_vol_step[0]);
+        debug_tx3("A tube_vol:%d,tube_curr:%f, tube_vol_step:%f\n", config_data.tube_vol[0], config_data.tube_curr[0], config_data.tube_vol_step[0]);
     }
     else
     {
@@ -241,7 +241,7 @@ int set_tube_vol_curr2(volatile uint8_t *buff, char *p)
         config_data.tube_curr[1] = ((float)data[1]) / 10;
         config_data.tube_vol[1]  = data[0];
         config_data.tube_vol_step[1] = (float)(config_data.tube_vol[1]) / (50 * 1);
-        debug_tx3("B tube_vol:%d,tube_curr:%d, tube_vol_step:%f\n", config_data.tube_vol[1], config_data.tube_curr[1], config_data.tube_vol_step[1]);
+        debug_tx3("B tube_vol:%d,tube_curr:%f, tube_vol_step:%f\n", config_data.tube_vol[1], config_data.tube_curr[1], config_data.tube_vol_step[1]);
     }
     else
     {
@@ -273,7 +273,7 @@ int set_expo_time1(volatile uint8_t *buff, char *p)
         return 0;
     }
 
-    if ((ctrl_data.xrayMode == XRAY_MODE_S_PULSE)||(ctrl_data.xrayMode == XRAY_MODE_D_PULSE))
+    if ((ctrl_data.xrayMode == XRAY_MODE_S_PULSE) || (ctrl_data.xrayMode == XRAY_MODE_D_PULSE))
     {
         debug_data.expoCycle_perCurrent[0] = num * 40;
         debug_data.expoTime_expect[0] = 400;
@@ -313,7 +313,7 @@ int set_expo_time2(volatile uint8_t *buff, char *p)
         return 0;
     }
 
-    if ((ctrl_data.xrayMode == XRAY_MODE_S_PULSE)||(ctrl_data.xrayMode == XRAY_MODE_D_PULSE))
+    if ((ctrl_data.xrayMode == XRAY_MODE_S_PULSE) || (ctrl_data.xrayMode == XRAY_MODE_D_PULSE))
     {
         debug_data.expoCycle_perCurrent[1] = num * 40;
         debug_data.expoTime_expect[1] = 400;
@@ -349,15 +349,19 @@ int set_expo_mode(volatile uint8_t *buff, char *p)
     {
     case HVPS_MODE_S_CONTINUOUS:
         ctrl_data.xrayMode = XRAY_MODE_S_CONTINUOUS;
+        debug_tx3("S_CONTINUOUS\n");
         break;
     case HVPS_MODE_S_PULSE:
         ctrl_data.xrayMode = XRAY_MODE_S_PULSE;
+        debug_tx3("S_PULSE\n");
         break;
     case HVPS_MODE_D_CONTINUOUS:
         ctrl_data.xrayMode = XRAY_MODE_D_CONTINUOUS;
+        debug_tx3("D_CONTINUOUS\n");
         break;
     case HVPS_MODE_D_PULSE:
         ctrl_data.xrayMode = XRAY_MODE_D_PULSE;
+        debug_tx3("D_PULSE\n");
         break;
     }
     return 0;
@@ -377,7 +381,7 @@ int set_enable(volatile uint8_t *buff, char *p)
         token = strtok(NULL, " ");
     }
 
-    if (num == 1)
+    if (num == 0)
     {
         set_hv_state(HVPS_SM_ID_TRAIN_PREPARE, 0);
         set_hv_state(HVPS_SM_ID_IDLE, 1);
@@ -385,12 +389,12 @@ int set_enable(volatile uint8_t *buff, char *p)
         ctrl_data.enable[0] = 1;
         ctrl_data.enable[1] = 0;
         debug_data.timmer_count = 1;
-				config_enable_sw(0); // 选取射源0采样
-				config_disable_sw(1); // 关闭射源1采样
+        config_enable_sw(0); // 选取射源0采样
+        config_disable_sw(1); // 关闭射源1采样
         HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_1, DAC_ALIGN_12B_R, 0);
-        debug_tx3("ʹ使能开始ʼ\n");
+        debug_tx3("A enable\n");
     }
-    else if (num == 2)
+    else if (num == 1)
     {
         set_hv_state(HVPS_SM_ID_TRAIN_PREPARE, 1);
         set_hv_state(HVPS_SM_ID_IDLE, 0);
@@ -398,13 +402,13 @@ int set_enable(volatile uint8_t *buff, char *p)
         ctrl_data.enable[1] = 1;
         ctrl_data.enable[0] = 0;
         debug_data.timmer_count = 1;
-				config_enable_sw(1); // 选取射源1采样
-				config_disable_sw(0); // 关闭射源0采样
+        config_enable_sw(1); // 选取射源1采样
+        config_disable_sw(0); // 关闭射源0采样
 //      PWM
         __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_4, 0);
-        debug_tx3("ʹ使能结束ʼ\n");
+        debug_tx3("B enable\n");
     }
-    else if (num == 3)
+    else if (num == 2)
     {
         set_hv_state(HVPS_SM_ID_TRAIN_PREPARE, 0);
         set_hv_state(HVPS_SM_ID_TRAIN_PREPARE, 1);
@@ -412,12 +416,12 @@ int set_enable(volatile uint8_t *buff, char *p)
         ctrl_data.enable[0] = 1;
         ctrl_data.enable[1] = 1;
         debug_data.timmer_count = 1;
-				config_enable_sw(0); // 选取射源0采样
-				config_disable_sw(1); // 关闭射源1采样
+        config_enable_sw(0); // 选取射源0采样
+        config_disable_sw(1); // 关闭射源1采样
         HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_1, DAC_ALIGN_12B_R, 0);
         //PWM
         __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_4, 0);
-        debug_tx3("ʹ使能开始ʼ\n");
+        debug_tx3("A&B enable\n\n");
 
     }
     else
@@ -427,7 +431,7 @@ int set_enable(volatile uint8_t *buff, char *p)
         ctrl_data.interlock = 0;
         ctrl_data.enable[0] = 0;
         ctrl_data.enable[0] = 0;
-        debug_tx3("ʹ使能结束\n");
+        debug_tx3("A&B disable\n\n");
     }
     return 0;
 }
@@ -441,7 +445,7 @@ int set_ref_onoff(volatile uint8_t *buff, char *p)
     ctrl_data.enable[0]    = 1;
     debug_data.timmer_count = 1;
 
-    debug_tx3("开始给高压基准\n");
+    debug_tx3("exping\n");
 
     return 0;
 }
@@ -521,6 +525,29 @@ int set_filament_onoff(volatile uint8_t *buff, char *p)
         __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_4, 0);
         debug_tx3("B lam on");
     }
+    else if (num == 2)
+    {
+        config_filamentOn_signal(1, 0);
+        ctrl_data.filament_on[0] = 0;
+        config_filamentOn_signal(1, 1);
+        ctrl_data.filament_on[1] = 0;
+        //PWM
+        HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_2, DAC_ALIGN_12B_R, 0);
+        __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_4, 0);
+        debug_tx3("A&B lam on");
+    }
+    else if (num == 3)
+    {
+        config_filamentOn_signal(0, 0);
+        ctrl_data.filament_on[0] = 1;
+        config_filamentOn_signal(0, 1);
+        ctrl_data.filament_on[1] = 1;
+        //PWM
+        HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_2, DAC_ALIGN_12B_R, 0);
+        __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_4, 0);
+        debug_tx3("A&B lam off");
+    }
+
 
     return 0;
 }
@@ -621,10 +648,27 @@ int start_calibrate(volatile uint8_t *buff, char *p)
 /* 开始自动校准*/
 int set_hv_on(volatile uint8_t *buff, char *p)
 {
-    debug_tx3("CALIBRATE START");
+    volatile uint8_t *p_p = buff + 9;
+    int num = 0;
 
-    xray_HV_enable_debug(1);
-    debug_data.timmer_count = 1;
+    char *token = strtok((char *)p_p, " ");
+    while (token != NULL)
+    {
+        num = atoi(token);
+        token = strtok(NULL, " ");
+    }
+    if (num == 0)
+    {
+        debug_tx3("HV_on");
+
+        xray_HV_enable_debug(1);
+        debug_data.timmer_count = 1;
+    }
+    else
+        debug_tx3("HV_off");
+
+    xray_HV_enable_debug(0);
+    debug_data.timmer_count = 0;
 
     return 0;
 }
@@ -691,9 +735,9 @@ int ray_source(volatile uint8_t *buff, char *p)
 // lc oven sttemp 31.255
 void cmd_parser_string()
 {
-    if (uart3.recv_complete != 1) return;
+    if (uart4.recv_complete != 1) return;
 
-    volatile uint8_t *buff = uart3.uart_rx_buf;
+    volatile uint8_t *buff = uart4.uart_rx_buf;
 
     int i;
 
@@ -709,14 +753,14 @@ void cmd_parser_string()
     if (ret == NULL)
     {
         debug_tx3("没有该指令！");
-        restart_usart_receive(USART3);
+        restart_usart_receive(UART4);
         return;
     }
 
     /* 2调用对应的函数*/
     cmd_pack[i].func_ptr(buff, ret); /* ret为指令初始位置*/
 
-    restart_usart_receive(USART3);
+    restart_usart_receive(UART4);
 
     return;
 }

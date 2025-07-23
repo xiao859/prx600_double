@@ -62,27 +62,28 @@ void config_filament_ref_slop_debug(uint8_t n)
     {}
 }
 
-/////**/
+
 void debug_task()
 {
-    static uint8_t xray_active;            // 当前激活射源：0 = 无, 1 = SW1, 2 = SW2
-    static uint32_t last_switch_tick = 0;      // 上次切换采样开关时间戳
-    static uint8_t sw_changed = 0;
+    static uint8_t xray_active;            // 当前激活射源
+    static uint32_t last_switch_tick = 0;   // 上次切换采样开关时间戳
+    xray_active = ctrl_data.xray_current - 1;
 
-    if ((ctrl_data.xrayMode == XRAY_MODE_D_CONTINUOUS) || (ctrl_data.xrayMode == XRAY_MODE_D_PULSE))
+    // 检查射线模式
+    if ((ctrl_data.xrayMode == XRAY_MODE_D_CONTINUOUS) || (ctrl_data.xrayMode == XRAY_MODE_D_PULSE) ||
+            (ctrl_data.xrayMode == XRAY_MODE_S_CONTINUOUS) || (ctrl_data.xrayMode == XRAY_MODE_S_PULSE))
     {
-        xray_active = 0;
         if ((ctrl_data.enable[0] == 0) && (ctrl_data.enable[1] == 0))      // 若系统关闭，强制退出
         {
             xray_HV_enable_debug(0);
             xray_disable_ref_debug();
             set_hv_state(HVPS_SM_ID_TRAIN_END, 0);
             set_hv_state(HVPS_SM_ID_TRAIN_END, 1);
+            return;
         }
     }
     else
     {
-        xray_active = ctrl_data.xray_current - 1;
         if (ctrl_data.enable[xray_active] == 0)
         {
             config_disable_sw(xray_active);  // 关闭采样通道
@@ -90,96 +91,167 @@ void debug_task()
         }
     }
 
+    hvps_sm_state debug_source_state = get_hv_state(xray_active);
+    // Tick自增
+    if (debug_data.timmer_count >= 1)
+        debug_data.timmer_count++;
 
-    for (uint8_t i = xray_active; i < XRAY_NUMS; )
+    config_filament_ref_slop_debug(xray_active);
+
+    switch (debug_source_state)
     {
-        hvps_sm_state debug_source_state = get_hv_state(i);
-        // Tick自增
-        if (debug_data.timmer_count >= 1)
-            debug_data.timmer_count++;
-
-        config_filament_ref_slop_debug(i);
-
-        switch (debug_source_state)
+    case HVPS_SM_ID_TRAIN_PREPARE:
+        if (ctrl_data.interlock == 1)
         {
-        case HVPS_SM_ID_TRAIN_PREPARE:
-            if (ctrl_data.interlock == 1)
-            {
-                config_mcuLock_signal(1);
-            }
-            break;
-        case HVPS_SM_ID_TRAIN_RUN:
-            set_hv_state(HVPS_SM_ID_TRAIN_EXPOSURING, i);
+            config_mcuLock_signal(1);
+        }
+        break;
+    case HVPS_SM_ID_TRAIN_RUN:
+        set_hv_state(HVPS_SM_ID_TRAIN_EXPOSURING, xray_active);
+        debug_data.timmer_count = 1;
+        break;
+    case HVPS_SM_ID_TRAIN_EXPOSURING:
+        config_hvref_slope(xray_active);
+        xray_HV_enable_debug(1);
+        config_data.expo_count_total[xray_active]++;
+
+        if (debug_data.timmer_count >= debug_data.expoTime_expect[xray_active])
+        {
+            xray_HV_enable_debug(0);
+            set_hv_state(HVPS_SM_ID_TRAIN_COOLING, xray_active);
             debug_data.timmer_count = 1;
-            break;
-        case HVPS_SM_ID_TRAIN_EXPOSURING:
-            config_hvref_slope(i);
-            xray_HV_enable_debug(1);
-            config_data.expo_count_total[i]++;
+            last_switch_tick = HAL_GetTick();  // 记录曝光结束时间
+        }
 
-            if (debug_data.timmer_count >= debug_data.expoTime_expect[i])
+        xray_data.isCheckAvailable[xray_active] = (debug_data.timmer_count >= TIMER6_5_MILSECOND_CYCLES);
+        break;
+    case HVPS_SM_ID_TRAIN_COOLING:
+        // 冷却中，等待时间达到切换阈值
+        if (debug_data.timmer_count < debug_data.coolTime_expect[xray_active])
+            return;
+
+        debug_data.cycle_count[xray_active]++;
+
+        if (ctrl_data.xrayMode == XRAY_MODE_D_CONTINUOUS)
+        {
+            // 双源连续模式：每个源曝光一次后切换
+            if (xray_active == 0 && debug_data.cycle_count[xray_active] >= debug_data.expoCycle_perCurrent[0])  // A源曝光一次
             {
-                xray_HV_enable_debug(0);
-                set_hv_state(HVPS_SM_ID_TRAIN_COOLING, i);
-                debug_data.timmer_count = 1;
-                last_switch_tick = HAL_GetTick();  // 记录曝光结束时间
-            }
-
-            xray_data.isCheckAvailable[i] = (debug_data.timmer_count >= TIMER6_5_MILSECOND_CYCLES);
-            break;
-        case HVPS_SM_ID_TRAIN_COOLING:
-            // 冷却中，等待时间达到切换阈值
-            if (debug_data.timmer_count < debug_data.coolTime_expect[i])
-                return;
-
-            debug_data.cycle_count[i]++;
-
-            if (i && (debug_data.cycle_count[i] >= debug_data.expoCycle_perCurrent[i]) && ((ctrl_data.xrayMode == XRAY_MODE_D_CONTINUOUS) || (ctrl_data.xrayMode == XRAY_MODE_D_PULSE)))
-            {
-                //双源模式，B射源结束了，结束状态
-                parm_table[i].expo_count_total++;
-                parm_table[i].expo_times_total += config_data.expo_count_total[i] / 3000000;
-                cali_data.para_save_flag = 1;
-                set_hv_state(HVPS_SM_ID_TRAIN_END, i);
-            }
-            else if ((debug_data.cycle_count[i] >= debug_data.expoCycle_perCurrent[i]) && ((ctrl_data.xrayMode == XRAY_MODE_D_CONTINUOUS) || (ctrl_data.xrayMode == XRAY_MODE_D_PULSE)))
-            {
-                //双源模式，A源结束了，回归曝光状态
-                // 切换射源：需确保距离上次关闭 >8ms
-                if ((HAL_GetTick() - last_switch_tick >= 8) && (sw_changed == 0))
+                config_disable_sw(xray_active);
+                if (HAL_GetTick() - last_switch_tick >= 8)// 切B源
                 {
-                    config_disable_sw(i);
-                    config_enable_sw((i == 0) ? 1 : 0);
+                    parm_table[xray_active].expo_count_total++;
+                    parm_table[xray_active].expo_times_total += config_data.expo_count_total[xray_active] / 3000000;
+                    config_enable_sw(1);
                     last_switch_tick = HAL_GetTick();
-                    i ^= 1;
-                    set_hv_state(HVPS_SM_ID_TRAIN_EXPOSURING, i);
+                    ctrl_data.xray_current =  2 ;
+                    set_hv_state(HVPS_SM_ID_TRAIN_EXPOSURING, 1);
                     debug_data.timmer_count = 1;
                 }
             }
-            else  //单源模式
+            else if (xray_active == 1 && debug_data.cycle_count[xray_active] >= debug_data.expoCycle_perCurrent[1])  // B源曝光一次,结束
             {
-                parm_table[i].expo_count_total++;
-                parm_table[i].expo_times_total += config_data.expo_count_total[i] / 3000000;
+                // 曝光完成，进入结束状态
+                parm_table[xray_active].expo_count_total++;
+                parm_table[xray_active].expo_times_total += config_data.expo_count_total[xray_active] / 3000000;
                 cali_data.para_save_flag = 1;
-                set_hv_state(HVPS_SM_ID_TRAIN_END, i);
+                set_hv_state(HVPS_SM_ID_TRAIN_END, xray_active);
             }
-            break;
-        case HVPS_SM_ID_TRAIN_END:
-            config_disable_sw(1);
-            config_enable_sw(0);
-            xray_HV_enable_debug(0);
-            xray_disable_ref_debug();
-            set_hv_state(HVPS_SM_ID_IDLE, 0);
-            set_hv_state(HVPS_SM_ID_IDLE, 0);
-            break;
-        default:
-            break;
         }
-        // LED指示
-        xray_on_led((get_hv_state(0) == HVPS_SM_ID_TRAIN_EXPOSURING) || (get_hv_state(1) == HVPS_SM_ID_TRAIN_EXPOSURING));
+        else if (ctrl_data.xrayMode == XRAY_MODE_D_PULSE)
+        {
+            parm_table[xray_active].expo_count_total++;
+            parm_table[xray_active].expo_times_total += config_data.expo_count_total[xray_active] / 3000000;
+            // 双源脉冲模式，A源和B源交替曝光，直到达到最大曝光次数
+            if (xray_active == 0)
+            {
+                config_disable_sw(xray_active);
+                if (HAL_GetTick() - last_switch_tick >= 8)// 切B源
+                {
+                    config_enable_sw(1);
+                    last_switch_tick = HAL_GetTick();
+                    ctrl_data.xray_current =  2 ;
+                    set_hv_state(HVPS_SM_ID_TRAIN_EXPOSURING, 1);
+                    debug_data.timmer_count = 1;
+                }
+            }
+            else if (xray_active == 1 && debug_data.cycle_count[xray_active] < debug_data.expoCycle_perCurrent[1])
+            {
+                config_disable_sw(xray_active);
+                if (HAL_GetTick() - last_switch_tick >= 8)// 切A源
+                {
+                    config_enable_sw(0);
+                    last_switch_tick = HAL_GetTick();
+                    ctrl_data.xray_current =  1 ;
+                    set_hv_state(HVPS_SM_ID_TRAIN_EXPOSURING, 0);
+                    debug_data.timmer_count = 1;
+                }
+            }
+            else
+            {
+                cali_data.para_save_flag = 1;
+                set_hv_state(HVPS_SM_ID_TRAIN_END, xray_active);
+            }
+        }
+        else if (ctrl_data.xrayMode == XRAY_MODE_S_CONTINUOUS)
+        {
+            // 单源连续模式，选择A源或B源曝光一次，结束
+            parm_table[xray_active].expo_count_total++;
+            parm_table[xray_active].expo_times_total += config_data.expo_count_total[xray_active] / 3000000;
+            cali_data.para_save_flag = 1;
+            set_hv_state(HVPS_SM_ID_TRAIN_END, xray_active);
+        }
+        else if (ctrl_data.xrayMode == XRAY_MODE_S_PULSE)
+        {
+            parm_table[xray_active].expo_count_total++;
+            parm_table[xray_active].expo_times_total += config_data.expo_count_total[xray_active] / 3000000;
+            // 单源脉冲模式，选择A源或B源曝光，直到达到最大曝光次数
+            if (xray_active == 0 && debug_data.cycle_count[xray_active] < debug_data.expoCycle_perCurrent[0])
+            {
+                set_hv_state(HVPS_SM_ID_TRAIN_EXPOSURING, 0); // A源曝光
+                debug_data.timmer_count = 1;
+            }
+            else if (xray_active == 1 && debug_data.cycle_count[xray_active] < debug_data.expoCycle_perCurrent[1])
+            {
+                set_hv_state(HVPS_SM_ID_TRAIN_EXPOSURING, 1); // B源曝光
+                debug_data.timmer_count = 1;
+            }
+            else
+            {
+                cali_data.para_save_flag = 1;
+                set_hv_state(HVPS_SM_ID_TRAIN_END, xray_active);
+            }
+        }
+        break;
+    case HVPS_SM_ID_TRAIN_END:
 
+        xray_HV_enable_debug(0);
+        xray_disable_ref_debug();
+        if (xray_active == 1)
+        {
+            config_disable_sw(xray_active);
+            if (HAL_GetTick() - last_switch_tick >= 8)  //A源不用切
+            {
+                config_enable_sw(0);
+                last_switch_tick = HAL_GetTick();
+                set_hv_state(HVPS_SM_ID_IDLE, 0);
+                set_hv_state(HVPS_SM_ID_IDLE, 1);
+            }
+        }
+        else
+        {
+
+            set_hv_state(HVPS_SM_ID_IDLE, 0);
+            set_hv_state(HVPS_SM_ID_IDLE, 1);
+        }
+
+        break;
+    default:
+        break;
     }
-}
 
+    // LED指示
+    xray_on_led((get_hv_state(0) == HVPS_SM_ID_TRAIN_EXPOSURING) || (get_hv_state(1) == HVPS_SM_ID_TRAIN_EXPOSURING));
+}
 
 

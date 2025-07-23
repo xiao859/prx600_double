@@ -5,7 +5,7 @@
 #include <stdint.h>
 
 
-#define LC_CMD_NUM              28
+#define LC_CMD_NUM              26
 
 
 typedef struct
