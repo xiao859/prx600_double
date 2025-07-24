@@ -65,7 +65,7 @@ void config_filament_ref_slop_debug(uint8_t n)
 
 void debug_task()
 {
-    static uint8_t xray_active;            // 当前激活射源
+    static uint8_t xray_active;            // 当前射源
     static uint32_t last_switch_tick = 0;   // 上次切换采样开关时间戳
     xray_active = ctrl_data.xray_current - 1;
 

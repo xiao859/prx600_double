@@ -206,28 +206,31 @@ void UpdateVar_CheckFaultFast()
     return;
 }
 
-//void xray_fast_protect()
-//{
-//    /*长时间曝光*/
-//    if (config_data.expo_count > para_range.expo_time_limit) {
-//        mHVPS_Fault.FAULT_REG3.bit.EXPO1_OVERTIME = 1;
+void xray_fast_protect()
+{
+    /*长时间曝光*/
+    if (config_data.expo_count[0] > para_range.expo_time_limit) {
+        mHVPS_Fault.FAULT_REG3.bit.EXPO1_OVERTIME = 1;
+    }
+		if (config_data.expo_count[1] > para_range.expo_time_limit) {
+        mHVPS_Fault.FAULT_REG5.bit.EXPO2_OVERTIME = 1;
+    }
+
+//    if (!Is_Exposing() || !xray_data.isCheckAvailable) {
+//        return;
 //    }
 
-////    if (!Is_Exposing() || !xray_data.isCheckAvailable) {
-////        return;
-////    }
+    /*油箱直接报的故障*/
+    if (ctrl_data.hv_vol_fault || ctrl_data.hv_curr_fault) {
+        xray_data.hv_hardware_count++;
+        if (xray_data.hv_hardware_count > FAST_PROTECT_TIME_RANGE) mHVPS_Fault.FAULT_REG1.bit.HV_HARDW_FAULT = 1;
+    } else {
+        xray_data.hv_hardware_count = 0;
+    }
 
-//    /* ÓÍÏäÖ±½Ó±¨¹ýÀ´µÄ¹ÊÕÏ */
-//    if (ctrl_data.hv_vol_fault || ctrl_data.hv_curr_fault) {
-//        xray_data.hv_hardware_count++;
-//        if (xray_data.hv_hardware_count > FAST_PROTECT_TIME_RANGE) mHVPS_Fault.FAULT_REG1.bit.HV_HARDW_FAULT = 1;
-//    } else {
-//        xray_data.hv_hardware_count = 0;
-//    }
-
-//    /* ¹ÜµçÑ¹ */
-//    float tube_vol_p = sampled_data.tube_vol_p_value * 2;
-//    float tube_vol_n = sampled_data.tube_vol_n_value * 2;
+    /*管电压*/
+    float tube_vol_p = sampled_data.tube_vol_p_value * 2;
+    float tube_vol_n = sampled_data.tube_vol_n_value * 2;
 
 //    /* ¹ýÑ¹ÅÐ¶Ï */
 //    if ((tube_vol_p > para_range.tube_vol_max_protected) ||
@@ -322,7 +325,7 @@ void UpdateVar_CheckFaultFast()
 //    }
 
 //    return;
-//}
+}
 
 void transform_adc_values()
 {
@@ -331,9 +334,9 @@ void transform_adc_values()
 
     sampled_data.filament_vol_value     = 0.00806f *  ((float)(adc_buffer2[2]));
     sampled_data.filament_curr_value    = 0.00806f *  ((float)(adc_buffer2[3]));
-		sampled_data.tube_vol_p_value       = 0.02579f *  ((float)(adc_buffer3[0])*1.08f);
-    sampled_data.tube_vol_n_value       = 0.02579f *  ((float)(adc_buffer3[1])*1.08f);
-    sampled_data.tube_curr_value        = 0.00645f *  ((float)(adc_buffer3[2]));
+		sampled_data.tube_vol_p_value       = 0.02579f *  ((float)(adc_buffer3[0])*1.04f);
+    sampled_data.tube_vol_n_value       = 0.02579f *  ((float)(adc_buffer3[1])*1.04f);
+    sampled_data.tube_curr_value        = 0.00645f *  ((float)(adc_buffer3[2])*1.04f);
     sampled_data.temp_oil_value         = ((float)(adc_buffer3[3]));
 
 	

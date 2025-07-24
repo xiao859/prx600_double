@@ -157,6 +157,7 @@ typedef union
     {
         uint16_t TRAIN1: 1;
         uint16_t TRAIN2: 1;
+				uint16_t EXPO2_OVERTIME: 1;
         uint16_t rsv: 13;
     }  bit;
 } HVPS_FAULT_GROUP5_REG;

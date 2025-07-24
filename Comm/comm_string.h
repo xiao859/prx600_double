@@ -14,6 +14,7 @@ typedef struct
     int  (*func_ptr)(volatile uint8_t *buff, char *p);
 } LC_Command_string;
 
+int set_enable(volatile uint8_t *buff, char *p);
 
 void registerFunc_init(void);
 void cmd_parser_string(void);

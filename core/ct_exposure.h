@@ -231,6 +231,8 @@ typedef struct
     uint32_t oil_strike_times;      /*油箱次数*/
 
     uint32_t isCheckAvailable[XRAY_NUMS];   /*管电压和管电流达到稳定后可以开始检测，稳定时间根据上升时间确定*/
+		
+		uint32_t hv_hardware_count;
 } xray_running_data;
 
 extern volatile xray_running_data xray_data;

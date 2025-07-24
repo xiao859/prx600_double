@@ -660,15 +660,12 @@ int set_hv_on(volatile uint8_t *buff, char *p)
     if (num == 0)
     {
         debug_tx3("HV_on");
-
+				HAL_GPIO_WritePin(GPIOA, GPIO_PIN_0, GPIO_PIN_SET);
         xray_HV_enable_debug(1);
         debug_data.timmer_count = 1;
     }
     else
         debug_tx3("HV_off");
-
-    xray_HV_enable_debug(0);
-    debug_data.timmer_count = 0;
 
     return 0;
 }
