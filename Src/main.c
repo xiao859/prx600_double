@@ -145,10 +145,17 @@ int main(void)
     //默认单源模式
     tmp_msg.data1 = HVPS_MODE_S_CONTINUOUS;
     send_message(SCI_MSG_SET_MODE, tmp_msg.data1, 0);
+		
 
     debug_tx3("123\n");
+		
+		 xray_HV_enable_debug(1);
+       HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_1, DAC_ALIGN_12B_R, 1241);
     while (1)
     {
+				ctrl_data.hv_vol_fault  = get_tube_vol_fault_pin();
+        ctrl_data.hv_curr_fault = get_tube_curr_fault_pin();
+
 //        HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_1, DAC_ALIGN_12B_R, 0);
 //        HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_2, DAC_ALIGN_12B_R, 0);
 //           __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_4, 0);
@@ -176,14 +183,14 @@ int main(void)
         {
             if ((get_tick_ms() - rely_time) > 2000)
             {
-                HAL_GPIO_WritePin(FILAMENT_A_EN_GPIO_Port, FILAMENT_A_EN_Pin, Calc_Gpio_State_P(1));
+                HAL_GPIO_WritePin(HV_RE_GPIO_Port, HV_RE_PIN, Calc_Gpio_State_P(1));
                 rely_state = 1;
             }
         }
         cmd_parser();
         cmd_parser_string();
 
-//          //  Protect_Check_Slow();      //慢速故障检查
+//        Protect_Check_Slow();      //慢速故障检查
 //            if ((get_hv_state(0) == HVPS_SM_ID_IDLE) && (get_hv_state(0) == HVPS_SM_ID_IDLE)&&( cali_data.para_save_flag == 1))
 //            {
 //                HAL_TIM_Base_Stop_IT(&htim6);
@@ -193,7 +200,7 @@ int main(void)
 
         if (ctrl_data.hv_vol_fault || ctrl_data.hv_curr_fault)
         {
-            config_reset_signal(1);
+//            config_reset_signal(1);
             falut_led(0);
         }
         else
@@ -252,6 +259,7 @@ void SystemClock_Config(void)
 /* USER CODE BEGIN 4 */
 void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 {
+
     /* USER CODE BEGIN Callback 0 */
     /* 1,TIM6 80kHz*/
     /* USER CODE END Callback 0 */
@@ -260,7 +268,25 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 //        ctrl_data.hv_vol_fault  = get_tube_vol_fault_pin();
 //        ctrl_data.hv_curr_fault = get_tube_curr_fault_pin();
 //        ctrl_data.interlock     = get_interLock_pin();
-
+//				static uint32_t gh=0;
+//				static uint8_t gh1=1;
+//				gh++;
+//				if(gh > 2500)
+//				{
+//				
+//					if(gh1==0){
+//						config_enable_sw(1); // 选取射源1采样
+//						config_disable_sw(0); // 关闭射源0采样
+//						gh1=1;
+//					}
+//					else
+//					{
+//					    config_enable_sw(0); // 选取射源0采样
+//							config_disable_sw(1); // 关闭射源1采样
+//						gh1=0;
+//					}
+//					gh=0;
+//				}
         transform_adc_values();
 //        if (Is_CTMode())
 //        {
@@ -270,14 +296,14 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 //            ctrl_data.enable[1] = get_enable_pin(1);
 //            ct_task();
 //        }
-        if (Is_CalibrateMode())
-        {
-            calibrate_task();
-        }
-        if (Is_DebugMode())
-        {
-            debug_task();
-        }
+//        if (Is_CalibrateMode())
+//        {
+//            calibrate_task();
+//        }
+//        if (Is_DebugMode())
+//        {
+//            debug_task();
+//        }
 
         // 更新状态变量及故障快速检测
         //   UpdateVar_CheckFaultFast();

@@ -213,7 +213,7 @@ int set_tube_vol_curr1(volatile uint8_t *buff, char *p)
     }
     else
     {
-        debug_tx3("A参数格式错误\n");
+        debug_tx3("A  error \n");
     }
 
     return 0;
@@ -245,7 +245,7 @@ int set_tube_vol_curr2(volatile uint8_t *buff, char *p)
     }
     else
     {
-        debug_tx3("B参数格式错误\n");
+        debug_tx3("B  error\n");
     }
 
     return 0;
@@ -405,7 +405,7 @@ int set_enable(volatile uint8_t *buff, char *p)
         config_enable_sw(1); // 选取射源1采样
         config_disable_sw(0); // 关闭射源0采样
 //      PWM
-        __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_4, 0);
+				HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_1, DAC_ALIGN_12B_R, 0);
         debug_tx3("B enable\n");
     }
     else if (num == 2)
@@ -419,10 +419,7 @@ int set_enable(volatile uint8_t *buff, char *p)
         config_enable_sw(0); // 选取射源0采样
         config_disable_sw(1); // 关闭射源1采样
         HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_1, DAC_ALIGN_12B_R, 0);
-        //PWM
-        __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_4, 0);
         debug_tx3("A&B enable\n\n");
-
     }
     else
     {
@@ -441,8 +438,8 @@ int set_ref_onoff(volatile uint8_t *buff, char *p)
 {
     set_hv_state(HVPS_SM_ID_TRAIN_EXPOSURING, 0);
     // debug_data.timmer_count = 0;
-//    xray_HV_enable_debug(1);
-    ctrl_data.enable[0]    = 1;
+    xray_HV_enable_debug(1);
+
     debug_data.timmer_count = 1;
 
     debug_tx3("exping\n");
@@ -491,7 +488,7 @@ int set_reset(volatile uint8_t *buff, char *p)
 {
     config_reset_signal(1);
 
-    debug_tx3("AB灯丝复位λ\n");
+    debug_tx3("fault reset\n");
 
     return 0;
 }
@@ -660,12 +657,22 @@ int set_hv_on(volatile uint8_t *buff, char *p)
     if (num == 0)
     {
         debug_tx3("HV_on");
-				HAL_GPIO_WritePin(GPIOA, GPIO_PIN_0, GPIO_PIN_SET);
+        ctrl_data.hv_vol_fault  = get_tube_vol_fault_pin();
+        ctrl_data.hv_curr_fault = get_tube_curr_fault_pin();
+        HAL_GPIO_WritePin(GPIOA, GPIO_PIN_0, GPIO_PIN_SET);
+        ctrl_data.hv_vol_fault  = get_tube_vol_fault_pin();
+        ctrl_data.hv_curr_fault = get_tube_curr_fault_pin();
         xray_HV_enable_debug(1);
+        HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_1, DAC_ALIGN_12B_R, 1241);
+
         debug_data.timmer_count = 1;
     }
     else
+    {
+        HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_1, DAC_ALIGN_12B_R, 0);
+        xray_HV_enable_debug(0);
         debug_tx3("HV_off");
+    }
 
     return 0;
 }
@@ -704,7 +711,7 @@ int init_para_table(volatile uint8_t *buff, char *p)
 
 int ray_source(volatile uint8_t *buff, char *p)
 {
-    volatile uint8_t *p_p = buff + 16;
+    volatile uint8_t *p_p = buff + 11;
     int num = 0;
 
     char *token = strtok((char *)p_p, " ");
@@ -720,11 +727,13 @@ int ray_source(volatile uint8_t *buff, char *p)
         // pid_Init(1.0);
         debug_tx3("A select");
     }
-    else
+    else if(num == 2)
     {
         ctrl_data.xray_current = 2;
         debug_tx3("B select");
     }
+		else
+			debug_tx3("error");
 
     return 0;
 }

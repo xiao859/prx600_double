@@ -22,9 +22,10 @@ volatile xray_debug_data debug_data;
 ///**/
 void xray_HV_enable_debug(uint16_t value)
 {
+    config_mcuLock_signal(value);
     config_HVEn_signal(value);      /*高压电源*/
     config_xrayOn_signal(value);    /*准备信号*/
-    config_mcuLock_signal(value);
+
 
     return;
 }
@@ -51,15 +52,20 @@ void config_filament_ref_slop_debug(uint8_t n)
             config_data.fila_ref_realtime[n] -= config_data.fila_ref_step[n];
     }
 
-    config_data.fila_ref_realtime[n] = MAX(MIN(config_data.fila_ref_realtime[n], config_data.fila_ref_target[n]), IDLE_FILAMENT_REF_DEBUG);
+
     if (n == 0)
     {
+        config_data.fila_ref_realtime[n] = MAX(MIN(config_data.fila_ref_realtime[n], config_data.fila_ref_target[n]), IDLE_FILAMENT_REF_DEBUG);
         uint32_t filament_ref = (uint32_t)floor(((config_data.fila_ref_realtime[n] / ADDA_FULL_SCALE_VIL_VALUE) * 4095));
 
         HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_2, DAC_ALIGN_12B_R, filament_ref);
     }
     else
-    {}
+    {
+			  config_data.fila_ref_realtime[n] = MAX(MIN(config_data.fila_ref_realtime[n], config_data.fila_ref_target[n]), IDLE_FILAMENT_REF_DEBUG);
+        uint32_t filament_ref = (uint32_t)floor(((config_data.fila_ref_realtime[n] / ADDA_FULL_SCALE_VIL_VALUE) * 2999));
+				__HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_4, filament_ref);
+    }
 }
 
 
@@ -67,8 +73,9 @@ void debug_task()
 {
     static uint8_t xray_active;            // 当前射源
     static uint32_t last_switch_tick = 0;   // 上次切换采样开关时间戳
-    xray_active = ctrl_data.xray_current - 1;
 
+
+    xray_active = ctrl_data.xray_current - 1;
     // 检查射线模式
     if ((ctrl_data.xrayMode == XRAY_MODE_D_CONTINUOUS) || (ctrl_data.xrayMode == XRAY_MODE_D_PULSE) ||
             (ctrl_data.xrayMode == XRAY_MODE_S_CONTINUOUS) || (ctrl_data.xrayMode == XRAY_MODE_S_PULSE))
@@ -86,15 +93,16 @@ void debug_task()
     {
         if (ctrl_data.enable[xray_active] == 0)
         {
-            config_disable_sw(xray_active);  // 关闭采样通道
+            // config_disable_sw(xray_active);  // 关闭采样通道
             xray_HV_enable_debug(0);
         }
     }
-
-    hvps_sm_state debug_source_state = get_hv_state(xray_active);
     // Tick自增
     if (debug_data.timmer_count >= 1)
         debug_data.timmer_count++;
+
+    hvps_sm_state debug_source_state = get_hv_state(xray_active);
+
 
     config_filament_ref_slop_debug(xray_active);
 
@@ -240,7 +248,6 @@ void debug_task()
         }
         else
         {
-
             set_hv_state(HVPS_SM_ID_IDLE, 0);
             set_hv_state(HVPS_SM_ID_IDLE, 1);
         }

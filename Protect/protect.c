@@ -209,10 +209,12 @@ void UpdateVar_CheckFaultFast()
 void xray_fast_protect()
 {
     /*长时间曝光*/
-    if (config_data.expo_count[0] > para_range.expo_time_limit) {
+    if (config_data.expo_count[0] > para_range.expo_time_limit)
+    {
         mHVPS_Fault.FAULT_REG3.bit.EXPO1_OVERTIME = 1;
     }
-		if (config_data.expo_count[1] > para_range.expo_time_limit) {
+    if (config_data.expo_count[1] > para_range.expo_time_limit)
+    {
         mHVPS_Fault.FAULT_REG5.bit.EXPO2_OVERTIME = 1;
     }
 
@@ -221,10 +223,13 @@ void xray_fast_protect()
 //    }
 
     /*油箱直接报的故障*/
-    if (ctrl_data.hv_vol_fault || ctrl_data.hv_curr_fault) {
+    if (ctrl_data.hv_vol_fault || ctrl_data.hv_curr_fault)
+    {
         xray_data.hv_hardware_count++;
         if (xray_data.hv_hardware_count > FAST_PROTECT_TIME_RANGE) mHVPS_Fault.FAULT_REG1.bit.HV_HARDW_FAULT = 1;
-    } else {
+    }
+    else
+    {
         xray_data.hv_hardware_count = 0;
     }
 
@@ -232,39 +237,47 @@ void xray_fast_protect()
     float tube_vol_p = sampled_data.tube_vol_p_value * 2;
     float tube_vol_n = sampled_data.tube_vol_n_value * 2;
 
-//    /* ¹ýÑ¹ÅÐ¶Ï */
-//    if ((tube_vol_p > para_range.tube_vol_max_protected) ||
-//        (tube_vol_n > para_range.tube_vol_max_protected)) {
-//        xray_data.tube_kv_overCount++;
-//        if (xray_data.tube_kv_overCount > FAST_PROTECT_TIME_RANGE) mHVPS_Fault.FAULT_REG2.bit.KV1_OVER = 1;
-//    } else {
-//        xray_data.tube_kv_overCount = 0;
-//    }
+    /*过压判断*/
+    if ((tube_vol_p > para_range.tube_vol_max_protected) ||
+            (tube_vol_n > para_range.tube_vol_max_protected))
+    {
+        xray_data.tube_kv_overCount++;
+        if (xray_data.tube_kv_overCount > FAST_PROTECT_TIME_RANGE)
+            mHVPS_Fault.FAULT_REG2.bit.KV1_OVER = 1;
+    }
+    else
+    {
+        xray_data.tube_kv_overCount = 0;
+    }
 
-//    float tube_vol_target = Is_CalibrateMode() ? CALI_HV_REF : (float)config_data.tube_vol;
+   float tube_vol_target = Is_CalibrateMode() ? CALI_HV_REF : (float)(float)config_data.tube_vol[ctrl_data.xray_current-1];
 
-//    /* Ç·Ñ¹£ºµøµ½Ä¿±ê-40kvÒÔÏÂ£¬³ÖÐø1ms */
-//    if ((tube_vol_p < para_range.tube_vol_min_protected) ||
-//        (tube_vol_n < para_range.tube_vol_min_protected) ||
-//        (tube_vol_p < tube_vol_target - 40) || (tube_vol_n < tube_vol_target - 40) ) {
-//        xray_data.tube_kv_underCount++;
-//        if (xray_data.tube_kv_underCount > FAST_PROTECT_TIME_RANGE) mHVPS_Fault.FAULT_REG2.bit.KV1_UNDER = 1;
-//    } else {
-//        xray_data.tube_kv_underCount = 0;
-//    }
+    /*欠压 持续1ms */
+    if ((tube_vol_p < para_range.tube_vol_min_protected) ||
+            (tube_vol_n < para_range.tube_vol_min_protected) ||
+            (tube_vol_p < tube_vol_target - 40) || (tube_vol_n < tube_vol_target - 40))
+    {
+        xray_data.tube_kv_underCount++;
+        if (xray_data.tube_kv_underCount > FAST_PROTECT_TIME_RANGE) mHVPS_Fault.FAULT_REG2.bit.KV1_UNDER = 1;
+    }
+    else
+    {
+        xray_data.tube_kv_underCount = 0;
+    }
 
-//    /* À­»¡£ºµøÁË20kvÒÔÉÏ£¬³ÖÐø1ms, Á¬Ðø4´Î */
-//    if ((tube_vol_p < tube_vol_target - 20) || (tube_vol_n < tube_vol_target - 20)) {
-//        xray_data.oil_strike_count++;
-//        if (xray_data.oil_strike_count > FAST_PROTECT_ONE_TIME_RANGE) {
-//            xray_data.oil_strike_count = 0;
-//            xray_data.oil_strike_times++;
-//        }
 
-//        if (xray_data.oil_strike_times >= STRIKE_TIEMS_RANGE) mHVPS_Fault.FAULT_REG4.bit.ARC1 = 1;
-//    } else {
-//        xray_data.oil_strike_count = 0;
-//    }
+    /*拉弧，跌到了20kv以下，持续1ms，持续4次*/
+    if ((tube_vol_p < tube_vol_target - 20) || (tube_vol_n < tube_vol_target - 20)) {
+        xray_data.oil_strike_count++;
+        if (xray_data.oil_strike_count > FAST_PROTECT_ONE_TIME_RANGE) {
+            xray_data.oil_strike_count = 0;
+            xray_data.oil_strike_times++;
+        }
+
+        if (xray_data.oil_strike_times >= STRIKE_TIEMS_RANGE) mHVPS_Fault.FAULT_REG4.bit.ARC1 = 1;
+    } else {
+        xray_data.oil_strike_count = 0;
+    }
 
 //    /*  Ë«±ß´ò»ð */
 //    if ((tube_vol_p < tube_vol_target - 40) && (tube_vol_n < tube_vol_target - 40)) {
@@ -329,15 +342,15 @@ void xray_fast_protect()
 
 void transform_adc_values()
 {
-    sampled_data.power_24v_value        = 0.01209f *  ((float)(adc_buffer2[0]));
+    sampled_data.power_24v_value        = 0.01209f * ((float)(adc_buffer2[0]));
     // sampled_data.temp_sink_value        = -0.04747f * ((float)(adc_buffer2[1])) + 122.59205f;
 
-    sampled_data.filament_vol_value     = 0.00806f *  ((float)(adc_buffer2[2]));
-    sampled_data.filament_curr_value    = 0.00806f *  ((float)(adc_buffer2[3]));
-		sampled_data.tube_vol_p_value       = 0.02579f *  ((float)(adc_buffer3[0])*1.04f);
-    sampled_data.tube_vol_n_value       = 0.02579f *  ((float)(adc_buffer3[1])*1.04f);
-    sampled_data.tube_curr_value        = 0.00645f *  ((float)(adc_buffer3[2])*1.04f);
+    sampled_data.filament_vol_value     = 0.00806f * ((float)(adc_buffer2[2]));
+    sampled_data.filament_curr_value    = 0.00806f * ((float)(adc_buffer2[3]));
+    sampled_data.tube_vol_p_value       = 0.02579f * ((float)(adc_buffer3[0]) * 1.04f);
+    sampled_data.tube_vol_n_value       = 0.02579f * ((float)(adc_buffer3[1]) * 1.04f);
+    sampled_data.tube_curr_value        = 0.00645f * ((float)(adc_buffer3[2]) * 1.04f);
     sampled_data.temp_oil_value         = ((float)(adc_buffer3[3]));
 
-	
+
 }

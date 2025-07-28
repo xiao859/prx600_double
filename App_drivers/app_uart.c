@@ -20,7 +20,7 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
 
 			  uart4.recv_len++;
         if (uart4.recv_byte == 0x0A) 
-					uart4.recv_complete  = 1;
+						uart4.recv_complete  = 1;
 
         if (uart4.uart_rx_cnt < USART_BUFFER_LEN)
         {
