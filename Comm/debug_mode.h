@@ -6,8 +6,8 @@
 #include "ct_exposure.h"
 
 
-#define IDLE_FILAMENT_REF_DEBUG       499
-
+#define IDLE_FILAMENT_REF_DEBUG   0.33    
+#define BIDLE_FILAMENT_REF_DEBUG       
 
 
 typedef struct {

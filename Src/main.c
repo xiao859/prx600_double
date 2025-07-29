@@ -288,18 +288,18 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 //					gh=0;
 //				}
         transform_adc_values();
-//        if (Is_CTMode())
-//        {
-//            ctrl_data.expo[0]   = get_expo_pin(0);
-//            ctrl_data.enable[0] = get_enable_pin(0);
-//                    ctrl_data.expo[1]   = get_expo_pin(1);
-//            ctrl_data.enable[1] = get_enable_pin(1);
-//            ct_task();
-//        }
-//        if (Is_CalibrateMode())
-//        {
-//            calibrate_task();
-//        }
+        if (Is_CTMode())
+        {
+            ctrl_data.expo[0]   = get_expo_pin(0);
+            ctrl_data.enable[0] = 1;
+            ctrl_data.expo[1]   = get_expo_pin(1);
+            ctrl_data.enable[1] = 1;
+            ct_task();
+        }
+        if (Is_CalibrateMode())
+        {
+            calibrate_task();
+        }
         if (Is_DebugMode())
         {
             debug_task();

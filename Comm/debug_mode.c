@@ -50,7 +50,7 @@ void config_filament_ref_slop_debug(uint8_t n)//到目标值时跳出
     }
     else
     {
-        if (config_data.fila_ref_realtime[n] > IDLE_FILAMENT_REF_DEBUG)
+        if (config_data.fila_ref_realtime[n] > (float)IDLE_FILAMENT_REF_DEBUG)
             config_data.fila_ref_realtime[n] -= config_data.fila_ref_step[n];
     }
 
@@ -64,7 +64,7 @@ void config_filament_ref_slop_debug(uint8_t n)//到目标值时跳出
     }
     else
     {
-        config_data.fila_ref_realtime[n] = MAX(MIN(config_data.fila_ref_realtime[n], config_data.fila_ref_target[n]), IDLE_FILAMENT_REF_DEBUG);
+        config_data.fila_ref_realtime[n] = MAX(MIN(config_data.fila_ref_realtime[n], config_data.fila_ref_target[n]), (float)IDLE_FILAMENT_REF_DEBUG);
         uint32_t filament_ref = (uint32_t)floor(((config_data.fila_ref_realtime[n] / ADDA_FULL_SCALE_VIL_VALUE) * 2999));
         __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_4, filament_ref);
     }
@@ -77,6 +77,7 @@ void debug_task()
     static uint32_t last_switch_tick = 0;   // 上次切换采样开关时间戳
     static uint32_t last_exp_tick = 0;
     static uint8_t switching = 0;
+    static uint32_t count = 0;
 
     xray_active = ctrl_data.xray_current - 1;
     // 检查射线模式
@@ -145,7 +146,8 @@ void debug_task()
         // 冷却中，等待时间达到切换阈值
         if (debug_data.timmer_count < debug_data.coolTime_expect[xray_active])
             return;
-
+        if (count >= 1)
+            count++;
         if (ctrl_data.xrayMode == XRAY_MODE_D_CONTINUOUS)
         {
             // 双源连续模式：每个源曝光一次后切换
@@ -153,24 +155,33 @@ void debug_task()
             {
                 if (HAL_GetTick() - last_exp_tick >= 9)// 切B源
                 {
-
                     if (switching == 0)
                     {
                         config_disable_sw(xray_active);
-                        last_switch_tick = HAL_GetTick();
+//                        last_switch_tick = HAL_GetTick();
                         switching = 1;
+                        count = 1;
                     }
-                    if (HAL_GetTick() - last_switch_tick >= 1)
+
+                    if (count >= 50)//uint32_t tuck = HAL_GetTick();tuck - last_switch_tick >= 1
                     {
-                        parm_table[xray_active].expo_count_total++;
-                        parm_table[xray_active].expo_times_total += config_data.expo_count_total[xray_active] / 3000000;
-                        config_data.expo_count_total[xray_active] = 0;
-                        config_enable_sw(1);
-                        last_switch_tick = HAL_GetTick();
-                        switching = 0;
-                        ctrl_data.xray_current =  2 ;
-                        set_hv_state(HVPS_SM_ID_TRAIN_EXPOSURING, 1);
-                        debug_data.timmer_count = 1;
+                        if (switching == 1)
+                        {
+                            config_enable_sw(1);
+                            count = 1; //last_switch_tick = HAL_GetTick();
+                            switching = 2;
+                        }
+                        if ((count >= 50) && (switching == 2))//HAL_GetTick() - last_switch_tick >= 1
+                        {
+                            count = 0;
+                            parm_table[xray_active].expo_count_total++;
+                            parm_table[xray_active].expo_times_total += config_data.expo_count_total[xray_active] / 3000000;
+                            config_data.expo_count_total[xray_active] = 0;
+                            switching = 0;
+                            ctrl_data.xray_current =  2 ;
+                            set_hv_state(HVPS_SM_ID_TRAIN_EXPOSURING, 1);
+                            debug_data.timmer_count = 1;
+                        }
                     }
                 }
             }
@@ -182,10 +193,10 @@ void debug_task()
                     if (switching == 0)
                     {
                         config_disable_sw(xray_active);
-                        last_switch_tick = HAL_GetTick();
+                        count = 1;//last_switch_tick = HAL_GetTick();
                         switching = 1;
                     }
-                    if (HAL_GetTick() - last_switch_tick >= 1)
+                    if (count>= 50)
                     {
                         // 曝光完成，进入结束状态
                         parm_table[xray_active].expo_count_total++;
@@ -194,38 +205,38 @@ void debug_task()
                         cali_data.para_save_flag = 1;
                         set_hv_state(HVPS_SM_ID_TRAIN_END, xray_active);
                         config_enable_sw(0);
-                        last_switch_tick = HAL_GetTick();
                         switching = 0;
-                        last_switch_tick = HAL_GetTick();
+											count=0;
                     }
                 }
             }
         }
         else if (ctrl_data.xrayMode == XRAY_MODE_D_PULSE)
         {
-
+            if (count > 0)
+                count++;
             // 双源脉冲模式，A源和B源交替曝光，直到达到最大曝光次数
             if (xray_active == 0)
             {
-
                 if (HAL_GetTick() - last_exp_tick >= 9)// 切B源
                 {
 
                     if (switching == 0)
                     {
                         config_disable_sw(xray_active);
-                        last_switch_tick = HAL_GetTick();
+                        count = 1; //last_switch_tick = HAL_GetTick();
                         switching = 1;
                     }
-                    if (HAL_GetTick() - last_switch_tick >= 1)
+
+                    if (count >= 50)//uint32_t tuck = HAL_GetTick();tuck - last_switch_tick >= 1
                     {
                         if (switching == 1)
                         {
                             config_enable_sw(1);
-                            last_switch_tick = HAL_GetTick();
+                            count = 1; //last_switch_tick = HAL_GetTick();
                             switching = 2;
                         }
-                        if ((HAL_GetTick() - last_switch_tick >= 1) && (switching == 2))
+                        if ((count >= 50) && (switching == 2))//HAL_GetTick() - last_switch_tick >= 1
                         {
                             ctrl_data.xray_current =  2 ;
                             set_hv_state(HVPS_SM_ID_TRAIN_EXPOSURING, 1);
@@ -234,6 +245,7 @@ void debug_task()
                             parm_table[xray_active].expo_count_total++;
                             parm_table[xray_active].expo_times_total += config_data.expo_count_total[xray_active] / 3000000;
                             config_data.expo_count_total[xray_active] = 0;
+                            count = 0;
                         }
                     }
                 }
@@ -246,24 +258,24 @@ void debug_task()
                     if (switching == 0)
                     {
                         config_disable_sw(1);
-                        last_switch_tick = HAL_GetTick();
+                        count = 1; //last_switch_tick = HAL_GetTick();
                         switching = 1;
                     }
-                    if (HAL_GetTick() - last_switch_tick >= 1)
+                    if (count >= 50)//HAL_GetTick() - last_switch_tick >= 1
                     {
                         if (switching == 1)
                         {
                             config_enable_sw(0);
-                            last_switch_tick = HAL_GetTick();
+                            count = 1; //last_switch_tick = HAL_GetTick();
                             switching = 2;
                         }
-                        if ((HAL_GetTick() - last_switch_tick >= 1) && (switching == 2))
+                        if ((count >= 50) && (switching == 2))//HAL_GetTick() - last_switch_tick >= 1
                         {
                             switching = 0;
                             debug_data.cycle_count[xray_active]++;
                             ctrl_data.xray_current =  1 ;
                             set_hv_state(HVPS_SM_ID_TRAIN_EXPOSURING, 0);
-
+                            count = 0;
                             debug_data.timmer_count = 1;
                             parm_table[xray_active].expo_count_total++;
                             parm_table[xray_active].expo_times_total += config_data.expo_count_total[xray_active] / 3000000;
@@ -277,20 +289,21 @@ void debug_task()
                 if (switching == 0)
                 {
                     config_disable_sw(1);
-                    last_switch_tick = HAL_GetTick();
+                    count = 1; //last_switch_tick = HAL_GetTick();
                     switching = 1;
                 }
-                if (HAL_GetTick() - last_switch_tick >= 1)
+                if (count >= 50)//HAL_GetTick() - last_switch_tick >= 1
                 {
                     if (switching == 1)
                     {
                         config_enable_sw(0);
-                        last_switch_tick = HAL_GetTick();
+                        count = 1; //last_switch_tick = HAL_GetTick();
                         switching = 2;
                     }
-                    if ((HAL_GetTick() - last_switch_tick >= 1) && (switching == 2))
+                    if ((count >= 50) && (switching == 2))//HAL_GetTick() - last_switch_tick >= 1
                     {
                         switching = 0;
+                        count = 0;
                         debug_data.cycle_count[xray_active]++;
                         debug_data.cycle_count[0] = 0;
                         debug_data.cycle_count[1] = 0;
@@ -339,26 +352,29 @@ void debug_task()
         }
         break;
     case HVPS_SM_ID_TRAIN_END:
-
+//        if (count >= 1)
+//           
         xray_HV_enable_debug(0);
+				//count=1; 
+		count++;
         xray_disable_ref_debug();
         config_filamentOn_signal(0, 0);
         config_filamentOn_signal(0, 1);
         ctrl_data.interlock = 0;
         ctrl_data.enable[0] = 0;
         ctrl_data.enable[0] = 0;
-        if (xray_active == 1)
+        if ((xray_active == 1)&(count>=450))
         {
             config_disable_sw(xray_active);
-            if (HAL_GetTick() - last_switch_tick >= 8)  //A源不用切
+            if (count>=500) 
             {
+							count=0;
                 config_enable_sw(0);
-                last_switch_tick = HAL_GetTick();
                 set_hv_state(HVPS_SM_ID_IDLE, 0);
                 set_hv_state(HVPS_SM_ID_IDLE, 1);
             }
         }
-        else
+        else if(xray_active == 0)
         {
             set_hv_state(HVPS_SM_ID_IDLE, 0);
             set_hv_state(HVPS_SM_ID_IDLE, 1);

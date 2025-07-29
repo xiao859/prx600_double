@@ -389,7 +389,7 @@ int set_enable(volatile uint8_t *buff, char *p)
 //        debug_data.timmer_count = 1;
         config_disable_sw(1); // 关闭射源1采样
         config_enable_sw(0); // 选取射源0采样
-
+        set_hv_state(HVPS_SM_ID_TRAIN_DEBUG, 0);
         HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_1, DAC_ALIGN_12B_R, 0);
         debug_tx3("A enable\n");
     }
@@ -399,11 +399,11 @@ int set_enable(volatile uint8_t *buff, char *p)
         ctrl_data.enable[1] = 1;
         ctrl_data.enable[0] = 0;
 //        debug_data.timmer_count = 1;
-
+        set_hv_state(HVPS_SM_ID_TRAIN_DEBUG, 1);
         config_disable_sw(0); // 关闭射源0采样
         config_enable_sw(1); // 选取射源1采样
 //      PWM
-        HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_1, DAC_ALIGN_12B_R, 0);
+//        HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_1, DAC_ALIGN_12B_R, 0);
         debug_tx3("B enable\n");
     }
     else if (num == 2)
@@ -412,7 +412,7 @@ int set_enable(volatile uint8_t *buff, char *p)
         ctrl_data.enable[0] = 1;
         ctrl_data.enable[1] = 1;
 //        debug_data.timmer_count = 1;
-
+        set_hv_state(HVPS_SM_ID_TRAIN_DEBUG, 0);
         config_disable_sw(1); // 关闭射源1采样
         config_enable_sw(0); // 选取射源0采样
         HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_1, DAC_ALIGN_12B_R, 0);
@@ -593,8 +593,8 @@ int set_filament_ref_onoff2(volatile uint8_t *buff, char *p)
     // uint32_t a = (uint32_t)(num * 1.2409);  /* ((num / 1000) / 3.3) * 4095 */
 
     config_data.fila_ref_target[1] = (float)num / 1000;
-    config_data.fila_ref_realtime[1] = IDLE_FILAMENT_REF_DEBUG;
-    config_data.fila_ref_step[1] = (config_data.fila_ref_target[1] - IDLE_FILAMENT_REF_DEBUG) / (50 * 1);
+    config_data.fila_ref_realtime[1] = (float)IDLE_FILAMENT_REF_DEBUG;
+    config_data.fila_ref_step[1] = (config_data.fila_ref_target[1] - (float)IDLE_FILAMENT_REF_DEBUG) / (50 * 1);
 
     debug_tx3("B lam ref:%f,%f\n", config_data.fila_ref_target[1], config_data.fila_ref_step[1]);
 
