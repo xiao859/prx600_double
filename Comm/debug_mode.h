@@ -6,7 +6,7 @@
 #include "ct_exposure.h"
 
 
-#define IDLE_FILAMENT_REF_DEBUG       0
+#define IDLE_FILAMENT_REF_DEBUG       499
 
 
 
@@ -20,7 +20,7 @@ typedef struct {
 } xray_debug_data;
 extern volatile xray_debug_data debug_data;
 
-
+void config_filament_ref_slop_debug(uint8_t n);
 void debug_task(void);
 void xray_HV_enable_debug(uint16_t value);
 

@@ -11,6 +11,7 @@
 #include "app_fun.h"
 #include "ct_exposure.h"
 #include "calibrate.h"
+#include "debug_mode.h"
 
 
 
@@ -269,7 +270,7 @@ int set_expo_time1(volatile uint8_t *buff, char *p)
 
     if (num == 0)
     {
-        debug_tx3("A参数格式错误");
+        debug_tx3("A error");
         return 0;
     }
 
@@ -285,8 +286,7 @@ int set_expo_time1(volatile uint8_t *buff, char *p)
         debug_data.expoTime_expect[0] = num * 50000;
     }
 
-    debug_tx3("A pusre count:%d, exp time:%d, cooltime:%d\n",
-              debug_data.expoCycle_perCurrent[0], debug_data.expoTime_expect[0], debug_data.coolTime_expect[0]);
+    debug_tx3("A pusre count:%d, exp time:%d, cooltime:%d\n", debug_data.expoCycle_perCurrent[0], debug_data.expoTime_expect[0], debug_data.coolTime_expect[0]);
 
     return 0;
 }
@@ -309,7 +309,7 @@ int set_expo_time2(volatile uint8_t *buff, char *p)
 
     if (num == 0)
     {
-        debug_tx3("B参数格式错误");
+        debug_tx3("B error");
         return 0;
     }
 
@@ -383,48 +383,43 @@ int set_enable(volatile uint8_t *buff, char *p)
 
     if (num == 0)
     {
-        set_hv_state(HVPS_SM_ID_TRAIN_PREPARE, 0);
-        set_hv_state(HVPS_SM_ID_IDLE, 1);
         ctrl_data.interlock = 1;
         ctrl_data.enable[0] = 1;
         ctrl_data.enable[1] = 0;
-        debug_data.timmer_count = 1;
-        config_enable_sw(0); // 选取射源0采样
+//        debug_data.timmer_count = 1;
         config_disable_sw(1); // 关闭射源1采样
+        config_enable_sw(0); // 选取射源0采样
+
         HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_1, DAC_ALIGN_12B_R, 0);
         debug_tx3("A enable\n");
     }
     else if (num == 1)
     {
-        set_hv_state(HVPS_SM_ID_TRAIN_PREPARE, 1);
-        set_hv_state(HVPS_SM_ID_IDLE, 0);
         ctrl_data.interlock = 1;
         ctrl_data.enable[1] = 1;
         ctrl_data.enable[0] = 0;
-        debug_data.timmer_count = 1;
-        config_enable_sw(1); // 选取射源1采样
+//        debug_data.timmer_count = 1;
+
         config_disable_sw(0); // 关闭射源0采样
+        config_enable_sw(1); // 选取射源1采样
 //      PWM
-				HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_1, DAC_ALIGN_12B_R, 0);
+        HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_1, DAC_ALIGN_12B_R, 0);
         debug_tx3("B enable\n");
     }
     else if (num == 2)
     {
-        set_hv_state(HVPS_SM_ID_TRAIN_PREPARE, 0);
-        set_hv_state(HVPS_SM_ID_TRAIN_PREPARE, 1);
         ctrl_data.interlock = 1;
         ctrl_data.enable[0] = 1;
         ctrl_data.enable[1] = 1;
-        debug_data.timmer_count = 1;
-        config_enable_sw(0); // 选取射源0采样
+//        debug_data.timmer_count = 1;
+
         config_disable_sw(1); // 关闭射源1采样
+        config_enable_sw(0); // 选取射源0采样
         HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_1, DAC_ALIGN_12B_R, 0);
         debug_tx3("A&B enable\n\n");
     }
     else
     {
-        set_hv_state(HVPS_SM_ID_IDLE, 0);
-        set_hv_state(HVPS_SM_ID_IDLE, 1);
         ctrl_data.interlock = 0;
         ctrl_data.enable[0] = 0;
         ctrl_data.enable[0] = 0;
@@ -436,9 +431,9 @@ int set_enable(volatile uint8_t *buff, char *p)
 
 int set_ref_onoff(volatile uint8_t *buff, char *p)
 {
-    set_hv_state(HVPS_SM_ID_TRAIN_EXPOSURING, 0);
+    set_hv_state(HVPS_SM_ID_TRAIN_EXPOSURING, ctrl_data.xray_current - 1);
     // debug_data.timmer_count = 0;
-    xray_HV_enable_debug(1);
+    // xray_HV_enable_debug(1);
 
     debug_data.timmer_count = 1;
 
@@ -519,7 +514,7 @@ int set_filament_onoff(volatile uint8_t *buff, char *p)
         config_filamentOn_signal(1, 1);
         ctrl_data.filament_on[1] = 0;
         //PWM
-        __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_4, 0);
+        __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_4, 499);
         debug_tx3("B lam on");
     }
     else if (num == 2)
@@ -530,7 +525,7 @@ int set_filament_onoff(volatile uint8_t *buff, char *p)
         ctrl_data.filament_on[1] = 0;
         //PWM
         HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_2, DAC_ALIGN_12B_R, 0);
-        __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_4, 0);
+        __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_4, 499);
         debug_tx3("A&B lam on");
     }
     else if (num == 3)
@@ -563,7 +558,6 @@ int set_filament_ref_onoff1(volatile uint8_t *buff, char *p)
     }
 
     ctrl_data.filament_on[0] = 1;
-    set_hv_state(HVPS_SM_ID_TRAIN_IDLE, 0);
     debug_data.timmer_count = 0;
 
     // uint32_t a = (uint32_t)(num * 1.2409);  /* ((num / 1000) / 3.3) * 4095 */
@@ -575,7 +569,7 @@ int set_filament_ref_onoff1(volatile uint8_t *buff, char *p)
     debug_tx3("A lam ref:%f,%f\n", config_data.fila_ref_target[0], config_data.fila_ref_step[0]);
 
     // HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_2, DAC_ALIGN_12B_R, a);
-
+    config_filament_ref_slop_debug(0);
     return 0;
 }
 
@@ -593,7 +587,7 @@ int set_filament_ref_onoff2(volatile uint8_t *buff, char *p)
     }
 
     ctrl_data.filament_on[1] = 1;
-    set_hv_state(HVPS_SM_ID_TRAIN_IDLE, 1);
+//   set_hv_state(HVPS_SM_ID_TRAIN_IDLE, 1);
     debug_data.timmer_count = 0;
 
     // uint32_t a = (uint32_t)(num * 1.2409);  /* ((num / 1000) / 3.3) * 4095 */
@@ -604,6 +598,8 @@ int set_filament_ref_onoff2(volatile uint8_t *buff, char *p)
 
     debug_tx3("B lam ref:%f,%f\n", config_data.fila_ref_target[1], config_data.fila_ref_step[1]);
 
+
+    config_filament_ref_slop_debug(1);
     // HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_2, DAC_ALIGN_12B_R, a);
 
     return 0;
@@ -727,13 +723,13 @@ int ray_source(volatile uint8_t *buff, char *p)
         // pid_Init(1.0);
         debug_tx3("A select");
     }
-    else if(num == 2)
+    else if (num == 2)
     {
         ctrl_data.xray_current = 2;
         debug_tx3("B select");
     }
-		else
-			debug_tx3("error");
+    else
+        debug_tx3("error");
 
     return 0;
 }
