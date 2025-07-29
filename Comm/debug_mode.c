@@ -76,7 +76,7 @@ void debug_task()
     static uint8_t xray_active;            // 当前射源
     static uint32_t last_switch_tick = 0;   // 上次切换采样开关时间戳
     static uint32_t last_exp_tick = 0;
-
+    static uint8_t switching = 0;
 
     xray_active = ctrl_data.xray_current - 1;
     // 检查射线模式
@@ -131,10 +131,10 @@ void debug_task()
             if (debug_data.timmer_count >= debug_data.expoTime_expect[xray_active])
             {
                 xray_HV_enable_debug(0);
-                last_exp_tick = HAL_GetTick();
+                last_exp_tick = HAL_GetTick(); // 记录曝光结束时间
                 set_hv_state(HVPS_SM_ID_TRAIN_COOLING, xray_active);
                 debug_data.timmer_count = 1;
-                last_switch_tick = HAL_GetTick();  // 记录曝光结束时间
+                // last_switch_tick = HAL_GetTick();
             }
 
             xray_data.isCheckAvailable[xray_active] = (debug_data.timmer_count >= TIMER6_5_MILSECOND_CYCLES);
@@ -151,68 +151,156 @@ void debug_task()
             // 双源连续模式：每个源曝光一次后切换
             if (xray_active == 0)   // A源曝光一次   && debug_data.cycle_count[xray_active] >= debug_data.expoCycle_perCurrent[0]
             {
-                config_disable_sw(xray_active);
-                if (HAL_GetTick() - last_switch_tick >= 8)// 切B源
+                if (HAL_GetTick() - last_exp_tick >= 9)// 切B源
                 {
-                    parm_table[xray_active].expo_count_total++;
-                    parm_table[xray_active].expo_times_total += config_data.expo_count_total[xray_active] / 3000000;
-                    config_data.expo_count_total[xray_active] = 0;
-                    config_enable_sw(1);
-                    last_switch_tick = HAL_GetTick();
-                    ctrl_data.xray_current =  2 ;
-                    set_hv_state(HVPS_SM_ID_TRAIN_EXPOSURING, 1);
-                    debug_data.timmer_count = 1;
+
+                    if (switching == 0)
+                    {
+                        config_disable_sw(xray_active);
+                        last_switch_tick = HAL_GetTick();
+                        switching = 1;
+                    }
+                    if (HAL_GetTick() - last_switch_tick >= 1)
+                    {
+                        parm_table[xray_active].expo_count_total++;
+                        parm_table[xray_active].expo_times_total += config_data.expo_count_total[xray_active] / 3000000;
+                        config_data.expo_count_total[xray_active] = 0;
+                        config_enable_sw(1);
+                        last_switch_tick = HAL_GetTick();
+                        switching = 0;
+                        ctrl_data.xray_current =  2 ;
+                        set_hv_state(HVPS_SM_ID_TRAIN_EXPOSURING, 1);
+                        debug_data.timmer_count = 1;
+                    }
                 }
             }
             else if (xray_active == 1)  // B源曝光一次,结束 && debug_data.cycle_count[xray_active] >= debug_data.expoCycle_perCurrent[1]
             {
-                // 曝光完成，进入结束状态
-                parm_table[xray_active].expo_count_total++;
-                parm_table[xray_active].expo_times_total += config_data.expo_count_total[xray_active] / 3000000;
-                config_data.expo_count_total[xray_active] = 0;
-                cali_data.para_save_flag = 1;
-                set_hv_state(HVPS_SM_ID_TRAIN_END, xray_active);
+                if (HAL_GetTick() - last_exp_tick >= 9)// 切B源
+                {
+
+                    if (switching == 0)
+                    {
+                        config_disable_sw(xray_active);
+                        last_switch_tick = HAL_GetTick();
+                        switching = 1;
+                    }
+                    if (HAL_GetTick() - last_switch_tick >= 1)
+                    {
+                        // 曝光完成，进入结束状态
+                        parm_table[xray_active].expo_count_total++;
+                        parm_table[xray_active].expo_times_total += config_data.expo_count_total[xray_active] / 3000000;
+                        config_data.expo_count_total[xray_active] = 0;
+                        cali_data.para_save_flag = 1;
+                        set_hv_state(HVPS_SM_ID_TRAIN_END, xray_active);
+                        config_enable_sw(0);
+                        last_switch_tick = HAL_GetTick();
+                        switching = 0;
+                        last_switch_tick = HAL_GetTick();
+                    }
+                }
             }
         }
         else if (ctrl_data.xrayMode == XRAY_MODE_D_PULSE)
         {
-            parm_table[xray_active].expo_count_total++;
-            parm_table[xray_active].expo_times_total += config_data.expo_count_total[xray_active] / 3000000;
-            config_data.expo_count_total[xray_active] = 0;
+
             // 双源脉冲模式，A源和B源交替曝光，直到达到最大曝光次数
             if (xray_active == 0)
             {
-                config_disable_sw(xray_active);
-                if (HAL_GetTick() - last_switch_tick >= 8)// 切B源
+
+                if (HAL_GetTick() - last_exp_tick >= 9)// 切B源
                 {
 
-                    config_enable_sw(1);
-
-                    ctrl_data.xray_current =  2 ;
-                    set_hv_state(HVPS_SM_ID_TRAIN_EXPOSURING, 1);
-                    last_switch_tick = HAL_GetTick();
-                    debug_data.timmer_count = 1;
+                    if (switching == 0)
+                    {
+                        config_disable_sw(xray_active);
+                        last_switch_tick = HAL_GetTick();
+                        switching = 1;
+                    }
+                    if (HAL_GetTick() - last_switch_tick >= 1)
+                    {
+                        if (switching == 1)
+                        {
+                            config_enable_sw(1);
+                            last_switch_tick = HAL_GetTick();
+                            switching = 2;
+                        }
+                        if ((HAL_GetTick() - last_switch_tick >= 1) && (switching == 2))
+                        {
+                            ctrl_data.xray_current =  2 ;
+                            set_hv_state(HVPS_SM_ID_TRAIN_EXPOSURING, 1);
+                            switching = 0;
+                            debug_data.timmer_count = 1;
+                            parm_table[xray_active].expo_count_total++;
+                            parm_table[xray_active].expo_times_total += config_data.expo_count_total[xray_active] / 3000000;
+                            config_data.expo_count_total[xray_active] = 0;
+                        }
+                    }
                 }
             }
             else if (xray_active == 1 && debug_data.cycle_count[xray_active] < debug_data.expoCycle_perCurrent[1])
             {
-                config_disable_sw(xray_active);
-                if (HAL_GetTick() - last_switch_tick >= 8)// 切A源
+
+                if (HAL_GetTick() - last_exp_tick >= 9)// 切A源
                 {
-                    debug_data.cycle_count[xray_active]++;
-                    config_enable_sw(0);
-                    ctrl_data.xray_current =  1 ;
-                    set_hv_state(HVPS_SM_ID_TRAIN_EXPOSURING, 0);
-                    last_switch_tick = HAL_GetTick();
-                    debug_data.timmer_count = 1;
+                    if (switching == 0)
+                    {
+                        config_disable_sw(1);
+                        last_switch_tick = HAL_GetTick();
+                        switching = 1;
+                    }
+                    if (HAL_GetTick() - last_switch_tick >= 1)
+                    {
+                        if (switching == 1)
+                        {
+                            config_enable_sw(0);
+                            last_switch_tick = HAL_GetTick();
+                            switching = 2;
+                        }
+                        if ((HAL_GetTick() - last_switch_tick >= 1) && (switching == 2))
+                        {
+                            switching = 0;
+                            debug_data.cycle_count[xray_active]++;
+                            ctrl_data.xray_current =  1 ;
+                            set_hv_state(HVPS_SM_ID_TRAIN_EXPOSURING, 0);
+
+                            debug_data.timmer_count = 1;
+                            parm_table[xray_active].expo_count_total++;
+                            parm_table[xray_active].expo_times_total += config_data.expo_count_total[xray_active] / 3000000;
+                            config_data.expo_count_total[xray_active] = 0;
+                        }
+                    }
                 }
             }
             else
             {
-                debug_data.cycle_count[0] = 0;
-                debug_data.cycle_count[1] = 0;
-                cali_data.para_save_flag = 1;
-                set_hv_state(HVPS_SM_ID_TRAIN_END, xray_active);
+                if (switching == 0)
+                {
+                    config_disable_sw(1);
+                    last_switch_tick = HAL_GetTick();
+                    switching = 1;
+                }
+                if (HAL_GetTick() - last_switch_tick >= 1)
+                {
+                    if (switching == 1)
+                    {
+                        config_enable_sw(0);
+                        last_switch_tick = HAL_GetTick();
+                        switching = 2;
+                    }
+                    if ((HAL_GetTick() - last_switch_tick >= 1) && (switching == 2))
+                    {
+                        switching = 0;
+                        debug_data.cycle_count[xray_active]++;
+                        debug_data.cycle_count[0] = 0;
+                        debug_data.cycle_count[1] = 0;
+                        cali_data.para_save_flag = 1;
+                        set_hv_state(HVPS_SM_ID_TRAIN_END, xray_active);
+                        parm_table[xray_active].expo_count_total++;
+                        parm_table[xray_active].expo_times_total += config_data.expo_count_total[xray_active] / 3000000;
+                        config_data.expo_count_total[xray_active] = 0;
+                    }
+                }
             }
         }
         else if (ctrl_data.xrayMode == XRAY_MODE_S_CONTINUOUS)
@@ -281,7 +369,7 @@ void debug_task()
         break;
     }
 
-    // LED指示
+// LED指示
     xray_on_led((get_hv_state(0) == HVPS_SM_ID_TRAIN_EXPOSURING) || (get_hv_state(1) == HVPS_SM_ID_TRAIN_EXPOSURING));
 }
 
