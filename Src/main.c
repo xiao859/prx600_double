@@ -122,7 +122,7 @@ int main(void)
     uint8_t rely_state = 0;
     uint32_t rely_time = 0;
     HAL_TIM_Base_Start_IT(&htim2);
-//    bsp_read_info();
+    bsp_read_info();
 
     registerFunc_init();
 
@@ -140,6 +140,15 @@ int main(void)
     HAL_ADC_Start_DMA(&hadc2, (uint32_t*)adc_buffer2, ADC_2_CHANNEL_NUM * ADC_SAMPLE_CYCLE_NUM);
     HAL_ADC_Start_DMA(&hadc3, (uint32_t*)adc_buffer3, ADC_3_CHANNEL_NUM * ADC_SAMPLE_CYCLE_NUM);
 
+//		uint8_t arr[5]={1,2,3,4,5};
+//		uint8_t arr1[5]={0};
+//		bsp_read_buffer(arr1,0,5);
+//		bsp_erase_sector(0);
+//		bsp_write_buffer(arr,0,5);
+//		bsp_read_buffer(arr1,0,5);
+//		bsp_erase_sector(0);
+//		bsp_read_buffer(arr1,0,5);
+//		bsp_erase_sector(0);
 //    flash_table_init();
 
     //默认单源模式
@@ -164,11 +173,11 @@ int main(void)
 //        HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_1, DAC_ALIGN_12B_R, 1700);
 //        HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_1, DAC_ALIGN_12B_R, 0);
 
-//        HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_2, DAC_ALIGN_12B_R, 1700);
+//        HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_2, DAC_ALIGN_12B_R, 1241);
 ////          HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_2, DAC_ALIGN_12B_R, 1100);
 //        HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_2, DAC_ALIGN_12B_R, 0);
 //////
-//         __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_4, 999);
+//         __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_4, 801);
 //                   __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_4, 0);
 ////
 //        uint32_t temp1 = get_tick_ms();
@@ -288,25 +297,27 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 //					gh=0;
 //				}
         transform_adc_values();
-        if (Is_CTMode())
-        {
-            ctrl_data.expo[0]   = get_expo_pin(0);
-            ctrl_data.enable[0] = 1;
-            ctrl_data.expo[1]   = get_expo_pin(1);
-            ctrl_data.enable[1] = 1;
-            ct_task();
-        }
-        if (Is_CalibrateMode())
-        {
-            calibrate_task();
-        }
+//				 config_filament_ref_slop_debug(0);
+//				  config_filament_ref_slop_debug(1);
+//        if (Is_CTMode())
+//        {
+//            ctrl_data.expo[0]   = get_expo_pin(0);
+//            ctrl_data.enable[0] = 1;
+//            ctrl_data.expo[1]   = get_expo_pin(1);
+//            ctrl_data.enable[1] = 1;
+//            ct_task();
+//        }
+//        if (Is_CalibrateMode())
+//        {
+//            calibrate_task();
+//        }
         if (Is_DebugMode())
         {
             debug_task();
         }
 
         // 更新状态变量及故障快速检测
-        //   UpdateVar_CheckFaultFast();
+         UpdateVar_CheckFaultFast();
     }
 
     /* USER CODE END Callback 1 */
