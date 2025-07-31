@@ -122,7 +122,7 @@ int main(void)
     uint8_t rely_state = 0;
     uint32_t rely_time = 0;
     HAL_TIM_Base_Start_IT(&htim2);
-    bsp_read_info();
+//    bsp_read_info();
 
     registerFunc_init();
 
@@ -152,9 +152,10 @@ int main(void)
 //    flash_table_init();
 
     //默认单源模式
+		ctrl_data.xray_current = 1;
     tmp_msg.data1 = HVPS_MODE_S_CONTINUOUS;
     send_message(SCI_MSG_SET_MODE, tmp_msg.data1, 0);
-		
+//		uint16_t pwm=0;
 
     debug_tx3("123\n");
 		
@@ -162,12 +163,18 @@ int main(void)
 //       HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_1, DAC_ALIGN_12B_R, 1241);
     while (1)
     {
-				ctrl_data.hv_vol_fault  = get_tube_vol_fault_pin();
-        ctrl_data.hv_curr_fault = get_tube_curr_fault_pin();
+//				ctrl_data.hv_vol_fault  = get_tube_vol_fault_pin();
+//        ctrl_data.hv_curr_fault = get_tube_curr_fault_pin();
+			
+//			    HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_2, DAC_ALIGN_12B_R, 1241);
+			 config_filamentOn_signal(1, 0);
+				config_filamentOn_signal(1, 1);
+//			
+//			 config_filamentOn_signal(0, 0);
 
 //        HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_1, DAC_ALIGN_12B_R, 0);
 //        HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_2, DAC_ALIGN_12B_R, 0);
-//           __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_4, 0);
+//           __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_4, pwm);
 //
 
 //        HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_1, DAC_ALIGN_12B_R, 1700);
@@ -276,6 +283,11 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
     {
 //        ctrl_data.hv_vol_fault  = get_tube_vol_fault_pin();
 //        ctrl_data.hv_curr_fault = get_tube_curr_fault_pin();
+//			if((ctrl_data.hv_vol_fault = 1) ||  (ctrl_data.hv_curr_fault == 1))
+//			{
+//			uint8_t a=1;
+//				a++;
+//			}
 //        ctrl_data.interlock     = get_interLock_pin();
 //				static uint32_t gh=0;
 //				static uint8_t gh1=1;

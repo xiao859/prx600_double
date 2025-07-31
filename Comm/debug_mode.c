@@ -41,66 +41,66 @@ void xray_disable_ref_debug()
 
 void config_filament_ref_slop_debug(uint8_t n)//到目标值时跳出
 {
-    if (config_data.fila_ref_target[n] == 0)
-        return;
-    if (ctrl_data.filament_on[n] == 1)
-    {
-        if (config_data.fila_ref_realtime[n] < config_data.fila_ref_target[n])
-            config_data.fila_ref_realtime[n] += config_data.fila_ref_step[n];
-    }
-    else
-    {
-        if (config_data.fila_ref_realtime[n] > (float)IDLE_FILAMENT_REF_DEBUG)
-            config_data.fila_ref_realtime[n] -= config_data.fila_ref_step[n];
-    }
+//    if (config_data.fila_ref_target[n] == 0)
+//        return;
+//    if (ctrl_data.filament_on[n] == 1)
+//    {
+//        if (config_data.fila_ref_realtime[n] < config_data.fila_ref_target[n])
+//            config_data.fila_ref_realtime[n] += config_data.fila_ref_step[n];
+//    }
+//    else
+//    {
+//        if (config_data.fila_ref_realtime[n] > (float)IDLE_FILAMENT_REF_DEBUG)
+//            config_data.fila_ref_realtime[n] -= config_data.fila_ref_step[n];
+//    }
 
 
-    if (n == 0)
-    {
-        config_data.fila_ref_realtime[n] = MAX(MIN(config_data.fila_ref_realtime[n], config_data.fila_ref_target[n]), IDLE_FILAMENT_REF_DEBUG);
-        uint32_t filament_ref = (uint32_t)floor(((config_data.fila_ref_realtime[n] / ADDA_FULL_SCALE_VIL_VALUE) * 4095));
+//    if (n == 0)
+//    {
+//        config_data.fila_ref_realtime[n] = MAX(MIN(config_data.fila_ref_realtime[n], config_data.fila_ref_target[n]), IDLE_FILAMENT_REF_DEBUG);
+//        uint32_t filament_ref = (uint32_t)floor(((config_data.fila_ref_realtime[n] / ADDA_FULL_SCALE_VIL_VALUE) * 4095));
 
-        HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_2, DAC_ALIGN_12B_R, filament_ref);
-    }
-    else
-    {
-        config_data.fila_ref_realtime[n] = MAX(MIN(config_data.fila_ref_realtime[n], config_data.fila_ref_target[n]), (float)IDLE_FILAMENT_REF_DEBUG);
-        uint32_t filament_ref = (uint32_t)floor(((config_data.fila_ref_realtime[n] / ADDA_FULL_SCALE_VIL_VALUE) * 2999));
-        __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_4, filament_ref);
-    }
+//        HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_2, DAC_ALIGN_12B_R, filament_ref);
+//    }
+//    else
+//    {
+//        config_data.fila_ref_realtime[n] = MAX(MIN(config_data.fila_ref_realtime[n], config_data.fila_ref_target[n]), (float)IDLE_FILAMENT_REF_DEBUG);
+//        uint32_t filament_ref = (uint32_t)floor(((config_data.fila_ref_realtime[n] / ADDA_FULL_SCALE_VIL_VALUE) * 2999));
+//        __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_4, filament_ref);
+//    }
 }
 
 
 void debug_task()
 {
     static uint8_t xray_active;            // 当前射源
-    static uint32_t last_switch_tick = 0;   // 上次切换采样开关时间戳
+//    static uint32_t last_switch_tick = 0;   // 上次切换采样开关时间戳
     static uint32_t last_exp_tick = 0;
     static uint8_t switching = 0;
     static uint32_t count = 0;
 
     xray_active = ctrl_data.xray_current - 1;
-    // 检查射线模式
-    if ((ctrl_data.xrayMode == XRAY_MODE_D_CONTINUOUS) || (ctrl_data.xrayMode == XRAY_MODE_D_PULSE) ||
-            (ctrl_data.xrayMode == XRAY_MODE_S_CONTINUOUS) || (ctrl_data.xrayMode == XRAY_MODE_S_PULSE))
-    {
-        if ((ctrl_data.enable[0] == 0) && (ctrl_data.enable[1] == 0))      // 若系统关闭，强制退出
-        {
-            xray_HV_enable_debug(0);
-            xray_disable_ref_debug();
-            set_hv_state(HVPS_SM_ID_TRAIN_END, 0);
-            set_hv_state(HVPS_SM_ID_TRAIN_END, 1);
-            return;
-        }
-    }
-    else
-    {
-        if (ctrl_data.enable[xray_active] == 0)
-        {
-            // config_disable_sw(xray_active);  // 关闭采样通道
-            xray_HV_enable_debug(0);
-        }
-    }
+//    // 检查射线模式
+//    if ((ctrl_data.xrayMode == XRAY_MODE_D_CONTINUOUS) || (ctrl_data.xrayMode == XRAY_MODE_D_PULSE) ||
+//            (ctrl_data.xrayMode == XRAY_MODE_S_CONTINUOUS) || (ctrl_data.xrayMode == XRAY_MODE_S_PULSE))
+//    {
+//        if ((ctrl_data.enable[0] == 0) && (ctrl_data.enable[1] == 0))      // 若系统关闭，强制退出
+//        {
+//            xray_HV_enable_debug(0);
+//            xray_disable_ref_debug();
+//            set_hv_state(HVPS_SM_ID_TRAIN_END, 0);
+//            set_hv_state(HVPS_SM_ID_TRAIN_END, 1);
+//            return;
+//        }
+//    }
+//    else
+//    {
+//        if (ctrl_data.enable[xray_active] == 0)
+//        {
+//            // config_disable_sw(xray_active);  // 关闭采样通道
+//            xray_HV_enable_debug(0);
+//        }
+//    }
     // Tick自增
     if (debug_data.timmer_count >= 1)
         debug_data.timmer_count++;
@@ -108,8 +108,8 @@ void debug_task()
     hvps_sm_state debug_source_state = get_hv_state(xray_active);
 
 
-    config_filament_ref_slop_debug(0);
-    config_filament_ref_slop_debug(1);
+//    config_filament_ref_slop_debug(0);
+//    config_filament_ref_slop_debug(1);
 
     switch (debug_source_state)
     {

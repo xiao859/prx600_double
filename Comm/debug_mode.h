@@ -6,7 +6,7 @@
 #include "ct_exposure.h"
 
 
-#define IDLE_FILAMENT_REF_DEBUG   0.33    
+#define IDLE_FILAMENT_REF_DEBUG   1.241    
 #define BIDLE_FILAMENT_REF_DEBUG       
 
 
