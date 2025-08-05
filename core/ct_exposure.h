@@ -289,7 +289,7 @@ void pid_Init(float target, uint32_t ref_init, uint8_t isPulseMode);
 void xray_system_disable(uint16_t n);
 
 void config_filamentRef(uint16_t n);
-void disable_hvref(uint16_t n);
+void disable_hvref(void);
 void disable_filamentref(uint16_t n);
 void config_filament_ref_slop(uint16_t n);
 void config_hvref_slope(uint16_t n);

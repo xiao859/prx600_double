@@ -141,7 +141,7 @@ void calibrate_task()
     if (ctrl_data.enable[cali_source] == 0)
     {
         xray_system_disable(cali_source);
-        disable_hvref(cali_source);
+        disable_hvref();
         disable_filamentref(cali_source);
         set_hv_state(HVPS_SM_ID_IDLE, cali_source);
         return;

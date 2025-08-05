@@ -7,7 +7,7 @@
 
 
 /*50kHz */
-#define COUNTER_TIMER6_FREQ                  50000
+#define COUNTER_TIMER6_FREQ                  20000
 
 /*2.5s*/
 #define TIMER6_2P5_SECOND_CYCLES                (uint32_t)(2.5 * COUNTER_TIMER6_FREQ)
