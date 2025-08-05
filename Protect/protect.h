@@ -6,7 +6,7 @@
 #include "comm_string.h"
 
 #define OVER_RANGE_TIME_LIMIT           5000
-#define FAST_PROTECT_TIME_RANGE         40  //10khz 4ms
+#define FAST_PROTECT_TIME_RANGE         200  //50khz 4ms
 /*对应1ms */
 #define FAST_PROTECT_ONE_TIME_RANGE     50
 #define STRIKE_TIEMS_RANGE              5
@@ -148,7 +148,11 @@ typedef union
         uint16_t LAMP2_OV: 1;
         uint16_t lamp_wait_overtime: 1;
         uint16_t VOL_CURR_OV: 1;
-        uint16_t rsv: 5;
+			  uint16_t lamp_wait_overtime2: 1;//new add
+			  uint16_t INTERLOCK2: 1;
+				uint16_t spark1: 1;
+				uint16_t spark2: 1;
+        uint16_t rsv: 1;
     }  bit;
 } HVPS_FAULT_GROUP4_REG;
 
@@ -159,8 +163,7 @@ typedef union
     {
         uint16_t TRAIN1: 1;
         uint16_t TRAIN2: 1;
-				uint16_t EXPO2_OVERTIME: 1;
-        uint16_t rsv: 13;
+        uint16_t rsv: 14;
     }  bit;
 } HVPS_FAULT_GROUP5_REG;
 
@@ -187,9 +190,9 @@ typedef struct
 extern HVPS_FAULT_REGS mHVPS_Fault;
 
 void InqHVPSFault(message_protocol *msg);
-void UpdateVar_CheckFaultFast(void);
+void xray_fast_protect(void);
 void Protect_Check_Slow(void);
-
+void xray_system_fault_check(void);
 void transform_adc_values(void);
 #endif
 

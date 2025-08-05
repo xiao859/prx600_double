@@ -131,10 +131,9 @@ void Error_Handler(void);
 
 #define EXP_A_Pin GPIO_PIN_2
 #define EXP_A_GPIO_Port GPIOE
-#define EXP_A_EXTI_IRQn EXTI2_IRQn
+
 #define EXP_B_Pin GPIO_PIN_0
 #define EXP_B_GPIO_Port GPIOE
-#define EXP_B_EXTI_IRQn EXTI0_IRQn
 
 //#define ENABLE_A_Pin GPIO_PIN_10
 //#define ENABLE_A_GPIO_Port GPIOD

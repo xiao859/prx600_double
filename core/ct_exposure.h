@@ -3,7 +3,8 @@
 
 #include "stdint.h"
 
-#define IDLE_FILAMENT_REF               1000
+#define IDLE_FILAMENT1_REF               2120
+#define IDLE_FILAMENT2_REF               1360
 
 #define XRAY_NUMS 2
 #define IDLE_HV_REF                     0
@@ -61,7 +62,7 @@ typedef enum
 
 #define Is_CalibrateMode()              (((hv_state[0] >= HPVS_SM_ID_CAL_PREPARE) && (hv_state[0] <= HPVS_SM_ID_CAL_END))|| ((hv_state[1] >= HPVS_SM_ID_CAL_PREPARE) && (hv_state[1] <= HPVS_SM_ID_CAL_END)))
 
-#define Is_CTMode()                     ((((int)hv_state[0] >= HVPS_SM_ID_IDLE) && (int)(hv_state[0] <= HVPS_SM_ID_EXPO_END))&&(((int)hv_state[1] >= HVPS_SM_ID_IDLE) && ((int)hv_state[1] <= HVPS_SM_ID_EXPO_END)))
+#define Is_CTMode()                     (((int)hv_state[0] >= HVPS_SM_ID_IDLE) && (int)(hv_state[0] <= HVPS_SM_ID_EXPO_END))
 
 #define Is_DebugMode()                  (((hv_state[0] >= HVPS_SM_ID_TRAIN_IDLE) && (hv_state[0] <= HVPS_SM_ID_TRAIN_END))||((hv_state[1] >= HVPS_SM_ID_TRAIN_IDLE) && (hv_state[1] <= HVPS_SM_ID_TRAIN_END)))
 

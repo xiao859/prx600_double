@@ -1,6 +1,6 @@
 #include "app_uart.h"
 #include "stm32g4xx_hal.h"
-//#include "update.h"
+#include "app_fun.h"
 #include <string.h>
 #include <stdio.h>
 #include <stdarg.h>
@@ -54,8 +54,10 @@ void HAL_UART_RxCpltCallback(UART_HandleTypeDef *huart)
                 uint8_t check_recv = uart_check(&(uart5.uart_rx_buf[2]), 4);
                 if (check_recv == 1)
                 {
+										if(uart5.uart_rx_buf[2] == 0x29)
+											Setenable((message_protocol *)uart5.uart_rx_buf);
                     // 放入FIFO
-                    if (uart5_frame_fifo.count < FRAME_BUF_NUM)
+                    else if (uart5_frame_fifo.count < FRAME_BUF_NUM)
                     {
                         uint8_t idx = uart5_frame_fifo.tail;
                         memcpy(&uart5_frame_fifo.data[idx], uart5.uart_rx_buf, 6);

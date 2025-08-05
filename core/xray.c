@@ -125,7 +125,7 @@ uint16_t get_filament_pin(uint16_t n)
 	if(n == 0)
     return ((HAL_GPIO_ReadPin(FILAMENT_A_EN_GPIO_Port, FILAMENT_A_EN_Pin) == GPIO_PIN_RESET) ? 0 : 1);
 	else
-		return ((HAL_GPIO_ReadPin(FILAMENT_A_EN_GPIO_Port, FILAMENT_A_EN_Pin) == GPIO_PIN_RESET) ? 0 : 1);
+		return ((HAL_GPIO_ReadPin(FILAMENT_B_EN_GPIO_Port, FILAMENT_B_EN_Pin) == GPIO_PIN_RESET) ? 0 : 1);
 }
 
 void heartBeat_led()

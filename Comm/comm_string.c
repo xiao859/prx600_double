@@ -564,7 +564,7 @@ int set_filament_ref_onoff1(volatile uint8_t *buff, char *p)
 
     // uint32_t a = (uint32_t)(num * 1.2409);  /* ((num / 1000) / 3.3) * 4095 */
 		 HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_2, DAC_ALIGN_12B_R, num);
-		    debug_tx3("A lam ref:%f\n", num);
+		    debug_tx3("A lam ref:%d\n", num);
 //    config_data.fila_ref_target[0] = (float)num / 1000;
 //    config_data.fila_ref_realtime[0] = IDLE_FILAMENT_REF_DEBUG;
 //    config_data.fila_ref_step[0] = (config_data.fila_ref_target[0] - IDLE_FILAMENT_REF_DEBUG) / (5 * 1);
@@ -599,7 +599,7 @@ int set_filament_ref_onoff2(volatile uint8_t *buff, char *p)
 //    config_data.fila_ref_realtime[1] = (float)IDLE_FILAMENT_REF_DEBUG;
 //    config_data.fila_ref_step[1] = (config_data.fila_ref_target[1] - (float)IDLE_FILAMENT_REF_DEBUG) / (50 * 1);
 
-    debug_tx3("B lam ref:%f\n", num);
+    debug_tx3("B lam ref:%d\n", num);
 
 
 //    config_filament_ref_slop_debug(1);
@@ -629,7 +629,7 @@ int start_calibrate(volatile uint8_t *buff, char *p)
         ctrl_data.enable[0] = 1;
         ctrl_data.enable[1] = 1;
         // pid_Init(1.0);
-        debug_tx3("");
+        debug_tx3("start_calibrate");
     }
     else
     {

@@ -99,7 +99,7 @@ void calibrate_para_init()
     cali_data.tube_vol_step = ((float)(CALI_HV_REF - IDLE_HV_REF) / 100);
 
     config_data.fila_ref_realtime[0] = 0;
-    config_data.fila_ref_step[0] = IDLE_FILAMENT_REF / (20 * 50);          /* 20msÉÏÉýÊ±¼ä */
+    config_data.fila_ref_step[0] = IDLE_FILAMENT1_REF / (20 * 50);          /* 20ms*/
 
     return;
 }
@@ -131,12 +131,12 @@ void filament_ref_update(uint8_t curr_idx, uint16_t n)
 
 void calibrate_task()
 {
-
     static uint8_t cali_source = 0; // 当前射源通道，0表示射源1，1表示射源2
     static uint32_t last_expo_end_time = 0;
-    static uint32_t last_sw_end_time = 0;
+    static uint32_t sw_change_time = 0;
     static uint8_t sw_changed = 0;
-	
+    ctrl_data.xray_current =  cali_source + 1 ;
+
     // 如果关闭使能，则强制回到IDLE
     if (ctrl_data.enable[cali_source] == 0)
     {
@@ -149,6 +149,8 @@ void calibrate_task()
 
     if (cali_data.timmer_count >= 1)
         cali_data.timmer_count++;
+    if (sw_change_time >= 1)
+        sw_change_time++;
     switch (get_hv_state(cali_source))
     {
     case HPVS_SM_ID_CAL_PREPARE:
@@ -161,15 +163,12 @@ void calibrate_task()
         config_filamentOn_signal(1, 1);                     // 打开灯丝1
         config_filament_ref_slop(1);                        // 控制灯丝PWM软启动
 
-
-
         if (cali_data.timmer_count > TIMER6_2P5_SECOND_CYCLES)
         {
             cali_data.timmer_count = 1;
             set_hv_state(HPVS_SM_ID_CAL_RUN, cali_source);
 
-            uint32_t currRef = (Is_PulseMode()) ?
-                               parm_table[cali_source].currRef[cali_data.curr_index] : parm_table[cali_source].currRef_c[cali_data.curr_index];
+            uint32_t currRef = (Is_PulseMode()) ? parm_table[cali_source].currRef[cali_data.curr_index] : parm_table[cali_source].currRef_c[cali_data.curr_index];
             pid_Init(parm_table[cali_source].currValue[cali_data.curr_index], currRef, Is_PulseMode());
         }
         break;
@@ -178,7 +177,7 @@ void calibrate_task()
         config_hvref_cali(cali_source);                                // 设置高压参考
         config_filamentRef_cali(cali_data.curr_index, cali_source);    // 设置灯丝DA/PWM输出
 
-        if (cali_data.timmer_count >= TIMER6_5_SECOND_CYCLES)
+        if (cali_data.timmer_count >= TIMER6_2_SECOND_CYCLES)
         {
             set_hv_state(HPVS_SM_ID_CAL_EXPOSURING, cali_source);
             cali_data.timmer_count = 1;
@@ -187,22 +186,19 @@ void calibrate_task()
         break;
 
     case HPVS_SM_ID_CAL_EXPOSURING:
-
         if ((get_tick_ms() - last_expo_end_time) >= 10)
         {
             xray_HV_enable(1);
             config_hvref_cali(cali_source);
-        }
-        else
-            return;
-
-        config_data.expo_count_total[cali_source]++;
-
-        if (cali_data.timmer_count >= cali_data.expoTime_expect)
-        {
-            last_expo_end_time = get_tick_ms();            // 记录曝光结束时间戳
-            set_hv_state(HPVS_SM_ID_CAL_COOLING, cali_source);
-            cali_data.timmer_count = 1;
+            config_data.expo_count_total[cali_source]++;
+            if (cali_data.timmer_count >= cali_data.expoTime_expect)
+            {
+                xray_HV_enable(0);
+                last_expo_end_time = get_tick_ms();            // 记录曝光结束时间戳
+                set_hv_state(HPVS_SM_ID_CAL_COOLING, cali_source);
+                cali_data.timmer_count = 1;
+                sw_change_time = 1;
+            }
         }
 
         // 曝光期间调节 PI（如连续模式）
@@ -219,7 +215,6 @@ void calibrate_task()
         break;
 
     case HPVS_SM_ID_CAL_COOLING:
-        last_sw_end_time = get_tick_ms();
         config_hvref_cali(cali_source);
 
         if ((Is_PulseMode()) && (cali_data.timmer_count == (uint32_t)(cali_data.coolTime_expect / 2)))
@@ -234,14 +229,6 @@ void calibrate_task()
 
         cali_data.cycle_count++;
 
-        if (((get_tick_ms() - last_sw_end_time) >= 8) && (sw_changed == 0))
-        {
-            config_disable_sw(cali_source);
-            config_enable_sw((cali_source == 0) ? 1 : 0);
-            sw_changed = 1;
-        }
-
-
         if (cali_data.cycle_count >= cali_data.expoCycle_perCurrent[cali_source])
         {
             filament_ref_update(cali_data.curr_index, cali_source);    // 更新灯丝查表
@@ -253,76 +240,137 @@ void calibrate_task()
             cali_data.curr_index++;
             if ((cali_data.curr_index >= FILAMENT_CURRENT_TABLE_ORDER) && (cali_source))
             {
-                uint32_t last_idx = cali_data.curr_index - 1;
-                debug_tx3("闭环结果: %f, %f, %d, %d\n",
-                          user_pid.currValue, parm_table[cali_source].currValue[last_idx], parm_table[cali_source].currRef[last_idx], param_pid.config_ref);
-                cali_data.curr_index = 0;
-
-                /*该模式下所有电流校准完毕*/
-                if (Is_PulseMode())
+                if ((get_tick_ms() - last_expo_end_time >= 9))
                 {
-                    // 切换下一个射源交替运行
-                    cali_source ^= 1;
-                    sw_changed = 0;
-                    // 重新开始 RUN 状态
-                    set_hv_state(HPVS_SM_ID_CAL_RUN, cali_source);
-                    cali_data.timmer_count = 1;
+                    if (sw_changed == 0)
+                    {
+                        config_disable_sw(cali_source);
+                        sw_changed = 1;
+                        sw_change_time = 1;
+                    }
+                    if (sw_change_time >= 50)//uint32_t tuck = HAL_GetTick();tuck - last_switch_tick >= 1
+                    {
+                        if (sw_changed == 1)
+                        {
+                            config_enable_sw(1 - cali_source);
+                            sw_change_time = 1; //last_switch_tick = HAL_GetTick();
+                            sw_changed = 2;
+                        }
+                        if ((sw_change_time >= 50) && (sw_changed == 2))//HAL_GetTick() - last_switch_tick >= 1
+                        {
+                            uint32_t last_idx = cali_data.curr_index - 1;
+                            debug_tx3("close loop: %f, %f, %d, %d\n",
+                                      user_pid.currValue, parm_table[cali_source].currValue[last_idx], parm_table[cali_source].currRef[last_idx], param_pid.config_ref);
+                            cali_data.curr_index = 0;
+                            /*该模式下所有电流校准完毕*/
+                            if (Is_PulseMode())
+                            {
+                                // 切换下一个射源交替运行
+                                cali_source ^= 1;
+                                sw_changed = 0;
+                                // 重新开始 RUN 状态
+                                set_hv_state(HPVS_SM_ID_CAL_RUN, cali_source);
+                                cali_data.timmer_count = 1;
+                                sw_changed = 0;
+                                cali_data.mode = XRAY_MODE_D_CONTINUOUS;
+                                calibrate_mode_config(cali_source);
+                                uint32_t currRef = (Is_PulseMode()) ?
+                                                   parm_table[cali_source].currRef[cali_data.curr_index] : parm_table[cali_source].currRef_c[cali_data.curr_index];
+                                pid_Init(parm_table[cali_source].currValue[cali_data.curr_index], currRef, Is_PulseMode());
+                            }
+                            else
+                            {
+                                cali_data.para_save_flag = 1;              // 标记保存参数
+                                set_hv_state(HPVS_SM_ID_CAL_END, cali_source);
+                                sw_changed = 0;
+                            }
 
-                    cali_data.mode = XRAY_MODE_D_CONTINUOUS;
-                    calibrate_mode_config(cali_source);
-                    uint32_t currRef = (Is_PulseMode()) ?
-                                       parm_table[cali_source].currRef[cali_data.curr_index] : parm_table[cali_source].currRef_c[cali_data.curr_index];
-                    pid_Init(parm_table[cali_source].currValue[cali_data.curr_index], currRef, Is_PulseMode());
+                        }
+                    }
                 }
-                else
-                {
-                    cali_data.para_save_flag = 1;              // 标记保存参数
-                    set_hv_state(HPVS_SM_ID_CAL_END, cali_source);
-                }
-                break;
             }
             else if (cali_source == 1) //准备下个电流
             {
-                /*上报本次校准结果*/
-                uint32_t last_idx = cali_data.curr_index - 1;
-                debug_tx3("闭环结果: %d.%f, %f, %d, %d\n",
-                          cali_source, user_pid.currValue, parm_table[cali_source].currValue[last_idx], parm_table[cali_source].currRef[last_idx], param_pid.config_ref);
+                if ((get_tick_ms() - last_expo_end_time >= 9))
+                {
+                    if (sw_changed == 0)
+                    {
+                        config_disable_sw(cali_source);
+                        sw_changed = 1;
+                        sw_change_time = 1;
+                    }
+                    if (sw_change_time >= 50)//uint32_t tuck = HAL_GetTick();tuck - last_switch_tick >= 1
+                    {
+                        if (sw_changed == 1)
+                        {
+                            config_enable_sw(1 - cali_source);
+                            sw_change_time = 1; //last_switch_tick = HAL_GetTick();
+                            sw_changed = 2;
+                        }
+                        if ((sw_change_time >= 50) && (sw_changed == 2))//HAL_GetTick() - last_switch_tick >= 1
+                        {
+                            uint32_t last_idx = cali_data.curr_index - 1;                /*上报本次校准结果*/
+                            debug_tx3("close loop: %d.%f, %f, %d, %d\n",
+                                      cali_source, user_pid.currValue, parm_table[cali_source].currValue[last_idx], parm_table[cali_source].currRef[last_idx], param_pid.config_ref);
+                            sw_change_time = 0;
+                            cali_source ^= 1;                // 切换下一个射源交替运行
+                            set_hv_state(HPVS_SM_ID_CAL_RUN, cali_source);                // 重新开始 RUN 状态
+                            cali_data.timmer_count = 1;
 
-                uint32_t currRef = (Is_PulseMode()) ?
-                                   parm_table[cali_source].currRef[cali_data.curr_index] : parm_table[cali_source].currRef_c[cali_data.curr_index];
-                // 切换下一个射源交替运行
-                cali_source ^= 1;
-                sw_changed = 0;
-                set_hv_state(HPVS_SM_ID_CAL_RUN, cali_source);
-                pid_Init(parm_table[cali_source].currValue[cali_data.curr_index], currRef, Is_PulseMode());//PID系数重置
+                            uint32_t currRef = (Is_PulseMode()) ?
+                                               parm_table[cali_source].currRef[cali_data.curr_index] : parm_table[cali_source].currRef_c[cali_data.curr_index];
+                            pid_Init(parm_table[cali_source].currValue[cali_data.curr_index], currRef, Is_PulseMode());
+                            sw_changed = 0;
+                        }
+                    }
+                }
             }
             else//准备下个射源
             {
-                // 切换下一个射源交替运行
-                cali_source ^= 1;
-                sw_changed = 0;
-                // 重新开始 RUN 状态
-                set_hv_state(HPVS_SM_ID_CAL_RUN, cali_source);
-                cali_data.timmer_count = 1;
-                // 初始化下一个点的PID
-                uint32_t currRef = (Is_PulseMode()) ?
-                                   parm_table[cali_source].currRef[cali_data.curr_index] : parm_table[cali_source].currRef_c[cali_data.curr_index];
-                pid_Init(parm_table[cali_source].currValue[cali_data.curr_index], currRef, Is_PulseMode());
+                if ((get_tick_ms() - last_expo_end_time >= 9))
+                {
+                    if (sw_changed == 0)
+                    {
+                        config_disable_sw(0);
+                        sw_changed = 1;
+                        sw_change_time = 1;
+                    }
+                    if (sw_change_time >= 50)//uint32_t tuck = HAL_GetTick();tuck - last_switch_tick >= 1
+                    {
+                        if (sw_changed == 1)
+                        {
+                            config_enable_sw(1);
+                            sw_change_time = 1; //last_switch_tick = HAL_GetTick();
+                            sw_changed = 2;
+                        }
+                        if ((sw_change_time >= 50) && (sw_changed == 2))//HAL_GetTick() - last_switch_tick >= 1
+                        {
+                            sw_change_time = 0;
+                            cali_source ^= 1;                // 切换下一个射源交替运行
+                            set_hv_state(HPVS_SM_ID_CAL_RUN, cali_source);                // 重新开始 RUN 状态
+                            cali_data.timmer_count = 1;
+
+                            uint32_t currRef = (Is_PulseMode()) ?                // 初始化下一个点的PID
+                                               parm_table[cali_source].currRef[cali_data.curr_index] : parm_table[cali_source].currRef_c[cali_data.curr_index];
+                            pid_Init(parm_table[cali_source].currValue[cali_data.curr_index], currRef, Is_PulseMode());
+                            sw_changed = 0;
+                        }
+                    }
+                }
             }
         }
         break;
-
     case HPVS_SM_ID_CAL_END:
-            xray_system_disable(0);
-            xray_system_disable(1);
-            cali_data.timmer_count = 0;
-            set_hv_state(HVPS_SM_ID_IDLE, 0);
-            set_hv_state(HVPS_SM_ID_IDLE, 1);
-            break;
+        xray_system_disable(0);
+        xray_system_disable(1);
+        cali_data.timmer_count = 0;
+        set_hv_state(HVPS_SM_ID_IDLE, 0);
+        set_hv_state(HVPS_SM_ID_IDLE, 1);
+        break;
 
-        default:
-                break;
-            }
+    default:
+        break;
+    }
 
     // 指示灯
     xray_on_led((get_hv_state(cali_source) == HPVS_SM_ID_CAL_EXPOSURING) ? 1 : 0);

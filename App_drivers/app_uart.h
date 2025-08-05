@@ -22,8 +22,8 @@ typedef struct
     uint8_t head1;
     uint8_t head2;
     uint8_t msg_id;
-    uint8_t data1;
     uint8_t data2;
+    uint8_t data1;
     uint8_t checksum;
 } message_protocol;
 

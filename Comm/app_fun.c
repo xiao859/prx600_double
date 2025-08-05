@@ -66,7 +66,7 @@ controler_cmd_funcs funcs[APP_FUNC_NUM] =
     {SCI_MSG_SET_EXP2_COUNTCLR,             &exp2countclr},
     {SCI_MSG_SET_EXP1_TIMECLR,              &exp1timeclr},
     {SCI_MSG_SET_EXP2_TIMECLR,              &exp2timeclr},
-    {SCI_MSG_SET_NULL,                                           &fun_null},
+    {SCI_MSG_SET_NULL,                      &fun_null},
     {SCI_MSG_SET_ENABLE,                    &Setenable},
 
     {SCI_MSG_CTRL_RST,                      &FaultReset},
@@ -210,6 +210,7 @@ void InqHVPSExpo_Count2(message_protocol *msg)
 
 void SetHVPSMode(message_protocol *msg)
 {
+    msg->data2 = msg->data1;
     if ((get_hv_state(0) == HVPS_SM_ID_IDLE) && get_hv_state(1) == HVPS_SM_ID_IDLE)
     {
         if (msg->data1 < 4)
@@ -220,47 +221,48 @@ void SetHVPSMode(message_protocol *msg)
                 ctrl_data.xrayMode = XRAY_MODE_S_CONTINUOUS;
                 //DMA地址
                 ctrl_data.xray_current = 1;
+                msg->data1 = SETUP_SUCCESS;
                 break;
             case HVPS_MODE_S_PULSE:
                 ctrl_data.xrayMode = XRAY_MODE_S_PULSE;
+                ctrl_data.xray_current = 1;
+                msg->data1 = SETUP_SUCCESS;
                 break;
             case HVPS_MODE_D_CONTINUOUS:
                 ctrl_data.xrayMode = XRAY_MODE_D_CONTINUOUS;
+                msg->data1 = SETUP_SUCCESS;
                 break;
             case HVPS_MODE_D_PULSE:
                 ctrl_data.xrayMode = XRAY_MODE_D_PULSE;
+                msg->data1 = SETUP_SUCCESS;
                 break;
             default:
-                msg->data2 = SETUP_SM_ERROR;
+                msg->data2 = SETUP_OUT_LIMIT;
             }
-            config_enable_sw(0); // 选取射源0作为采样
             config_disable_sw(1);
-            msg->data2 = SETUP_SUCCESS;
+            config_enable_sw(0); // 选取射源0作为采样
         }
         else
-            msg->data2 = SETUP_OUT_LIMIT;
+            msg->data1 = SETUP_OUT_LIMIT;
     }
     else
-        msg->data2 = SETUP_SM_ERROR;
+        msg->data1 = SETUP_SM_ERROR;
 
     send_message(msg->msg_id, msg->data1, msg->data2);
 
     return;
 }
 
-float lasthvpsset[XRAY_NUMS] = {60, 60};
-float lasthvcurrentset[XRAY_NUMS] = {10, 10};
 
 void SetHV1TubeVoltageandcurrent(message_protocol *msg)
 {
     uint8_t data1, data2;
     if ((get_hv_state(0) == HVPS_SM_ID_IDLE) && (get_hv_state(1) == HVPS_SM_ID_IDLE))
     {
-        if ((msg->data1 <= para_range.tube_vol_max_config) && (msg->data1 >= para_range.tube_vol_min_config))
+        if ((msg->data2 <= para_range.tube_vol_max_config) && (msg->data2 >= para_range.tube_vol_min_config))
         {
-            config_data.tube_vol[0]  = msg->data1;
-            lasthvpsset[0] = (float)msg->data2;
-            data1 = SETUP_SUCCESS;
+            config_data.tube_vol[0]  = msg->data2;
+            data2 = SETUP_SUCCESS;
         }
         else
         {
@@ -268,10 +270,9 @@ void SetHV1TubeVoltageandcurrent(message_protocol *msg)
             data1 = SETUP_OUT_LIMIT;
         }
 
-        if ((msg->data2 <= para_range.tube_curr_max_config) && (msg->data2 >= para_range.tube_curr_min_config))
+        if ((msg->data1 <= para_range.tube_curr_max_config) && (msg->data1 >= para_range.tube_curr_min_config))
         {
-            config_data.tube_curr[0] = ((float)msg->data2) / 10;
-            lasthvcurrentset[0] = (float)msg->data1;
+            config_data.tube_curr[0] = ((float)msg->data1) / 10;
             config_data.tube_vol_realtime[0] = 0;
             config_data.tube_vol_step[0] = (float)(config_data.tube_vol[0] - IDLE_HV_REF) / (50 * parm_table[0].rising_time);
             data1 = SETUP_SUCCESS;
@@ -279,9 +280,8 @@ void SetHV1TubeVoltageandcurrent(message_protocol *msg)
         else
         {
             mHVPS_Fault.FAULT_REG4.bit.VOL_CURR_OV = 1;
-            data2 = SETUP_OUT_LIMIT;
+            data1 = SETUP_OUT_LIMIT;
         }
-        //      xray_data.timmer_count = 1;
     }
     else
     {
@@ -299,11 +299,10 @@ void SetHV2TubeVoltageandcurrent(message_protocol *msg)
     uint8_t data1, data2;
     if ((get_hv_state(0) == HVPS_SM_ID_IDLE) && (get_hv_state(1) == HVPS_SM_ID_IDLE))
     {
-        if ((msg->data1 <= para_range.tube_vol_max_config) && (msg->data1 >= para_range.tube_vol_min_config))
+        if ((msg->data2 <= para_range.tube_vol_max_config) && (msg->data2 >= para_range.tube_vol_min_config))
         {
-            config_data.tube_vol[1]  = msg->data1;
-            lasthvpsset[1] = (float)msg->data2;
-            data1 = SETUP_SUCCESS;
+            config_data.tube_vol[1]  = msg->data2;
+            data2 = SETUP_SUCCESS;
         }
         else
         {
@@ -311,12 +310,11 @@ void SetHV2TubeVoltageandcurrent(message_protocol *msg)
             data1 = SETUP_OUT_LIMIT;
         }
 
-        if ((msg->data2 <= para_range.tube_curr_max_config) && (msg->data2 >= para_range.tube_curr_min_config))
+        if ((msg->data1 <= para_range.tube_curr_max_config) && (msg->data1 >= para_range.tube_curr_min_config))
         {
-            config_data.tube_curr[1] = ((float)msg->data2) / 10;
-            lasthvcurrentset[1] = (float)msg->data1;
+            config_data.tube_curr[1] = ((float)msg->data1) / 10;
             config_data.tube_vol_realtime[1] = 0;
-            config_data.tube_vol_step[1] = (float)(config_data.tube_vol[1] - IDLE_HV_REF) / (50 * parm_table[0].rising_time);
+            config_data.tube_vol_step[1] = (float)(config_data.tube_vol[1] - IDLE_HV_REF) / (50 * parm_table[1].rising_time);
             data1 = SETUP_SUCCESS;
         }
         else
@@ -378,7 +376,7 @@ void FaultReset(message_protocol *msg)
 {
     uint8_t data1, data2;
 
-    if ((get_hv_state(0) != HVPS_SM_ID_IDLE) && (get_hv_state(1) != HVPS_SM_ID_IDLE))
+    if ((get_hv_state(0) == HVPS_SM_ID_FAULT) || (get_hv_state(1) == HVPS_SM_ID_FAULT))
     {
         HVPS_FAULT_GROUP1_REG FAULT_REG1_temp;
         FAULT_REG1_temp.value = 0;
@@ -462,6 +460,11 @@ void Setmaxexpotime(message_protocol *msg)
 
 void Inqixay1HVPSCurrentset(message_protocol *msg)
 {
+    uint8_t data1, data2;
+
+    data1 = 90;
+    data2 = 60;
+    send_message(msg->msg_id, data1, data2);
     return;
 }
 
@@ -481,37 +484,20 @@ void Lampcontrol(message_protocol *msg)
 
     switch (combined)
     {
-    case 0x0001:  // data2=0x00, data1=0x01
-        if ((get_hv_state(0) == HVPS_SM_ID_IDLE) && (get_hv_state(1) == HVPS_SM_ID_IDLE))
-        {
-            config_filamentOn_signal(1, 1);
-            ctrl_data.filament_on[1] = 1;
-            xray_data.timmer_count[1] = 1;
-            config_data.fila_ref_step[1] = (float)IDLE_FILAMENT_REF / (20 * 50); /* 20ms上升时间*/
-            msg->data1 = SETUP_SUCCESS;  // 明确设置成功码
-						config_disable_sw(1);
-						config_enable_sw(0);
-        }
-        else
-        {
-            msg->data1 = SETUP_SM_ERROR;  // 状态不符合条件
-        }
-        break;
-
     case 0x0100:  // data2=0x01, data1=0x00
         if ((get_hv_state(0) == HVPS_SM_ID_IDLE) && (get_hv_state(1) == HVPS_SM_ID_IDLE))
         {
             config_filamentOn_signal(1, 0);
             ctrl_data.filament_on[0] = 1;
             xray_data.timmer_count[0] = 1;
-            config_data.fila_ref_step[0] = (float)IDLE_FILAMENT_REF / (20 * 50); /* 20ms上升时间*/
+            config_data.fila_ref_step[0] = (float)IDLE_FILAMENT1_REF / (20 * 50); /* 20ms上升时间*/
             msg->data2 = SETUP_SUCCESS;  // 明确设置成功码
-						config_disable_sw(0);
-						config_enable_sw(1);
+            config_disable_sw(1);
+            config_enable_sw(0);
         }
         else
         {
-            msg->data1 = SETUP_SM_ERROR;
+            msg->data2 = SETUP_SM_ERROR;
         }
         break;
 
@@ -521,19 +507,20 @@ void Lampcontrol(message_protocol *msg)
             config_filamentOn_signal(1, 0);
             ctrl_data.filament_on[0] = 1;
             xray_data.timmer_count[0] = 1;
-            config_data.fila_ref_step[0] = (float)IDLE_FILAMENT_REF / (20 * 50); /* 20ms上升时间*/
+            config_data.fila_ref_step[0] = (float)IDLE_FILAMENT1_REF / (20 * 50); /* 20ms上升时间*/
             config_filamentOn_signal(1, 1);
             ctrl_data.filament_on[1] = 1;
             xray_data.timmer_count[1] = 1;
-            config_data.fila_ref_step[1] = (float)IDLE_FILAMENT_REF / (20 * 50); /* 20ms上升时间*/
+            config_data.fila_ref_step[1] = (float)IDLE_FILAMENT2_REF / (20 * 50); /* 20ms上升时间*/
             msg->data1 = SETUP_SUCCESS;
             msg->data2 = SETUP_SUCCESS;
-						config_disable_sw(1);
-						config_enable_sw(0);
+            config_disable_sw(1);
+            config_enable_sw(0);
         }
         else
         {
             msg->data1 = SETUP_SM_ERROR;
+            msg->data2 = SETUP_SM_ERROR;
         }
         break;
     case 0x0000:
@@ -541,15 +528,31 @@ void Lampcontrol(message_protocol *msg)
         ctrl_data.filament_on[0] = 0;
         config_filamentOn_signal(0, 1);
         ctrl_data.filament_on[1] = 0;
-		    msg->data1 = SETUP_SUCCESS;
+        msg->data1 = SETUP_SUCCESS;
         msg->data2 = SETUP_SUCCESS;
-				config_disable_sw(1);
-				config_enable_sw(0);
-        break;	
-		default:
-			   msg->data1 = SETUP_SUCCESS;
-         msg->data2 = SETUP_SUCCESS;
-			
+        config_disable_sw(1);
+        config_enable_sw(0);
+        break;
+    case 0x0001:  // data2=0x00, data1=0x01
+        if ((get_hv_state(0) == HVPS_SM_ID_IDLE) && (get_hv_state(1) == HVPS_SM_ID_IDLE))
+        {
+            config_filamentOn_signal(1, 1);
+            ctrl_data.filament_on[1] = 1;
+            xray_data.timmer_count[1] = 1;
+            config_data.fila_ref_step[1] = (float)IDLE_FILAMENT2_REF / (20 * 50); /* 20ms上升时间*/
+            msg->data1 = SETUP_SUCCESS;  // 明确设置成功码
+            config_disable_sw(0);
+            config_enable_sw(1);
+        }
+        else
+        {
+            msg->data1 = SETUP_SM_ERROR;  // 状态不符合条件
+        }
+        break;
+    default:
+        msg->data1 = SETUP_OUT_LIMIT;
+        msg->data2 = SETUP_OUT_LIMIT;
+
     }
 
     send_message(msg->msg_id, msg->data1, msg->data2);
@@ -697,20 +700,14 @@ void exp2timeclr(message_protocol *msg)
 
 void Setenable(message_protocol *msg)
 {
-    if ((get_hv_state(0) == HVPS_SM_ID_IDLE) && (get_hv_state(1) == HVPS_SM_ID_IDLE))
-    {
-        ctrl_data.enable[0] = msg->data1;
-        ctrl_data.enable[1] = msg->data2;
+
+        ctrl_data.enable[0] = msg->data2;
+        ctrl_data.enable[1] = msg->data1;
         msg->data1 = SETUP_SUCCESS;
         msg->data2 = SETUP_SUCCESS;
-    }
-    else
-    {
-        msg->data1 = SETUP_SM_ERROR;
-        msg->data2 = SETUP_SM_ERROR;
-    }
+   
 
-    send_message(msg->msg_id, msg->data1, msg->data2);
+ //   send_message(msg->msg_id, msg->data1, msg->data2);
 
     return;
 }
@@ -931,16 +928,16 @@ uint8_t message_check(USART_TypeDef *Instance)
 
 void cmd_parser()
 {
-    if (uart4_frame_fifo.count > 0)
-    {
-        uint8_t idx = uart4_frame_fifo.head;
-        message_protocol* frame = & uart4_frame_fifo.data[idx];
+//    if (uart4_frame_fifo.count > 0)
+//    {
+//        uint8_t idx = uart4_frame_fifo.head;
+//        message_protocol* frame = & uart4_frame_fifo.data[idx];
 
-        cmd_process(frame->msg_id, frame, UART4);
-        // 出队
-        uart4_frame_fifo.head = (uart4_frame_fifo.head + 1) % FRAME_BUF_NUM;
-        uart4_frame_fifo.count--;
-    }
+//        cmd_process(frame->msg_id, frame, UART4);
+//        // 出队
+//        uart4_frame_fifo.head = (uart4_frame_fifo.head + 1) % FRAME_BUF_NUM;
+//        uart4_frame_fifo.count--;
+//    }
 
     if (uart5_frame_fifo.count > 0)
     {
