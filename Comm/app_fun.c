@@ -274,7 +274,7 @@ void SetHV1TubeVoltageandcurrent(message_protocol *msg)
         {
             config_data.tube_curr[0] = ((float)msg->data1) / 10;
             config_data.tube_vol_realtime[0] = 0;
-            config_data.tube_vol_step[0] = (float)(config_data.tube_vol[0] - IDLE_HV_REF) / (50 * parm_table[0].rising_time);
+            config_data.tube_vol_step[0] = (float)(config_data.tube_vol[0] - IDLE_HV_REF) / (20 * parm_table[0].rising_time);
             data1 = SETUP_SUCCESS;
         }
         else
@@ -314,7 +314,7 @@ void SetHV2TubeVoltageandcurrent(message_protocol *msg)
         {
             config_data.tube_curr[1] = ((float)msg->data1) / 10;
             config_data.tube_vol_realtime[1] = 0;
-            config_data.tube_vol_step[1] = (float)(config_data.tube_vol[1] - IDLE_HV_REF) / (50 * parm_table[1].rising_time);
+            config_data.tube_vol_step[1] = (float)(config_data.tube_vol[1] - IDLE_HV_REF) / (20 * parm_table[1].rising_time);
             data1 = SETUP_SUCCESS;
         }
         else

@@ -1670,6 +1670,16 @@
               <FileType>5</FileType>
               <FilePath>..\core\ct_exposure.h</FilePath>
             </File>
+            <File>
+              <FileName>pi_ctrl.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\core\pi_ctrl.c</FilePath>
+            </File>
+            <File>
+              <FileName>pi_ctl.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\core\pi_ctl.h</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>

@@ -163,7 +163,7 @@ void debug_task()
                         count = 1;
                     }
 
-                    if (count >= 50)//uint32_t tuck = HAL_GetTick();tuck - last_switch_tick >= 1
+                    if (count >= 20)//uint32_t tuck = HAL_GetTick();tuck - last_switch_tick >= 1
                     {
                         if (switching == 1)
                         {
@@ -171,7 +171,7 @@ void debug_task()
                             count = 1; //last_switch_tick = HAL_GetTick();
                             switching = 2;
                         }
-                        if ((count >= 50) && (switching == 2))//HAL_GetTick() - last_switch_tick >= 1
+                        if ((count >= 20) && (switching == 2))//HAL_GetTick() - last_switch_tick >= 1
                         {
                             count = 0;
                             parm_table[xray_active].expo_count_total++;
@@ -196,7 +196,7 @@ void debug_task()
                         count = 1;//last_switch_tick = HAL_GetTick();
                         switching = 1;
                     }
-                    if (count>= 50)
+                    if (count>= 20)
                     {
                         // 曝光完成，进入结束状态
                         parm_table[xray_active].expo_count_total++;
@@ -228,7 +228,7 @@ void debug_task()
                         switching = 1;
                     }
 
-                    if (count >= 50)//uint32_t tuck = HAL_GetTick();tuck - last_switch_tick >= 1
+                    if (count >= 20)//uint32_t tuck = HAL_GetTick();tuck - last_switch_tick >= 1
                     {
                         if (switching == 1)
                         {
@@ -236,7 +236,7 @@ void debug_task()
                             count = 1; //last_switch_tick = HAL_GetTick();
                             switching = 2;
                         }
-                        if ((count >= 50) && (switching == 2))//HAL_GetTick() - last_switch_tick >= 1
+                        if ((count >= 20) && (switching == 2))//HAL_GetTick() - last_switch_tick >= 1
                         {
                             ctrl_data.xray_current =  2 ;
                             set_hv_state(HVPS_SM_ID_TRAIN_EXPOSURING, 1);
@@ -261,7 +261,7 @@ void debug_task()
                         count = 1; //last_switch_tick = HAL_GetTick();
                         switching = 1;
                     }
-                    if (count >= 50)//HAL_GetTick() - last_switch_tick >= 1
+                    if (count >= 20)//HAL_GetTick() - last_switch_tick >= 1
                     {
                         if (switching == 1)
                         {
@@ -269,7 +269,7 @@ void debug_task()
                             count = 1; //last_switch_tick = HAL_GetTick();
                             switching = 2;
                         }
-                        if ((count >= 50) && (switching == 2))//HAL_GetTick() - last_switch_tick >= 1
+                        if ((count >= 20) && (switching == 2))//HAL_GetTick() - last_switch_tick >= 1
                         {
                             switching = 0;
                             debug_data.cycle_count[xray_active]++;
@@ -292,7 +292,7 @@ void debug_task()
                     count = 1; //last_switch_tick = HAL_GetTick();
                     switching = 1;
                 }
-                if (count >= 50)//HAL_GetTick() - last_switch_tick >= 1
+                if (count >= 20)//HAL_GetTick() - last_switch_tick >= 1
                 {
                     if (switching == 1)
                     {
@@ -300,7 +300,7 @@ void debug_task()
                         count = 1; //last_switch_tick = HAL_GetTick();
                         switching = 2;
                     }
-                    if ((count >= 50) && (switching == 2))//HAL_GetTick() - last_switch_tick >= 1
+                    if ((count >= 20) && (switching == 2))//HAL_GetTick() - last_switch_tick >= 1
                     {
                         switching = 0;
                         count = 0;
@@ -363,10 +363,10 @@ void debug_task()
         ctrl_data.interlock = 0;
         ctrl_data.enable[0] = 0;
         ctrl_data.enable[0] = 0;
-        if ((xray_active == 1)&(count>=450))
+        if ((xray_active == 1)&(count>=180))
         {
             config_disable_sw(xray_active);
-            if (count>=500) 
+            if (count>=200) 
             {
 							count=0;
                 config_enable_sw(0);

@@ -8,6 +8,7 @@
 #include "xray.h"
 #include "tim.h"
 #include "stdbool.h"
+#include "pi_ctl.h"
 
 
 hvps_sm_state volatile hv_state[XRAY_NUMS];
@@ -104,133 +105,6 @@ void set_hv_state(hvps_sm_state state, uint16_t n)
 
     return;
 }
-
-User_PID   user_pid;
-PARAM_PID  param_pid;
-
-void pid_Init(float target, uint32_t ref_init, uint8_t isPulseMode)
-{
-    if (isPulseMode)
-    {
-        user_pid.Kp = 25;
-        user_pid.Ti = 1;
-    }
-    else
-    {
-        user_pid.Kp = 4;
-        user_pid.Ti = 0.001;
-    }
-
-    user_pid.currTarget = target;
-
-    param_pid.Error     = 0;
-    param_pid.lastError = 0;
-    param_pid.integral  = 0;
-    param_pid.Out_pid   = 0;
-    param_pid.coeff     = 1;
-    param_pid.config_ref = ref_init;
-
-    return;
-}
-
-uint32_t test_flag = 0;
-void tube_current_piControl(uint8_t conflag, uint8_t ct_source)
-{
-
-    param_pid.Error = user_pid.currTarget - user_pid.currValue;
-
-    param_pid.integral  += param_pid.Error;
-
-    param_pid.integral = MAX(MIN(param_pid.integral, 26), -26);
-
-
-    param_pid.Out_pid = user_pid.Kp * param_pid.Error;
-
-
-    // param_pid.Out_pid = MAX(MIN(param_pid.Out_pid, 30.0), 0);
-    if (param_pid.integral == 26 || param_pid.integral == -26)
-    {
-        param_pid.integral = 0;
-    }
-
-
-
-    float pid_value;
-    pid_value = param_pid.Out_pid;
-    if (conflag == 1)
-    {
-        if (Is_ContinuousMode_CT())
-        {
-            pid_value = MAX(MIN(param_pid.Out_pid, 1), -1);
-            // if (param_pid.Error < 0.05 && param_pid.Error > -0.05) pid_value = 0;
-        }
-    }
-    else
-    {
-        pid_value = param_pid.Out_pid;
-        if ((pid_value > -1) && (pid_value < 0)) pid_value = 0;
-    }
-
-    // if (pi_fast_flag == 1 && param_pid.Out_pid > 0) pid_value = 1;
-
-
-    // HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_2, DAC_ALIGN_12B_R, 2050);
-    if (ct_source == 0)
-    {
-        param_pid.config_ref = (uint32_t)(param_pid.config_ref + pid_value);
-
-        param_pid.config_ref = MAX(MIN(param_pid.config_ref, 2750), 1000);
-        HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_2, DAC_ALIGN_12B_R, param_pid.config_ref);
-    }
-    else  //pwm
-    {
-        param_pid.config_ref = (uint32_t)(param_pid.config_ref + pid_value);
-
-        param_pid.config_ref = MAX(MIN(param_pid.config_ref, 1550), 1000);
-        __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_4, config_data.fila_ref_realtime[ct_source]);//max 1999
-    }
-    return;
-}
-
-void tube_current_piControl_2(uint8_t conflag, uint8_t ct_source)
-{
-    // user_pid.currTarget = 5.0;
-    param_pid.Error = user_pid.currTarget - user_pid.currValue;
-
-
-
-    param_pid.Out_pid = user_pid.Kp * (param_pid.Error - param_pid.lastError) + user_pid.Ti * param_pid.Error;
-
-
-    float pid_value;
-    pid_value = param_pid.Out_pid;
-    if (conflag == 1)
-    {
-        if (Is_ContinuousMode_CT()) pid_value = MAX(MIN(param_pid.Out_pid, 1), -1);
-    }
-    else
-    {
-        pid_value = param_pid.Out_pid;
-    }
-    if (param_pid.Error < 0.1f && param_pid.Error > -0.1f)
-    {
-        pid_value = 0;
-    }
-
-    param_pid.config_ref = (uint32_t)(param_pid.config_ref + pid_value);
-    // debug_tx3("±ջ·ֵ: %f, %d, %f, %f\n",
-    //     param_pid.Out_pid, param_pid.config_ref, user_pid.currValue, param_pid.integral);
-
-
-    param_pid.config_ref = MAX(MIN(param_pid.config_ref, 2450), 1000);
-
-    param_pid.lastError = param_pid.Error;
-
-    HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_2, DAC_ALIGN_12B_R, param_pid.config_ref);
-
-    return;
-}
-
 
 void save_parament_to_flash()
 {
@@ -335,19 +209,19 @@ void config_filament_ref_slop(uint16_t n)
         if (config_data.fila_ref_realtime[n] > 0)
             config_data.fila_ref_realtime[n] -= config_data.fila_ref_step[n];
     }
-		uint32_t fila_ref_target;
+    uint32_t fila_ref_target;
     if (n == 0)
     {
-				fila_ref_target= (ctrl_data.filament_on[n] == 1) ? IDLE_FILAMENT1_REF: 0;
-				if (config_data.fila_ref_realtime[n] == fila_ref_target) return;
+        fila_ref_target = (ctrl_data.filament_on[n] == 1) ? IDLE_FILAMENT1_REF : 0;
+        if (config_data.fila_ref_realtime[n] == fila_ref_target) return;
         config_data.fila_ref_realtime[n] = MAX(MIN(config_data.fila_ref_realtime[n], IDLE_FILAMENT1_REF), 0);
         uint32_t filament_ref = (uint32_t)floor(((config_data.fila_ref_realtime[n] / ADDA_FULL_SCALE_VIL_VALUE) * 4095));
         HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_2, DAC_ALIGN_12B_R, (uint32_t)config_data.fila_ref_realtime[n]);
     }
     else
     {
-				fila_ref_target= (ctrl_data.filament_on[n] == 1) ? IDLE_FILAMENT1_REF: 0;
-				if (config_data.fila_ref_realtime[n] == fila_ref_target) return;
+        fila_ref_target = (ctrl_data.filament_on[n] == 1) ? IDLE_FILAMENT1_REF : 0;
+        if (config_data.fila_ref_realtime[n] == fila_ref_target) return;
         config_data.fila_ref_realtime[n] = MAX(MIN(config_data.fila_ref_realtime[n], config_data.fila_ref_target[n]), (float)IDLE_FILAMENT2_REF);
         uint32_t filament_ref = (uint32_t)floor(((config_data.fila_ref_realtime[n] / ADDA_FULL_SCALE_VIL_VALUE) * 2999));
         __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_4, filament_ref);
@@ -429,17 +303,19 @@ void check_dual_filament_preheat(void)
 }
 
 
-float kp_test = 3.5;
-float ki_test = 0.0009;
-
+//float kp_test = 3.5;
+//float ki_test = 0.0009;
+uint32_t pulse_time_base_count = 0;
+float pulse_kp = 100;
+float pulse_ki = 1;
 void ct_task()
 {
     static uint32_t last_expo_end_tick[XRAY_NUMS] = {0};
     static uint8_t sw_state = 0;  // 采样开关状态：0-SW1，1-SW2
     static uint16_t ct_source = 0;
     static uint16_t sw_count = 0;
-		bool expo_end = false;
-		bool is_dual_source = false;
+    bool expo_end = false;
+    bool is_dual_source = false;
 
 //     ctrl_data.xray_current= ct_source+1;
     hvps_sm_state ct_source_state = get_hv_state(ct_source);
@@ -456,7 +332,7 @@ void ct_task()
         hvState_ilde_init(ct_source);
         config_ready_signal(0);
         config_xrayOn_signal(0);
-		
+
 
         // 先判断是否双源开启，提前进行预热参考输出
         if (ctrl_data.filament_on[0] && ctrl_data.filament_on[1])
@@ -468,8 +344,8 @@ void ct_task()
         {
             config_filament_ref_slop(ct_source);
         }
-				else if (ctrl_data.filament_on[0] == 0)
-					break;
+        else if (ctrl_data.filament_on[0] == 0)
+            break;
 
         // 仅当满足时间、interlock后才允许进入下一状态
         if (ctrl_data.interlock && ctrl_data.filament_on[ct_source] &&
@@ -505,7 +381,9 @@ void ct_task()
         set_hv_state(HVPS_SM_ID_READY, ct_source);
         xray_data.timmer_count[ct_source] = 1;
 
-       pid_Init(config_data.tube_curr[ct_source], config_data.fila_ref_realtime[ct_source], Is_PulseMode_CT());
+        pid_Init(config_data.tube_curr[ct_source], config_data.fila_ref_realtime[ct_source], Is_PulseMode_CT());
+        param_pid.pulse_count = 0;
+        pid_Init_2(config_data.tube_curr[ct_source], config_data.fila_ref_realtime[ct_source], Is_PulseMode_CT());
         break;
 
     case HVPS_SM_ID_READY:
@@ -545,19 +423,32 @@ void ct_task()
         config_xrayOn_signal(1);
 
         // 曝光控制：延时 PI 初始化
-        if (xray_data.timmer_count[ct_source] == TIMER6_8_MILSECOND_CYCLES)
+        user_pid_2.currValue = 0.00645f * ((float)(adc_buffer3[2]));
+        user_pid.currValue = 0.00645f * ((float)(adc_buffer3[2]));
+
+        /*连续模式PI调节*/
+        if ((param_pid.pulse_count >= 5) && Is_ContinuousMode_CT() && (xray_data.timmer_count[ct_source] > TIMER6_5_MILSECOND_CYCLES))
         {
-            user_pid.currValue = sampled_data.tube_curr_value;
-        }
-//				debug_tx3("V.Aֵ: %f, %f, %f\n",sampled_data.tube_vol_p_value, sampled_data.tube_vol_n_value, sampled_data.tube_curr_value);
-        // 间隔 10ms 进入 PI 控制
-        if (xray_data.timmer_count[ct_source] > TIMER6_8_MILSECOND_CYCLES &&
-                xray_data.timmer_count[ct_source] % TIMER6_10_MILSECOND_CYCLES == 0)
-        {
-            user_pid.currValue = sampled_data.tube_curr_value;
-            user_pid.Kp = kp_test;
-            user_pid.Ti = ki_test;
-           // tube_current_piControl(1, ct_source);  // 启用时解除注释
+
+            param_pid.ti_CycleCount++;
+
+            user_pid.Kp = 0;
+            user_pid.Ti = 0.2;
+
+            if (param_pid.ti_CycleCount == TIMER6_10_MILSECOND_CYCLES)
+            {
+                param_pid.ki_flag = 1;
+                param_pid.ti_CycleCount = 0;
+            }
+            else
+            {
+                param_pid.ki_flag = 0;
+            }
+
+            user_pid_2.Kp = pulse_kp;
+            user_pid_2.Ki = pulse_ki;
+
+            tube_current_piControl(1, ct_source);
         }
 
         // ---- 曝光结束条件判断 ----
@@ -576,10 +467,11 @@ void ct_task()
                 // 双源脉冲模式：准备切换通道
                 set_hv_state(HVPS_SM_ID_EXPO_END, ct_source);
             }
-            else 
+            else
             {
                 // 单源脉冲：留在 READY 等待下次曝光
                 set_hv_state(HVPS_SM_ID_READY, ct_source);
+                param_pid.pulse_count++;
             }
         }
 
@@ -590,7 +482,17 @@ void ct_task()
             config_mcuLock_signal(0);
             config_HVEn_signal(0);
             config_xrayOn_signal(0);
+            if (!Is_ContinuousMode_CT())
+            {
+                user_pid_2.Kp = 100;
+                user_pid_2.Ki = 30;
+                uint32_t old_ref = user_pid_2.config_ref;
+                tube_current_piControl_v2();
+                param_pid.config_ref = user_pid_2.config_ref;
 
+                debug_tx3("pi: %d, %d, %f\n",
+                          old_ref, user_pid_2.config_ref, user_pid_2.currValue);
+            }
             // 曝光计数
             config_data.expo_count[ct_source]++;
             config_data.expo_count_total[ct_source]++;
@@ -613,7 +515,7 @@ void ct_task()
 //        // 高压基准维持
 //        config_hvref_slope(ct_source);
 
-				// ----------- 灯丝保护计数 -----------
+        // ----------- 灯丝保护计数 -----------
         for (uint8_t i = 0; i < XRAY_NUMS; i++)
         {
             if (get_filament_pin(i) && get_hv_state(i) != HVPS_SM_ID_EXPOSURING)
@@ -622,10 +524,10 @@ void ct_task()
                 config_data.fila_protect_cnt[i] = 0;
         }
 
-				// ----------- 检查是否为双源交替切换 -----------
-       is_dual_source = (ctrl_data.enable[0] && ctrl_data.enable[1] &&
-                               ctrl_data.filament_on[0] && ctrl_data.filament_on[1] &&
-                               ctrl_data.interlock);
+        // ----------- 检查是否为双源交替切换 -----------
+        is_dual_source = (ctrl_data.enable[0] && ctrl_data.enable[1] &&
+                          ctrl_data.filament_on[0] && ctrl_data.filament_on[1] &&
+                          ctrl_data.interlock);
 
         if (is_dual_source)
         {
@@ -680,16 +582,16 @@ void ct_task()
         }
         else if (!ctrl_data.enable[ct_source])
         {
-						config_disable_sw(1);
-						config_enable_sw(0);
+            config_disable_sw(1);
+            config_enable_sw(0);
             // 单源或失能，直接退出
             xray_CT_disable();
-						ctrl_data.filament_on[0] = 0;
-						ctrl_data.filament_on[1] = 0;
+            ctrl_data.filament_on[0] = 0;
+            ctrl_data.filament_on[1] = 0;
             set_hv_state(HVPS_SM_ID_IDLE, 0);
             set_hv_state(HVPS_SM_ID_IDLE, 1);
         }
-				break;
+        break;
 
 
 

@@ -209,7 +209,7 @@ int set_tube_vol_curr1(volatile uint8_t *buff, char *p)
     {
         config_data.tube_curr[0] = ((float)data[1]) / 10;
         config_data.tube_vol[0]  = data[0];
-        config_data.tube_vol_step[0] = (float)(config_data.tube_vol[0]) / (50 * 1);
+        config_data.tube_vol_step[0] = (float)(config_data.tube_vol[0]) / (20 * 1);
         debug_tx3("A tube_vol:%d,tube_curr:%f, tube_vol_step:%f\n", config_data.tube_vol[0], config_data.tube_curr[0], config_data.tube_vol_step[0]);
     }
     else
@@ -241,7 +241,7 @@ int set_tube_vol_curr2(volatile uint8_t *buff, char *p)
     {
         config_data.tube_curr[1] = ((float)data[1]) / 10;
         config_data.tube_vol[1]  = data[0];
-        config_data.tube_vol_step[1] = (float)(config_data.tube_vol[1]) / (50 * 1);
+        config_data.tube_vol_step[1] = (float)(config_data.tube_vol[1]) / (20 * 1);
         debug_tx3("B tube_vol:%d,tube_curr:%f, tube_vol_step:%f\n", config_data.tube_vol[1], config_data.tube_curr[1], config_data.tube_vol_step[1]);
     }
     else
@@ -277,13 +277,13 @@ int set_expo_time1(volatile uint8_t *buff, char *p)
     if ((ctrl_data.xrayMode == XRAY_MODE_S_PULSE) || (ctrl_data.xrayMode == XRAY_MODE_D_PULSE))
     {
         debug_data.expoCycle_perCurrent[0] = num * 40;
-        debug_data.expoTime_expect[0] = 400;
-        debug_data.coolTime_expect[0] = 850;
+        debug_data.expoTime_expect[0] = 160;//400;
+        debug_data.coolTime_expect[0] = 340;//850;
     }
     else
     {
         debug_data.expoCycle_perCurrent[0] = 1;
-        debug_data.expoTime_expect[0] = num * 50000;
+        debug_data.expoTime_expect[0] = num * 20000;//num * 50000;
     }
 
     debug_tx3("A pusre count:%d, exp time:%d, cooltime:%d\n", debug_data.expoCycle_perCurrent[0], debug_data.expoTime_expect[0], debug_data.coolTime_expect[0]);

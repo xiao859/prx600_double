@@ -116,14 +116,14 @@ void xray_HV_enable(uint16_t value)
 /*更新校准结果到表中*/
 void filament_ref_update(uint8_t curr_idx, uint16_t n)
 {
-    if (Is_PulseMode())
-    {
-        parm_table[n].currRef[curr_idx]   = param_pid.config_ref;
-    }
-    else
-    {
-        parm_table[n].currRef_c[curr_idx] = param_pid.config_ref;
-    }
+//    if (Is_PulseMode())
+//    {
+//        parm_table[n].currRef[curr_idx]   = param_pid.config_ref;
+//    }
+//    else
+//    {
+//        parm_table[n].currRef_c[curr_idx] = param_pid.config_ref;
+//    }
 
 
     return;
@@ -169,7 +169,7 @@ void calibrate_task()
             set_hv_state(HPVS_SM_ID_CAL_RUN, cali_source);
 
             uint32_t currRef = (Is_PulseMode()) ? parm_table[cali_source].currRef[cali_data.curr_index] : parm_table[cali_source].currRef_c[cali_data.curr_index];
-            pid_Init(parm_table[cali_source].currValue[cali_data.curr_index], currRef, Is_PulseMode());
+ //           pid_Init(parm_table[cali_source].currValue[cali_data.curr_index], currRef, Is_PulseMode());
         }
         break;
 
@@ -206,10 +206,10 @@ void calibrate_task()
                 (cali_data.timmer_count > TIMER6_4_MILSECOND_CYCLES) &&
                 (cali_data.timmer_count % TIMER6_10_MILSECOND_CYCLES == 0))
         {
-            user_pid.currValue = sampled_data.tube_curr_value;
-            user_pid.Kp = 3.7;
-            user_pid.Ti = 0.0009;
-            tube_current_piControl(cali_source, cali_source);
+//            user_pid.currValue = sampled_data.tube_curr_value;
+//            user_pid.Kp = 3.7;
+//            user_pid.Ti = 0.0009;
+//            tube_current_piControl(cali_source, cali_source);
         }
 
         break;
@@ -219,9 +219,9 @@ void calibrate_task()
 
         if ((Is_PulseMode()) && (cali_data.timmer_count == (uint32_t)(cali_data.coolTime_expect / 2)))
         {
-            user_pid.Kp = 20;
-            user_pid.Ti = 1;
-            tube_current_piControl(cali_source, cali_source);
+//            user_pid.Kp = 20;
+//            user_pid.Ti = 1;
+//            tube_current_piControl(cali_source, cali_source);
         }
 
         if (cali_data.timmer_count < cali_data.coolTime_expect)
@@ -259,9 +259,9 @@ void calibrate_task()
                         if ((sw_change_time >= 50) && (sw_changed == 2))//HAL_GetTick() - last_switch_tick >= 1
                         {
                             uint32_t last_idx = cali_data.curr_index - 1;
-                            debug_tx3("close loop: %f, %f, %d, %d\n",
-                                      user_pid.currValue, parm_table[cali_source].currValue[last_idx], parm_table[cali_source].currRef[last_idx], param_pid.config_ref);
-                            cali_data.curr_index = 0;
+//                            debug_tx3("close loop: %f, %f, %d, %d\n",
+//                                      user_pid.currValue, parm_table[cali_source].currValue[last_idx], parm_table[cali_source].currRef[last_idx], param_pid.config_ref);
+                           cali_data.curr_index = 0;
                             /*该模式下所有电流校准完毕*/
                             if (Is_PulseMode())
                             {
@@ -276,7 +276,7 @@ void calibrate_task()
                                 calibrate_mode_config(cali_source);
                                 uint32_t currRef = (Is_PulseMode()) ?
                                                    parm_table[cali_source].currRef[cali_data.curr_index] : parm_table[cali_source].currRef_c[cali_data.curr_index];
-                                pid_Init(parm_table[cali_source].currValue[cali_data.curr_index], currRef, Is_PulseMode());
+//                                pid_Init(parm_table[cali_source].currValue[cali_data.curr_index], currRef, Is_PulseMode());
                             }
                             else
                             {
@@ -310,8 +310,8 @@ void calibrate_task()
                         if ((sw_change_time >= 50) && (sw_changed == 2))//HAL_GetTick() - last_switch_tick >= 1
                         {
                             uint32_t last_idx = cali_data.curr_index - 1;                /*上报本次校准结果*/
-                            debug_tx3("close loop: %d.%f, %f, %d, %d\n",
-                                      cali_source, user_pid.currValue, parm_table[cali_source].currValue[last_idx], parm_table[cali_source].currRef[last_idx], param_pid.config_ref);
+//                            debug_tx3("close loop: %d.%f, %f, %d, %d\n",
+//                                      cali_source, user_pid.currValue, parm_table[cali_source].currValue[last_idx], parm_table[cali_source].currRef[last_idx], param_pid.config_ref);
                             sw_change_time = 0;
                             cali_source ^= 1;                // 切换下一个射源交替运行
                             set_hv_state(HPVS_SM_ID_CAL_RUN, cali_source);                // 重新开始 RUN 状态
@@ -319,7 +319,7 @@ void calibrate_task()
 
                             uint32_t currRef = (Is_PulseMode()) ?
                                                parm_table[cali_source].currRef[cali_data.curr_index] : parm_table[cali_source].currRef_c[cali_data.curr_index];
-                            pid_Init(parm_table[cali_source].currValue[cali_data.curr_index], currRef, Is_PulseMode());
+//                            pid_Init(parm_table[cali_source].currValue[cali_data.curr_index], currRef, Is_PulseMode());
                             sw_changed = 0;
                         }
                     }
@@ -352,7 +352,7 @@ void calibrate_task()
 
                             uint32_t currRef = (Is_PulseMode()) ?                // 初始化下一个点的PID
                                                parm_table[cali_source].currRef[cali_data.curr_index] : parm_table[cali_source].currRef_c[cali_data.curr_index];
-                            pid_Init(parm_table[cali_source].currValue[cali_data.curr_index], currRef, Is_PulseMode());
+//                            pid_Init(parm_table[cali_source].currValue[cali_data.curr_index], currRef, Is_PulseMode());
                             sw_changed = 0;
                         }
                     }
