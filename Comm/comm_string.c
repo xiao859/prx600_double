@@ -316,13 +316,13 @@ int set_expo_time2(volatile uint8_t *buff, char *p)
     if ((ctrl_data.xrayMode == XRAY_MODE_S_PULSE) || (ctrl_data.xrayMode == XRAY_MODE_D_PULSE))
     {
         debug_data.expoCycle_perCurrent[1] = num * 40;
-        debug_data.expoTime_expect[1] = 400;
-        debug_data.coolTime_expect[1] = 850;
+        debug_data.expoTime_expect[1] = 160;//400;
+        debug_data.coolTime_expect[1] = 340;//850;
     }
     else
     {
         debug_data.expoCycle_perCurrent[1] = 1;
-        debug_data.expoTime_expect[1] = num * 50000;
+        debug_data.expoTime_expect[1] = num * 20000;//50000;
     }
 
     debug_tx3("B pusre count:%d, exp time:%d, cooltime:%d\n",

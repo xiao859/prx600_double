@@ -162,6 +162,9 @@ int main(void)
     debug_tx3("123\n");
 		uint8_t arr[5]={1,2,3,4,5};
 		HAL_UART_Transmit(&huart5, arr, MESSAGE_PACK_LENGTH, 1000);
+		
+		 __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_4, 1210);
+		HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_2, DAC_ALIGN_12B_R, 1800);
 
 //       xray_HV_enable_debug(1);
 //       HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_1, DAC_ALIGN_12B_R, 1241);

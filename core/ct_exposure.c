@@ -157,8 +157,8 @@ void flash_table_init()
     }
     for (i = 0; i < FILAMENT_CURRENT_TABLE_ORDER; i++)
     {
-        parm_table[1].currRef[i]   = MIN(MAX(parm_table[0].currRef[i], 1000), 2450);
-        parm_table[1].currRef_c[i] = MIN(MAX(parm_table[0].currRef_c[i], 1000), 2450);
+        parm_table[1].currRef[i]   = MIN(MAX(parm_table[1].currRef[i], 1000), 1550);
+        parm_table[1].currRef_c[i] = MIN(MAX(parm_table[1].currRef_c[i], 1000), 1550);
     }
     config_data.expo_count_total[1] = 0;     //
 }
@@ -220,9 +220,9 @@ void config_filament_ref_slop(uint16_t n)
     }
     else
     {
-        fila_ref_target = (ctrl_data.filament_on[n] == 1) ? IDLE_FILAMENT1_REF : 0;
+        fila_ref_target = (ctrl_data.filament_on[n] == 1) ? IDLE_FILAMENT2_REF : 0;
         if (config_data.fila_ref_realtime[n] == fila_ref_target) return;
-        config_data.fila_ref_realtime[n] = MAX(MIN(config_data.fila_ref_realtime[n], config_data.fila_ref_target[n]), (float)IDLE_FILAMENT2_REF);
+        config_data.fila_ref_realtime[n] = MAX(MIN(config_data.fila_ref_realtime[n], IDLE_FILAMENT2_REF), 0);
         uint32_t filament_ref = (uint32_t)floor(((config_data.fila_ref_realtime[n] / ADDA_FULL_SCALE_VIL_VALUE) * 2999));
         __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_4, filament_ref);
 
@@ -317,7 +317,7 @@ void ct_task()
     bool expo_end = false;
     bool is_dual_source = false;
 
-//     ctrl_data.xray_current= ct_source+1;
+    ctrl_data.xray_current= ct_source+1;
     hvps_sm_state ct_source_state = get_hv_state(ct_source);
 
     // Tick自增
@@ -337,8 +337,8 @@ void ct_task()
         // 先判断是否双源开启，提前进行预热参考输出
         if (ctrl_data.filament_on[0] && ctrl_data.filament_on[1])
         {
-            config_filament_ref_slop(0);
-            config_filament_ref_slop(1);
+//            config_filament_ref_slop(0);
+//            config_filament_ref_slop(1);
         }
         else if (ctrl_data.filament_on[ct_source])
         {
@@ -390,10 +390,10 @@ void ct_task()
         config_hvref_slope(ct_source);
         if (ctrl_data.enable[ct_source] && ctrl_data.expo[ct_source])
         {
-//            // 曝光允许前需检查对方曝光是否间隔超过10ms
-//            uint8_t other = (ct_source == 0) ? 1 : 0;
-//            if (HAL_GetTick() - last_expo_end_tick[other] < 10)
-//                break;  // 距离对方曝光过短，等待
+            // 曝光允许前需检查对方曝光是否间隔超过10ms
+            uint8_t other = (ct_source == 0) ? 1 : 0;
+            if (HAL_GetTick() - last_expo_end_tick[other] < 10)
+                break;  // 距离对方曝光过短，等待
             set_hv_state(HVPS_SM_ID_EXPOSURING, ct_source);
             xray_data.timmer_count[ct_source] = 1;
         }
@@ -487,11 +487,11 @@ void ct_task()
                 user_pid_2.Kp = 100;
                 user_pid_2.Ki = 30;
                 uint32_t old_ref = user_pid_2.config_ref;
-                tube_current_piControl_v2();
-                param_pid.config_ref = user_pid_2.config_ref;
+//                tube_current_piControl_v2();
+//                param_pid.config_ref = user_pid_2.config_ref;
 
-                debug_tx3("pi: %d, %d, %f\n",
-                          old_ref, user_pid_2.config_ref, user_pid_2.currValue);
+//                debug_tx3("pi: %d, %d, %f\n",
+//                          old_ref, user_pid_2.config_ref, user_pid_2.currValue);
             }
             // 曝光计数
             config_data.expo_count[ct_source]++;
@@ -533,7 +533,7 @@ void ct_task()
         {
             uint32_t elapsed = HAL_GetTick() - last_expo_end_tick[ct_source];
 
-            if (elapsed >= 8)
+            if (elapsed >= 12)
             {
                 sw_count++;
 
@@ -558,7 +558,7 @@ void ct_task()
                     if (sw_count >= 20)
                     {
                         ctrl_data.xray_current = 2;
-                        set_hv_state(HVPS_SM_ID_READY, 1 - ct_source);
+                        set_hv_state(HVPS_SM_ID_PREPARE, 1 - ct_source);
 
                         // 曝光次数统计
                         parm_table[ct_source].expo_count_total++;
@@ -592,67 +592,6 @@ void ct_task()
             set_hv_state(HVPS_SM_ID_IDLE, 1);
         }
         break;
-
-
-
-
-//        config_hvref_slope(ct_source);
-//        // 灯丝保护
-//        if (get_filament_pin(0) && get_hv_state(0) != HVPS_SM_ID_EXPOSURING)
-//            config_data.fila_protect_cnt[0]++;
-//        else
-//            config_data.fila_protect_cnt[0] = 0;
-//        if (get_filament_pin(1) && get_hv_state(1) != HVPS_SM_ID_EXPOSURING)
-//            config_data.fila_protect_cnt[1]++;
-//        else
-//            config_data.fila_protect_cnt[1] = 0;
-
-//        if ((ctrl_data.enable[ct_source]) && (ctrl_data.enable[1 - ct_source]) &&
-//                (ctrl_data.filament_on[ct_source]) && (ctrl_data.filament_on[1 - ct_source]) &&
-//                (ctrl_data.interlock))
-//        {
-//            // 曝光切换采样开关
-//            if ((HAL_GetTick() - last_expo_end_tick[ct_source]) >= 8)
-//            {
-//                if (sw_count >= 1)
-//                    sw_count++;
-//                if (sw_state == 0)
-//                {
-//                    config_disable_sw(ct_source);
-//                    sw_count = 1;
-//                    sw_state = 1;
-//                }
-//                if (sw_count >= 50)
-//                {
-//                    if (sw_state == 1)
-//                    {
-//                        config_enable_sw(1 - ct_source);
-//                        sw_count = 1;
-//                        sw_state = 2;
-//                    }
-//                    if ((sw_count >= 50) && (sw_state == 2))
-//                    {
-//                        ctrl_data.xray_current =  2 ;
-//                        set_hv_state(HVPS_SM_ID_READY, 1 - ct_source);
-//                        sw_state = 0;
-//                        parm_table[ct_source].expo_count_total++;
-//                        parm_table[ct_source].expo_times_total += config_data.expo_count_total[ct_source] / 3000000;
-//                        config_data.expo_count_total[ct_source] = 0;
-//                        sw_count = 0;
-//                        ct_source = 1 - ct_source;
-//                        xray_data.timmer_count[ct_source] = 1;
-//                    }
-//                }
-//            }
-//        }
-//        else if (!(ctrl_data.enable[ct_source]))
-//        {
-//            xray_CT_disable();
-//            set_hv_state(HVPS_SM_ID_IDLE, 0);
-//            set_hv_state(HVPS_SM_ID_IDLE, 1);
-//        }
-//        break;
-
     default:
         //set_hv_state(HVPS_SM_ID_IDLE, ct_source);
         break;
