@@ -1,6 +1,7 @@
 #include "pi_ctl.h"
 #include "ct_exposure.h"
 #include "dac.h"
+#include "tim.h"
 
 User_PID   user_pid;
 PARAM_PID  param_pid;
@@ -53,12 +54,12 @@ void pid_Init(float target, uint32_t ref_init, uint8_t isPulseMode)
     return;
 }
 
-void pid_Init_2(float target, uint32_t ref_init, uint8_t isPulseMode)
+void pid_Init_2(float target, uint32_t ref_init, uint8_t isPulseMode,uint8_t n)
 {
-    user_pid_2.config_ref = ref_init;
-    user_pid_2.currTarget = target;
-    user_pid_2.err = 0;
-    user_pid_2.last_err = 0;
+    user_pid_2.config_ref[n] = ref_init;
+    user_pid_2.currTarget[n]  = target;
+    user_pid_2.err[n]  = 0;
+    user_pid_2.last_err[n]  = 0;
 
     user_pid_2.Kp = 1;
     user_pid_2.Ki = 1;
@@ -145,22 +146,28 @@ void tube_current_pid_pulseInit(uint8_t n)
     HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_2, DAC_ALIGN_12B_R, param_pid.config_ref);
 }
 
-void tube_current_piControl_v2()
+void tube_current_piControl_v2(uint8_t n)
 {
-    user_pid_2.err = user_pid_2.currTarget - user_pid_2.currValue;
+    user_pid_2.err[n] = user_pid_2.currTarget - user_pid_2.currValue;
 
-    float output = user_pid_2.Kp * (user_pid_2.err - user_pid_2.last_err) + user_pid_2.Ki * user_pid_2.err;
+    float output = user_pid_2.Kp * (user_pid_2.err[n] - user_pid_2.last_err[n]) + user_pid_2.Ki * user_pid_2.err[n];
 
     if (param_pid.pulse_count >= 5)
     {
         output = MAX(MIN(output, 1), -1);
     }
 
-    user_pid_2.last_err = user_pid_2.err;
+    user_pid_2.last_err[n] = user_pid_2.err[n];
 
-    user_pid_2.config_ref = (uint32_t)(user_pid_2.config_ref + output);
-
-    user_pid_2.config_ref = MAX(MIN(user_pid_2.config_ref, 2750), 1000);
-
-    HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_2, DAC_ALIGN_12B_R, user_pid_2.config_ref);
+    user_pid_2.config_ref[n] = (uint32_t)(user_pid_2.config_ref[n] + output);
+		if(n==0)
+		{
+    user_pid_2.config_ref[n] = MAX(MIN(user_pid_2.config_ref[n], 2750), 1000);
+    HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_2, DAC_ALIGN_12B_R, user_pid_2.config_ref[n]);
+		}
+		else
+		{
+		user_pid_2.config_ref[n] = MAX(MIN(user_pid_2.config_ref[n], 1550), 1000);
+		 __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_4, config_data.fila_ref_realtime[n]);
+		}
 }

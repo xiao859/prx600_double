@@ -45,13 +45,13 @@ extern PARAM_PID  param_pid;
 
 typedef struct
 {
-    float currTarget;
-    float currValue;
+    float currTarget[2];
+    float currValue[2];
     float Kp;
     float Ki;
-    float err;
-    float last_err;
-    uint32_t config_ref;
+    float err[2];
+    float last_err[2];
+    uint32_t config_ref[2];
 } User_PID_2;
 extern User_PID_2   user_pid_2;
 
@@ -59,8 +59,8 @@ extern User_PID_2   user_pid_2;
 void tube_current_piControl(uint8_t conflag,uint8_t n);
 void pid_Init(float target, uint32_t ref_init, uint8_t isPulseMode);
 void tube_current_pid_pulseInit(uint8_t n);
-void tube_current_piControl_v2(void);
-void pid_Init_2(float target, uint32_t ref_init, uint8_t isPulseMode);
+void tube_current_piControl_v2(uint8_t n);
+void pid_Init_2(float target, uint32_t ref_init, uint8_t isPulseMode,uint8_t n);
 
 
 #endif

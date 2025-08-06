@@ -308,6 +308,7 @@ void check_dual_filament_preheat(void)
 uint32_t pulse_time_base_count = 0;
 float pulse_kp = 100;
 float pulse_ki = 1;
+uint32_t oldref[2]={0};
 void ct_task()
 {
     static uint32_t last_expo_end_tick[XRAY_NUMS] = {0};
@@ -356,23 +357,6 @@ void ct_task()
             xray_data.timmer_count[ct_source] = 1;
             config_data.expo_count[ct_source] = 0;
         }
-
-//        if (ctrl_data.interlock && ctrl_data.filament_on[ct_source] && (xray_data.timmer_count[ct_source] > TIMER6_2P5_SECOND_CYCLES))   //开启灯丝，预热2.5s
-//        {
-//            //config_filament_ref_slop(ct_source);
-//            config_mcuLock_signal(1);
-//            //config_enable_sw(ct_source);
-//            set_hv_state(HVPS_SM_ID_PREPARE, ct_source);
-//            xray_data.timmer_count[ct_source] = 1;
-//            config_data.expo_count[ct_source] = 0;
-//        }
-//        else if ((ctrl_data.filament_on[ct_source]) && (ctrl_data.filament_on[1 - ct_source]))        // 若当前模式为双源，则另一通道也要同时预热
-//        {
-//            config_filament_ref_slop(0);
-//            config_filament_ref_slop(1);
-//        }
-//        else if (ctrl_data.filament_on[ct_source])
-//            config_filament_ref_slop(ct_source);
         break;
 
     case HVPS_SM_ID_PREPARE:
@@ -383,7 +367,7 @@ void ct_task()
 
         pid_Init(config_data.tube_curr[ct_source], config_data.fila_ref_realtime[ct_source], Is_PulseMode_CT());
         param_pid.pulse_count = 0;
-        pid_Init_2(config_data.tube_curr[ct_source], config_data.fila_ref_realtime[ct_source], Is_PulseMode_CT());
+        pid_Init_2(config_data.tube_curr[ct_source], config_data.fila_ref_realtime[ct_source], Is_PulseMode_CT(),ct_source);
         break;
 
     case HVPS_SM_ID_READY:
@@ -423,7 +407,7 @@ void ct_task()
         config_xrayOn_signal(1);
 
         // 曝光控制：延时 PI 初始化
-        user_pid_2.currValue = 0.00645f * ((float)(adc_buffer3[2]));
+        user_pid_2.currValue[ct_source] = 0.00645f * ((float)(adc_buffer3[2]));
         user_pid.currValue = 0.00645f * ((float)(adc_buffer3[2]));
 
         /*连续模式PI调节*/
@@ -486,12 +470,12 @@ void ct_task()
             {
                 user_pid_2.Kp = 100;
                 user_pid_2.Ki = 30;
-                uint32_t old_ref = user_pid_2.config_ref;
-//                tube_current_piControl_v2();
-//                param_pid.config_ref = user_pid_2.config_ref;
+                oldref[ct_source] = user_pid_2.config_ref[ct_source];
+                tube_current_piControl_v2(ct_source);
+                param_pid.config_ref = user_pid_2.config_ref[ct_source];
 
-//                debug_tx3("pi: %d, %d, %f\n",
-//                          old_ref, user_pid_2.config_ref, user_pid_2.currValue);
+                debug_tx3("pi:%d, %d, %d, %f\n",
+                          ct_source,oldref, user_pid_2.config_ref, user_pid_2.currValue);
             }
             // 曝光计数
             config_data.expo_count[ct_source]++;
