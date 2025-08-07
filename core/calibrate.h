@@ -7,16 +7,11 @@
 
 #define     CALI_HV_REF                     90
 
-#define     CALI_SINGLE_CURR_TIME           2.4 //2.04
-
-
+#define     CALI_PULSE_COUNT                30
+//曝光时间 单位ms
 #define     CALI_PULSE_CURR_EXPO_TIME       15
 
-#define     CALI_PULSE_SIGLE_CURR_PERIOD    120
-
-#define     Is_PulseMode()                  ((cali_data.mode) == XRAY_MODE_D_PULSE)
-
-#define     Is_ContinuousMode()             ((cali_data.mode) == XRAY_MODE_D_CONTINUOUS)
+#define     CALI_PULSE_SIGLE_CURR_PERIOD    60
 
 
 typedef struct {

@@ -320,11 +320,11 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 
             ct_task();
         }
-//        if (Is_CalibrateMode())
-//        {
-//            calibrate_task();
-//        }
-        if (Is_DebugMode())
+        else if (Is_CalibrateMode())
+        {
+            calibrate_task();
+        }
+        else if (Is_DebugMode())
         {
             debug_task();
         }

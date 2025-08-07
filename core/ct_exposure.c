@@ -83,13 +83,17 @@ void xray_CT_disable()
     return;
 }
 
-void xray_system_disable(uint16_t n)
+void xray_system_disable()
 {
     xray_CT_disable();
 
-    ctrl_data.enable[n] = 0;
-    ctrl_data.expo[n]  = 0;
-    ctrl_data.filament_on[n]  = 0;
+    ctrl_data.enable[0] = 0;
+    ctrl_data.expo[0]  = 0;
+    ctrl_data.filament_on[0]  = 0;
+
+    ctrl_data.enable[1] = 0;
+    ctrl_data.expo[1]  = 0;
+    ctrl_data.filament_on[1]  = 0;
 }
 
 hvps_sm_state get_hv_state(uint16_t n)
@@ -308,7 +312,7 @@ void check_dual_filament_preheat(void)
 uint32_t pulse_time_base_count = 0;
 float pulse_kp = 100;
 float pulse_ki = 1;
-uint32_t oldref[2]={0};
+uint32_t oldref[2] = {0};
 void ct_task()
 {
     static uint32_t last_expo_end_tick[XRAY_NUMS] = {0};
@@ -318,7 +322,7 @@ void ct_task()
     bool expo_end = false;
     bool is_dual_source = false;
 
-    ctrl_data.xray_current= ct_source+1;
+    ctrl_data.xray_current = ct_source + 1;
     hvps_sm_state ct_source_state = get_hv_state(ct_source);
 
     // Tick自增
@@ -367,7 +371,7 @@ void ct_task()
 
         pid_Init(config_data.tube_curr[ct_source], config_data.fila_ref_realtime[ct_source], Is_PulseMode_CT());
         param_pid.pulse_count = 0;
-        pid_Init_2(config_data.tube_curr[ct_source], config_data.fila_ref_realtime[ct_source], Is_PulseMode_CT(),ct_source);
+        pid_Init_2(config_data.tube_curr[ct_source], config_data.fila_ref_realtime[ct_source], Is_PulseMode_CT(), ct_source);
         break;
 
     case HVPS_SM_ID_READY:
@@ -475,7 +479,7 @@ void ct_task()
                 param_pid.config_ref = user_pid_2.config_ref[ct_source];
 
                 debug_tx3("pi:%d, %d, %d, %f\n",
-                          ct_source,oldref, user_pid_2.config_ref, user_pid_2.currValue);
+                          ct_source, oldref, user_pid_2.config_ref, user_pid_2.currValue);
             }
             // 曝光计数
             config_data.expo_count[ct_source]++;

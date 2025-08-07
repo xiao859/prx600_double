@@ -90,7 +90,7 @@ void xray_system_fault_check()
     {
         set_hv_state(HVPS_SM_ID_FAULT, 0);
         set_hv_state(HVPS_SM_ID_FAULT, 1);
-        xray_system_disable(0);
+        xray_system_disable();
         config_fault_signal(1);
 
         falut_led(1);
