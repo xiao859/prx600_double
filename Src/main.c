@@ -163,7 +163,7 @@ int main(void)
 		uint8_t arr[5]={1,2,3,4,5};
 		HAL_UART_Transmit(&huart5, arr, MESSAGE_PACK_LENGTH, 1000);
 		
-		 __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_4, 1210);
+		 __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_4, 1360);
 		HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_2, DAC_ALIGN_12B_R, 1800);
 
 //       xray_HV_enable_debug(1);
@@ -312,19 +312,19 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
         transform_adc_values();
 //               config_filament_ref_slop_debug(0);
 //                config_filament_ref_slop_debug(1);
-        if (Is_CTMode())
-        {
-            ctrl_data.expo[1]   = get_expo_pin(0);
+//        if (Is_CTMode())
+//        {
+//            ctrl_data.expo[1]   = get_expo_pin(0);
 
-            ctrl_data.expo[0]   = get_expo_pin(1);
+//            ctrl_data.expo[0]   = get_expo_pin(1);
 
-            ct_task();
-        }
-        else if (Is_CalibrateMode())
-        {
-            calibrate_task();
-        }
-        else if (Is_DebugMode())
+//            ct_task();
+//        }
+//        else if (Is_CalibrateMode())
+//        {
+//            calibrate_task();
+//        }
+        if (Is_DebugMode())
         {
             debug_task();
         }

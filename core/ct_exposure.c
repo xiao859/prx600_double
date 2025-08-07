@@ -217,18 +217,18 @@ void config_filament_ref_slop(uint16_t n)
     if (n == 0)
     {
         fila_ref_target = (ctrl_data.filament_on[n] == 1) ? IDLE_FILAMENT1_REF : 0;
-        if (config_data.fila_ref_realtime[n] == fila_ref_target) return;
-        config_data.fila_ref_realtime[n] = MAX(MIN(config_data.fila_ref_realtime[n], IDLE_FILAMENT1_REF), 0);
-        uint32_t filament_ref = (uint32_t)floor(((config_data.fila_ref_realtime[n] / ADDA_FULL_SCALE_VIL_VALUE) * 4095));
+        config_data.fila_ref_realtime[n] = MAX(MIN(config_data.fila_ref_realtime[n], IDLE_FILAMENT1_REF), 0);   
+				if (config_data.fila_ref_realtime[n] == fila_ref_target) return;
+       // uint32_t filament_ref = (uint32_t)floor(((config_data.fila_ref_realtime[n] / ADDA_FULL_SCALE_VIL_VALUE) * 4095));
         HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_2, DAC_ALIGN_12B_R, (uint32_t)config_data.fila_ref_realtime[n]);
     }
     else
     {
         fila_ref_target = (ctrl_data.filament_on[n] == 1) ? IDLE_FILAMENT2_REF : 0;
-        if (config_data.fila_ref_realtime[n] == fila_ref_target) return;
-        config_data.fila_ref_realtime[n] = MAX(MIN(config_data.fila_ref_realtime[n], IDLE_FILAMENT2_REF), 0);
-        uint32_t filament_ref = (uint32_t)floor(((config_data.fila_ref_realtime[n] / ADDA_FULL_SCALE_VIL_VALUE) * 2999));
-        __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_4, filament_ref);
+        config_data.fila_ref_realtime[n] = MAX(MIN(config_data.fila_ref_realtime[n], IDLE_FILAMENT2_REF), 0); 
+				if (config_data.fila_ref_realtime[n] == fila_ref_target) return;
+        //uint32_t filament_ref = (uint32_t)floor(((config_data.fila_ref_realtime[n] / ADDA_FULL_SCALE_VIL_VALUE) * 2999));
+        __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_4, config_data.fila_ref_realtime[n]);
 
     }
 }
@@ -275,7 +275,7 @@ void config_filamentRef(uint16_t n)
     else
     {
         //pwm
-        __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_4, config_data.fila_ref_realtime[n]);
+        __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_4, 1360);//config_data.fila_ref_realtime[n]
     }
     return;
 }
@@ -342,8 +342,8 @@ void ct_task()
         // 先判断是否双源开启，提前进行预热参考输出
         if (ctrl_data.filament_on[0] && ctrl_data.filament_on[1])
         {
-//            config_filament_ref_slop(0);
-//            config_filament_ref_slop(1);
+            config_filament_ref_slop(0);
+            config_filament_ref_slop(1);
         }
         else if (ctrl_data.filament_on[ct_source])
         {
@@ -365,6 +365,14 @@ void ct_task()
 
     case HVPS_SM_ID_PREPARE:
         config_filamentRef(ct_source); /*灯丝基准值拉到预期*/
+				if(ct_source == 0)
+				HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_2, DAC_ALIGN_12B_R, parm_table[ct_source].currRef[config_data.tube_curr_index[ct_source]]);
+				else
+				{__HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_4, 1360);//parm_table[ct_source].currRef[config_data.tube_curr_index[ct_source]]
+					uint32_t rtt= parm_table[ct_source].currRef[config_data.tube_curr_index[ct_source]];
+					 debug_tx3("pi:%d\n", rtt);
+				}
+				
         config_ready_signal(1);
         set_hv_state(HVPS_SM_ID_READY, ct_source);
         xray_data.timmer_count[ct_source] = 1;
@@ -478,8 +486,8 @@ void ct_task()
                 tube_current_piControl_v2(ct_source);
                 param_pid.config_ref = user_pid_2.config_ref[ct_source];
 
-                debug_tx3("pi:%d, %d, %d, %f\n",
-                          ct_source, oldref, user_pid_2.config_ref, user_pid_2.currValue);
+//                debug_tx3("pi:%d, %d, %d, %f\n",
+//                          ct_source, oldref, user_pid_2.config_ref, user_pid_2.currValue);
             }
             // 曝光计数
             config_data.expo_count[ct_source]++;

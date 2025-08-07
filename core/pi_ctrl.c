@@ -168,6 +168,6 @@ void tube_current_piControl_v2(uint8_t n)
 		else
 		{
 		user_pid_2.config_ref[n] = MAX(MIN(user_pid_2.config_ref[n], 1550), 1000);
-		 __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_4, config_data.fila_ref_realtime[n]);
+		 __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_4, user_pid_2.config_ref[n]);
 		}
 }
