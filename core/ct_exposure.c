@@ -324,6 +324,7 @@ void ct_task()
     static uint16_t sw_count = 0;
     bool expo_end = false;
     bool is_dual_source = false;
+		static uint32_t last_expo_count = 0;
 
     ctrl_data.xray_current = ct_source + 1;
     hvps_sm_state ct_source_state = get_hv_state(ct_source);
@@ -333,8 +334,8 @@ void ct_task()
         xray_data.timmer_count[ct_source]++;
     else
         return;
-		last_expo_end_tick[0]++;
-		last_expo_end_tick[1]++;
+		last_expo_count++;
+		
     switch (ct_source_state)
     {
     case HVPS_SM_ID_IDLE:
@@ -485,7 +486,9 @@ void ct_task()
             xray_data.isCheckAvailable[ct_source] = 0;
             config_mcuLock_signal(0);
             config_HVEn_signal(0);
-            config_xrayOn_signal(0);
+						// 曝光完成时间记录
+						last_expo_end_tick[ct_source] =last_expo_count;
+						config_xrayOn_signal(0);
             if (!Is_ContinuousMode_CT())
             {
                 user_pid_2.Kp = 80;
@@ -509,8 +512,6 @@ void ct_task()
             }
         }
 
-        // 曝光完成时间记录
-        last_expo_end_tick[ct_source] = HAL_GetTick();
         break;
 
     case HVPS_SM_ID_EXPO_END:
@@ -534,9 +535,9 @@ void ct_task()
 
         if (is_dual_source)
         {
-            uint32_t elapsed = HAL_GetTick() - last_expo_end_tick[ct_source];
+            uint32_t elapsed = last_expo_count - last_expo_end_tick[ct_source];
 
-            if (elapsed >= 10)
+            if (elapsed >= 200)
             {
                 sw_count++;
 
@@ -593,6 +594,7 @@ void ct_task()
             ctrl_data.filament_on[1] = 0;
             set_hv_state(HVPS_SM_ID_IDLE, 0);
             set_hv_state(HVPS_SM_ID_IDLE, 1);
+						last_expo_count = 0;
         }
         break;
     default:
