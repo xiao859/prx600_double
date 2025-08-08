@@ -2,6 +2,7 @@
 #include "ct_exposure.h"
 #include "dac.h"
 #include "tim.h"
+#include "app_uart.h"
 
 User_PID   user_pid;
 PARAM_PID  param_pid;
@@ -148,7 +149,9 @@ void tube_current_pid_pulseInit(uint8_t n)
 
 void tube_current_piControl_v2(uint8_t n)
 {
-    user_pid_2.err[n] = user_pid_2.currTarget - user_pid_2.currValue;
+    user_pid_2.err[n] = user_pid_2.currTarget[n] - user_pid_2.currValue[n];
+	
+//		debug_tx3("curt:%d, %f\n", n,  user_pid_2.currTarget[n]);
 
     float output = user_pid_2.Kp * (user_pid_2.err[n] - user_pid_2.last_err[n]) + user_pid_2.Ki * user_pid_2.err[n];
 
@@ -162,12 +165,12 @@ void tube_current_piControl_v2(uint8_t n)
     user_pid_2.config_ref[n] = (uint32_t)(user_pid_2.config_ref[n] + output);
 		if(n==0)
 		{
-    user_pid_2.config_ref[n] = MAX(MIN(user_pid_2.config_ref[n], 2750), 1000);
+    user_pid_2.config_ref[n] = MAX(MIN(user_pid_2.config_ref[n], 2600), 1000);
     HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_2, DAC_ALIGN_12B_R, user_pid_2.config_ref[n]);
 		}
 		else
 		{
-		user_pid_2.config_ref[n] = MAX(MIN(user_pid_2.config_ref[n], 1550), 1000);
-		 __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_4, user_pid_2.config_ref[n]);
+		user_pid_2.config_ref[n] = MAX(MIN(user_pid_2.config_ref[n], 1700), 1000);
+		 __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_4,user_pid_2.config_ref[n] );//1360
 		}
 }

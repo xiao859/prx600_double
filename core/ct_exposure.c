@@ -19,13 +19,13 @@ volatile xray_parament_table parm_table[XRAY_NUMS] =
     {
         0, 0, 1,
         {1,    2,    3,    4,    5,    6,    7,    8,    9,    10,  11,   12},
-        {1600, 1800, 1890, 2000, 2050, 2120, 2190, 2230, 2290, 2330, 2370, 2410},
+        {1700, 1850, 1980, 2050, 2140, 2200, 2270, 2320, 2370, 2400, 2440, 2480},
         {1600, 1800, 1890, 2000, 2050, 2120, 2190, 2230, 2290, 2330, 2370, 2430},
     },
     {
         0, 0, 1,
         {1,    2,    3,    4,    5,    6,    7,    8,    9,    10,  11,   12},
-        {1030, 1150, 1210, 1270, 1320, 1360, 1400, 1430, 1460, 1490, 1510, 1540},
+        {1100, 1200, 1280, 1330, 1380, 1420, 1460, 1500, 1530, 1550, 1580, 1600},
         {1030, 1150, 1210, 1270, 1320, 1360, 1400, 1430, 1460, 1480, 1500, 1530},
     },
 };
@@ -149,8 +149,8 @@ void flash_table_init()
     }
     for (i = 0; i < FILAMENT_CURRENT_TABLE_ORDER; i++)
     {
-        parm_table[0].currRef[i]   = MIN(MAX(parm_table[0].currRef[i], 1000), 2450);
-        parm_table[0].currRef_c[i] = MIN(MAX(parm_table[0].currRef_c[i], 1000), 2450);
+        parm_table[0].currRef[i]   = MIN(MAX(parm_table[0].currRef[i], 1000), 2500);
+        parm_table[0].currRef_c[i] = MIN(MAX(parm_table[0].currRef_c[i], 1000), 2500);
     }
     config_data.expo_count_total[0] = 0;     //
 
@@ -161,8 +161,8 @@ void flash_table_init()
     }
     for (i = 0; i < FILAMENT_CURRENT_TABLE_ORDER; i++)
     {
-        parm_table[1].currRef[i]   = MIN(MAX(parm_table[1].currRef[i], 1000), 1550);
-        parm_table[1].currRef_c[i] = MIN(MAX(parm_table[1].currRef_c[i], 1000), 1550);
+        parm_table[1].currRef[i]   = MIN(MAX(parm_table[1].currRef[i], 1000), 1650);
+        parm_table[1].currRef_c[i] = MIN(MAX(parm_table[1].currRef_c[i], 1000), 1650);
     }
     config_data.expo_count_total[1] = 0;     //
 }
@@ -228,7 +228,7 @@ void config_filament_ref_slop(uint16_t n)
         config_data.fila_ref_realtime[n] = MAX(MIN(config_data.fila_ref_realtime[n], IDLE_FILAMENT2_REF), 0); 
 				if (config_data.fila_ref_realtime[n] == fila_ref_target) return;
         //uint32_t filament_ref = (uint32_t)floor(((config_data.fila_ref_realtime[n] / ADDA_FULL_SCALE_VIL_VALUE) * 2999));
-        __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_4, config_data.fila_ref_realtime[n]);
+        __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_4, config_data.fila_ref_realtime[n]);//1360
 
     }
 }
@@ -251,7 +251,7 @@ uint32_t get_filamentRef(float tube_current, uint16_t n)
             break;
         }
     }
-
+//		return parm_table[n].currRef[config_data.tube_curr_index[n]];
     if (tube_current >= parm_table[n].currValue[FILAMENT_CURRENT_TABLE_ORDER - 1])
     {
         return parm_table[n].currRef[config_data.tube_curr_index[n]];
@@ -275,7 +275,7 @@ void config_filamentRef(uint16_t n)
     else
     {
         //pwm
-        __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_4, 1360);//config_data.fila_ref_realtime[n]
+        __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_4,config_data.fila_ref_realtime[n] );//1360
     }
     return;
 }
@@ -362,27 +362,26 @@ void ct_task()
             config_data.expo_count[ct_source] = 0;
         }
         break;
-
+        
     case HVPS_SM_ID_PREPARE:
-        config_filamentRef(ct_source); /*灯丝基准值拉到预期*/
-				if(ct_source == 0)
+				config_filamentRef(ct_source); /*灯丝基准值拉到预期*/
 				HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_2, DAC_ALIGN_12B_R, parm_table[ct_source].currRef[config_data.tube_curr_index[ct_source]]);
-				else
-				{__HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_4, 1360);//parm_table[ct_source].currRef[config_data.tube_curr_index[ct_source]]
-					uint32_t rtt= parm_table[ct_source].currRef[config_data.tube_curr_index[ct_source]];
-					 debug_tx3("pi:%d\n", rtt);
-				}
+
+				__HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_4,parm_table[ct_source].currRef[config_data.tube_curr_index[ct_source]]);// 1360
+				//	uint32_t rtt= parm_table[ct_source].currRef[config_data.tube_curr_index[ct_source]];
 				
         config_ready_signal(1);
         set_hv_state(HVPS_SM_ID_READY, ct_source);
         xray_data.timmer_count[ct_source] = 1;
-
-        pid_Init(config_data.tube_curr[ct_source], config_data.fila_ref_realtime[ct_source], Is_PulseMode_CT());
+			  pid_Init(config_data.tube_curr[ct_source], config_data.fila_ref_realtime[ct_source], Is_PulseMode_CT());
         param_pid.pulse_count = 0;
-        pid_Init_2(config_data.tube_curr[ct_source], config_data.fila_ref_realtime[ct_source], Is_PulseMode_CT(), ct_source);
+        pid_Init_2(config_data.tube_curr[0], config_data.fila_ref_realtime[0], Is_PulseMode_CT(), 0);
+				pid_Init_2(config_data.tube_curr[1], config_data.fila_ref_realtime[1], Is_PulseMode_CT(), 1);
         break;
 
     case HVPS_SM_ID_READY:
+
+		
         config_hvref_slope(ct_source);
         if (ctrl_data.enable[ct_source] && ctrl_data.expo[ct_source])
         {
@@ -420,7 +419,7 @@ void ct_task()
 
         // 曝光控制：延时 PI 初始化
         user_pid_2.currValue[ct_source] = 0.00645f * ((float)(adc_buffer3[2]));
-        user_pid.currValue = 0.00645f * ((float)(adc_buffer3[2]));
+        user_pid.currValue = 0.00645f * ((float)(adc_buffer3[2]));        
 
         /*连续模式PI调节*/
         if ((param_pid.pulse_count >= 5) && Is_ContinuousMode_CT() && (xray_data.timmer_count[ct_source] > TIMER6_5_MILSECOND_CYCLES))
@@ -486,8 +485,7 @@ void ct_task()
                 tube_current_piControl_v2(ct_source);
                 param_pid.config_ref = user_pid_2.config_ref[ct_source];
 
-//                debug_tx3("pi:%d, %d, %d, %f\n",
-//                          ct_source, oldref, user_pid_2.config_ref, user_pid_2.currValue);
+								debug_tx3("pi:%d, %d, %d, %f\n", ct_source, oldref[ct_source], user_pid_2.config_ref[ct_source], user_pid_2.currValue[ct_source]);
             }
             // 曝光计数
             config_data.expo_count[ct_source]++;
@@ -554,7 +552,7 @@ void ct_task()
                     if (sw_count >= 20)
                     {
                         ctrl_data.xray_current = 2;
-                        set_hv_state(HVPS_SM_ID_PREPARE, 1 - ct_source);
+                        set_hv_state(HVPS_SM_ID_READY, 1 - ct_source);
 
                         // 曝光次数统计
                         parm_table[ct_source].expo_count_total++;
