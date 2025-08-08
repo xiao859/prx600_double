@@ -19,13 +19,13 @@ volatile xray_parament_table parm_table[XRAY_NUMS] =
     {
         0, 0, 1,
         {1,    2,    3,    4,    5,    6,    7,    8,    9,    10,  11,   12},
-        {1700, 1850, 1980, 2050, 2140, 2200, 2270, 2420, 2530, 2700, 2440, 2480},
+        {1700, 1700, 1980, 2050, 2140, 2200, 2270, 2420, 2530, 2700, 2440, 2480},
         {1600, 1800, 1890, 2000, 2050, 2120, 2190, 2230, 2290, 2330, 2370, 2430},
     },
     {
         0, 0, 1,
         {1,    2,    3,    4,    5,    6,    7,    8,    9,    10,  11,   12},
-        {1100, 1200, 1280, 1330, 1380, 1420, 1460, 1600, 1630, 1750, 1580, 1600},
+        {1100, 1200, 1450, 1330, 1380, 1420, 1460, 1600, 1630, 1750, 1580, 1600},
         {1030, 1150, 1210, 1270, 1320, 1360, 1400, 1430, 1460, 1480, 1500, 1530},
     },
 };
@@ -333,7 +333,8 @@ void ct_task()
         xray_data.timmer_count[ct_source]++;
     else
         return;
-
+		last_expo_end_tick[0]++;
+		last_expo_end_tick[1]++;
     switch (ct_source_state)
     {
     case HVPS_SM_ID_IDLE:
@@ -394,9 +395,9 @@ void ct_task()
         if (ctrl_data.enable[ct_source] && ctrl_data.expo[ct_source])
         {
             // 曝光允许前需检查对方曝光是否间隔超过10ms
-            uint8_t other = (ct_source == 0) ? 1 : 0;
-            if (HAL_GetTick() - last_expo_end_tick[other] < 10)
-                break;  // 距离对方曝光过短，等待
+            //uint8_t other = (ct_source == 0) ? 1 : 0;
+           // if (HAL_GetTick() - last_expo_end_tick[other] < 10)
+            //    break;  // 距离对方曝光过短，等待
             set_hv_state(HVPS_SM_ID_EXPOSURING, ct_source);
             xray_data.timmer_count[ct_source] = 1;
         }
@@ -535,7 +536,7 @@ void ct_task()
         {
             uint32_t elapsed = HAL_GetTick() - last_expo_end_tick[ct_source];
 
-            if (elapsed >= 12)
+            if (elapsed >= 10)
             {
                 sw_count++;
 
