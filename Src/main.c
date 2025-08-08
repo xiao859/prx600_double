@@ -312,14 +312,14 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
         transform_adc_values();
 //               config_filament_ref_slop_debug(0);
 //                config_filament_ref_slop_debug(1);
-        if (Is_CTMode())
-        {
-            ctrl_data.expo[1]   = get_expo_pin(0);
+//        if (Is_CTMode())
+//        {
+//            ctrl_data.expo[1]   = get_expo_pin(0);
 
-            ctrl_data.expo[0]   = get_expo_pin(1);
+//            ctrl_data.expo[0]   = get_expo_pin(1);
 
-            ct_task();
-        }
+//            ct_task();
+//        }
 //        else if (Is_CalibrateMode())
 //        {
 //            calibrate_task();

@@ -170,7 +170,8 @@ void tube_current_piControl_v2(uint8_t n)
 		}
 		else
 		{
-		user_pid_2.config_ref[n] = MAX(MIN(user_pid_2.config_ref[n], 1700), 1000);
+		user_pid_2.config_ref[n] = MAX(MIN(user_pid_2.config_ref[n], 1850), 1000);
 		 __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_4,user_pid_2.config_ref[n] );//1360
 		}
+		debug_tx3("pi_p:%d, %f, %d, %f\n", n, output, user_pid_2.config_ref[n],user_pid_2.err[n]);
 }
