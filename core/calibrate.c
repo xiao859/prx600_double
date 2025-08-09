@@ -191,8 +191,8 @@ void calibrate_task()
 
         if (cali_data.timmer_count == (uint32_t)(cali_data.coolTime_expect / 2))
         {
-            user_pid_2.Kp = 100;
-            user_pid_2.Ki = 30;
+//            user_pid_2.Kp = 100;
+//            user_pid_2.Ki = 30;
 
             oldref[cali_source] = user_pid_2.config_ref[cali_source];
             tube_current_piControl_v2(cali_source);
@@ -471,8 +471,8 @@ void cal_cooling(uint8_t src)
 
     if (cali_data.timmer_count == (uint32_t)(cali_data.coolTime_expect / 2))
     {
-        user_pid_2.Kp = 100;
-        user_pid_2.Ki = 30;
+//        user_pid_2.Kp = 100;
+//        user_pid_2.Ki = 30;
         tube_current_piControl_v2(src);
         param_pid.config_ref = user_pid_2.config_ref[src];
     }

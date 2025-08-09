@@ -315,6 +315,7 @@ void check_dual_filament_preheat(void)
 uint32_t pulse_time_base_count = 0;
 float pulse_kp = 100;
 float pulse_ki = 1;
+
 uint32_t oldref[2] = {0};
 void ct_task()
 {
@@ -450,8 +451,8 @@ void ct_task()
                 param_pid.ki_flag = 0;
             }
 
-            user_pid_2.Kp = pulse_kp;
-            user_pid_2.Ki = pulse_ki;
+            user_pid_2.Kp[ct_source] = pulse_kp;
+            user_pid_2.Ki[ct_source] = pulse_ki;
 
             tube_current_piControl(1, ct_source);
         }
@@ -471,6 +472,7 @@ void ct_task()
             {
                 // 双源脉冲模式：准备切换通道
                 set_hv_state(HVPS_SM_ID_EXPO_END, ct_source);
+							  param_pid.pulse_count++;
             }
             else
             {
@@ -491,13 +493,15 @@ void ct_task()
 						config_xrayOn_signal(0);
             if (!Is_ContinuousMode_CT())
             {
-                user_pid_2.Kp = 80;
-                user_pid_2.Ki = 30;
+							user_pid_2.Kp[1] = 80;
+							user_pid_2.Ki[1] = 30;
+							user_pid_2.Kp[0] = 10;
+							user_pid_2.Ki[0] = 80;
                 oldref[ct_source] = user_pid_2.config_ref[ct_source];
                 tube_current_piControl_v2(ct_source);
                 param_pid.config_ref = user_pid_2.config_ref[ct_source];
 
-							debug_tx3("pi:%d, %d,%f\n", ct_source, oldref[ct_source], user_pid_2.currValue[ct_source]);
+	//						debug_tx3("pi:%d, %d,%f\n", ct_source, oldref[ct_source], user_pid_2.currValue[ct_source]);
             }
             // 曝光计数
             config_data.expo_count[ct_source]++;

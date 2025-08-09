@@ -47,8 +47,8 @@ typedef struct
 {
     float currTarget[2];
     float currValue[2];
-    float Kp;
-    float Ki;
+    float Kp[2];
+    float Ki[2];
     float err[2];
     float last_err[2];
     uint32_t config_ref[2];

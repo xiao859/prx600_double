@@ -62,8 +62,8 @@ void pid_Init_2(float target, uint32_t ref_init, uint8_t isPulseMode,uint8_t n)
     user_pid_2.err[n]  = 0;
     user_pid_2.last_err[n]  = 0;
 
-    user_pid_2.Kp = 1;
-    user_pid_2.Ki = 1;
+    user_pid_2.Kp[n] = 1;
+    user_pid_2.Ki[n] = 1;
 
 }
 
@@ -150,12 +150,11 @@ void tube_current_pid_pulseInit(uint8_t n)
 void tube_current_piControl_v2(uint8_t n)
 {
     user_pid_2.err[n] = user_pid_2.currTarget[n] - user_pid_2.currValue[n];
-	
-//		debug_tx3("curt:%d, %f\n", n,  user_pid_2.currTarget[n]);
 
-    float output = user_pid_2.Kp * (user_pid_2.err[n] - user_pid_2.last_err[n]) + user_pid_2.Ki * user_pid_2.err[n];
 
-    if (param_pid.pulse_count >= 5)
+    float output = user_pid_2.Kp[n] * (user_pid_2.err[n] - user_pid_2.last_err[n]) + user_pid_2.Ki[n] * user_pid_2.err[n];
+
+    if (param_pid.pulse_count >= 10)
     {
         output = MAX(MIN(output, 1), -1);
     }
@@ -163,6 +162,8 @@ void tube_current_piControl_v2(uint8_t n)
     user_pid_2.last_err[n] = user_pid_2.err[n];
 
     user_pid_2.config_ref[n] = (uint32_t)(user_pid_2.config_ref[n] + output);
+//		if(n==0)
+//		debug_tx3("curt:%f,%f,%f,%d\n", user_pid_2.currValue[n],output, user_pid_2.last_err[n],user_pid_2.config_ref[n]);
 		if(n==0)
 		{
     user_pid_2.config_ref[n] = MAX(MIN(user_pid_2.config_ref[n], 2600), 1000);
