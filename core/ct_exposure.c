@@ -20,7 +20,7 @@ volatile xray_parament_table parm_table[XRAY_NUMS] =
         0, 0, 1,
         {1,    2,    3,    4,    5,    6,    7,    8,    9,    10,  11,   12},
         {1720, 1875, 2050, 2150, 2235, 2300, 2370, 2430, 2485, 2535, 2550, 2600},
-        {1600, 1800, 1890, 2000, 2050, 2120, 2190, 2230, 2290, 2330, 2370, 2430},
+        {1720, 1875, 1920, 2050, 2100, 2120, 2190, 2230, 2290, 2330, 2370, 2430},
     },
     {
         0, 0, 1,
@@ -254,14 +254,24 @@ uint32_t get_filamentRef(float tube_current, uint16_t n)
 //      return parm_table[n].currRef[config_data.tube_curr_index[n]];
     if (tube_current >= parm_table[n].currValue[FILAMENT_CURRENT_TABLE_ORDER - 1])
     {
-        return parm_table[n].currRef[config_data.tube_curr_index[n]];
+        if (ctrl_data.xrayMode == XRAY_MODE_S_CONTINUOUS)
+            return parm_table[n].currRef_c[config_data.tube_curr_index[n]];
+        else
+            return parm_table[n].currRef[config_data.tube_curr_index[n]];
     }
 
     uint32_t currRef_uplimit;
     uint32_t currRef_downlimit;
-
-    currRef_uplimit   = parm_table[n].currRef[config_data.tube_curr_index[n] + 1];
-    currRef_downlimit = parm_table[n].currRef[config_data.tube_curr_index[n]];
+    if ((ctrl_data.xrayMode == XRAY_MODE_S_CONTINUOUS) && (index >= 8))
+    {
+        currRef_uplimit   = parm_table[n].currRef_c[config_data.tube_curr_index[n] + 1];
+        currRef_downlimit = parm_table[n].currRef_c[config_data.tube_curr_index[n]];
+    }
+    else
+    {
+        currRef_uplimit   = parm_table[n].currRef[config_data.tube_curr_index[n] + 1];
+        currRef_downlimit = parm_table[n].currRef[config_data.tube_curr_index[n]];
+    }
 
     return (currRef_downlimit + (tube_current - parm_table[n].currValue[index]) * (currRef_uplimit - currRef_downlimit));
 
@@ -445,7 +455,7 @@ void ct_task()
             {
                 param_pid.ki_flag = 1;
                 param_pid.ti_CycleCount = 0;
-								debug_tx3("pi:%d,%f\n", param_pid.config_ref, user_pid.currValue);
+                //  debug_tx3("pi:%d,%f\n", param_pid.config_ref, user_pid.currValue);
             }
             else
             {
@@ -600,7 +610,7 @@ void ct_task()
             set_hv_state(HVPS_SM_ID_IDLE, 0);
             set_hv_state(HVPS_SM_ID_IDLE, 1);
             last_expo_count = 0;
-						ct_source = 0;
+            ct_source = 0;
         }
         break;
     default:

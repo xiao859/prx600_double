@@ -18,7 +18,7 @@ User_PID_2   user_pid_2;
 
 uint32_t fila_ref_offset[FILAMENT_CURRENT_TABLE_ORDER] = {
     /* 1   2   3   4   5   6   7    8   9   10   11   12 */
-       0,  0,  0,  30,  0,  10, 10,  10, 15, 15//,  20,  30
+       2,  5,  5,  8,  10,  15, 15, 15, 20, 20,  20,  23
 };		
 		
 		

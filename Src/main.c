@@ -174,8 +174,8 @@ int main(void)
 //        ctrl_data.hv_curr_fault = get_tube_curr_fault_pin();
 
 //              HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_2, DAC_ALIGN_12B_R, 1241);
-        config_filamentOn_signal(1, 0);
-        config_filamentOn_signal(1, 1);
+//        config_filamentOn_signal(1, 0);
+//        config_filamentOn_signal(1, 1);
 //
 //           config_filamentOn_signal(0, 0);
 
