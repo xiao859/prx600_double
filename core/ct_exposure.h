@@ -17,7 +17,7 @@
 
 #define     Is_PulseMode_CT()           ((ctrl_data.xrayMode == XRAY_MODE_S_PULSE) || (ctrl_data.xrayMode == XRAY_MODE_D_PULSE))
 
-#define     Is_ContinuousMode_CT()      ((ctrl_data.xrayMode== XRAY_MODE_D_CONTINUOUS) || (ctrl_data.xrayMode== XRAY_MODE_D_CONTINUOUS) )
+#define     Is_ContinuousMode_CT()      ((ctrl_data.xrayMode== XRAY_MODE_S_CONTINUOUS) || (ctrl_data.xrayMode== XRAY_MODE_D_CONTINUOUS) )
 
 extern uint16_t adc_buffer2[ADC_2_CHANNEL_NUM * ADC_SAMPLE_CYCLE_NUM];
 extern uint16_t adc_buffer3[ADC_3_CHANNEL_NUM * ADC_SAMPLE_CYCLE_NUM];

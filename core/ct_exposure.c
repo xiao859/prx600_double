@@ -19,13 +19,13 @@ volatile xray_parament_table parm_table[XRAY_NUMS] =
     {
         0, 0, 1,
         {1,    2,    3,    4,    5,    6,    7,    8,    9,    10,  11,   12},
-        {1700, 1700, 1980, 2050, 2140, 2200, 2270, 2420, 2530, 2700, 2440, 2480},
+        {1720, 1875, 2050, 2150, 2235, 2300, 2370, 2430, 2485, 2535, 2550, 2600},
         {1600, 1800, 1890, 2000, 2050, 2120, 2190, 2230, 2290, 2330, 2370, 2430},
     },
     {
         0, 0, 1,
         {1,    2,    3,    4,    5,    6,    7,    8,    9,    10,  11,   12},
-        {1100, 1200, 1450, 1330, 1380, 1420, 1460, 1600, 1630, 1750, 1580, 1600},
+        {1100, 1220, 1300, 1390, 1440, 1490, 1530, 1560, 1605, 1635, 1650, 1680},
         {1030, 1150, 1210, 1270, 1320, 1360, 1400, 1430, 1460, 1480, 1500, 1530},
     },
 };
@@ -149,8 +149,8 @@ void flash_table_init()
     }
     for (i = 0; i < FILAMENT_CURRENT_TABLE_ORDER; i++)
     {
-        parm_table[0].currRef[i]   = MIN(MAX(parm_table[0].currRef[i], 1000), 2500);
-        parm_table[0].currRef_c[i] = MIN(MAX(parm_table[0].currRef_c[i], 1000), 2500);
+        parm_table[0].currRef[i]   = MIN(MAX(parm_table[0].currRef[i], 1000), 3000);
+        parm_table[0].currRef_c[i] = MIN(MAX(parm_table[0].currRef_c[i], 1000), 3000);
     }
     config_data.expo_count_total[0] = 0;     //
 
@@ -161,8 +161,8 @@ void flash_table_init()
     }
     for (i = 0; i < FILAMENT_CURRENT_TABLE_ORDER; i++)
     {
-        parm_table[1].currRef[i]   = MIN(MAX(parm_table[1].currRef[i], 1000), 1650);
-        parm_table[1].currRef_c[i] = MIN(MAX(parm_table[1].currRef_c[i], 1000), 1650);
+        parm_table[1].currRef[i]   = MIN(MAX(parm_table[1].currRef[i], 1000), 1900);
+        parm_table[1].currRef_c[i] = MIN(MAX(parm_table[1].currRef_c[i], 1000), 1900);
     }
     config_data.expo_count_total[1] = 0;     //
 }
@@ -275,10 +275,10 @@ void config_filamentRef(uint16_t n)
     else
     {
         //pwm
-				uint32_t rtt = config_data.fila_ref_realtime[n];
+        uint32_t rtt = config_data.fila_ref_realtime[n];
         debug_tx3("rtt:%d\n", rtt);
         __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_4, config_data.fila_ref_realtime[n]);//1360
-			
+
     }
     return;
 }
@@ -325,7 +325,7 @@ void ct_task()
     static uint16_t sw_count = 0;
     bool expo_end = false;
     bool is_dual_source = false;
-		static uint32_t last_expo_count = 0;
+    static uint32_t last_expo_count = 0;
 
     ctrl_data.xray_current = ct_source + 1;
     hvps_sm_state ct_source_state = get_hv_state(ct_source);
@@ -335,8 +335,8 @@ void ct_task()
         xray_data.timmer_count[ct_source]++;
     else
         return;
-		last_expo_count++;
-		
+    last_expo_count++;
+
     switch (ct_source_state)
     {
     case HVPS_SM_ID_IDLE:
@@ -375,8 +375,8 @@ void ct_task()
             config_filamentRef(ct_source); /*灯丝基准值拉到预期*/
             config_filamentRef(1 - ct_source); /*灯丝基准值拉到预期*/
         }
-        else           
-					config_filamentRef(ct_source); /*灯丝基准值拉到预期*/
+        else
+            config_filamentRef(ct_source); /*灯丝基准值拉到预期*/
 //        HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_2, DAC_ALIGN_12B_R, parm_table[ct_source].currRef[config_data.tube_curr_index[ct_source]]);
 
 //        __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_4, parm_table[1 - ct_source].currRef[config_data.tube_curr_index[1 - ct_source]]); // 1360
@@ -398,7 +398,7 @@ void ct_task()
         {
             // 曝光允许前需检查对方曝光是否间隔超过10ms
             //uint8_t other = (ct_source == 0) ? 1 : 0;
-           // if (HAL_GetTick() - last_expo_end_tick[other] < 10)
+            // if (HAL_GetTick() - last_expo_end_tick[other] < 10)
             //    break;  // 距离对方曝光过短，等待
             set_hv_state(HVPS_SM_ID_EXPOSURING, ct_source);
             xray_data.timmer_count[ct_source] = 1;
@@ -445,6 +445,7 @@ void ct_task()
             {
                 param_pid.ki_flag = 1;
                 param_pid.ti_CycleCount = 0;
+								debug_tx3("pi:%d,%f\n", param_pid.config_ref, user_pid.currValue);
             }
             else
             {
@@ -472,7 +473,7 @@ void ct_task()
             {
                 // 双源脉冲模式：准备切换通道
                 set_hv_state(HVPS_SM_ID_EXPO_END, ct_source);
-							  param_pid.pulse_count++;
+                param_pid.pulse_count++;
             }
             else
             {
@@ -488,20 +489,20 @@ void ct_task()
             xray_data.isCheckAvailable[ct_source] = 0;
             config_mcuLock_signal(0);
             config_HVEn_signal(0);
-						// 曝光完成时间记录
-						last_expo_end_tick[ct_source] =last_expo_count;
-						config_xrayOn_signal(0);
-            if (!Is_ContinuousMode_CT())
+            // 曝光完成时间记录
+            last_expo_end_tick[ct_source] = last_expo_count;
+            config_xrayOn_signal(0);
+            if (ctrl_data.enable[0] == 1)
             {
-							user_pid_2.Kp[1] = 80;
-							user_pid_2.Ki[1] = 30;
-							user_pid_2.Kp[0] = 10;
-							user_pid_2.Ki[0] = 80;
+                user_pid_2.Kp[1] = 50;
+                user_pid_2.Ki[1] = 30;
+                user_pid_2.Kp[0] = 40;
+                user_pid_2.Ki[0] = 40;
                 oldref[ct_source] = user_pid_2.config_ref[ct_source];
                 tube_current_piControl_v2(ct_source);
                 param_pid.config_ref = user_pid_2.config_ref[ct_source];
 
-	//						debug_tx3("pi:%d, %d,%f\n", ct_source, oldref[ct_source], user_pid_2.currValue[ct_source]);
+                debug_tx3("pi:%d,%d,%f\n", ct_source, oldref[ct_source], user_pid_2.currValue[ct_source]);
             }
             // 曝光计数
             config_data.expo_count[ct_source]++;
@@ -598,7 +599,8 @@ void ct_task()
             ctrl_data.filament_on[1] = 0;
             set_hv_state(HVPS_SM_ID_IDLE, 0);
             set_hv_state(HVPS_SM_ID_IDLE, 1);
-						last_expo_count = 0;
+            last_expo_count = 0;
+						ct_source = 0;
         }
         break;
     default:
