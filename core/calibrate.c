@@ -140,7 +140,7 @@ void calibrate_task()
     {
     case HPVS_SM_ID_CAL_PREPARE:
         config_mcuLock_signal(1);                          // 启用互锁
-        calibrate_mode_config();                                     // 初始化参数
+        calibrate_mode_config();                           // 初始化参数
 
         config_filamentOn_signal(1, 0);                     // 打开灯丝0
         config_filament_ref_slop(0);                        // 控制灯丝DA软启动
@@ -191,8 +191,10 @@ void calibrate_task()
 
         if (cali_data.timmer_count == (uint32_t)(cali_data.coolTime_expect / 2))
         {
-//            user_pid_2.Kp = 100;
-//            user_pid_2.Ki = 30;
+            user_pid_2.Kp[1] = 50;
+            user_pid_2.Ki[1] = 30;
+            user_pid_2.Kp[0] = 40;
+            user_pid_2.Ki[0] = 40;
 
             oldref[cali_source] = user_pid_2.config_ref[cali_source];
             tube_current_piControl_v2(cali_source);
@@ -208,7 +210,7 @@ void calibrate_task()
             filament_ref_update(cali_data.curr_index, cali_source);    // 更新灯丝查表
 
             parm_table[cali_source].expo_count_total++;
-            parm_table[cali_source].expo_times_total += config_data.expo_count_total[cali_source] / 3000000;
+            parm_table[cali_source].expo_times_total += config_data.expo_count_total[cali_source] / 1200000;
         }
 
         if (cali_data.timmer_count > cali_data.coolTime_expect)
@@ -288,15 +290,17 @@ void calibrate_task()
             //A B交替切换，准备下个射源
             else
             {
-
                 sw_count++;
-
+                uint32_t elapsed = get_tick_ms() - last_expo_end_time[cali_source];
                 switch (sw_state)
                 {
                 case 0:  // 准备关闭当前采样开关
-                    config_disable_sw(cali_source);
-                    sw_state = 1;
-                    sw_count = 1;
+                    if (elapsed >= 200)
+                    {
+                        config_disable_sw(cali_source);
+                        sw_state = 1;
+                        sw_count = 1;
+                    }
                     break;
 
                 case 1:  // 延时后打开下一个采样开关
@@ -486,7 +490,7 @@ void cal_cooling(uint8_t src)
     {
         filament_ref_update(cali_data.curr_index, src);
         parm_table[src].expo_count_total++;
-        parm_table[src].expo_times_total += config_data.expo_count_total[src] / 3000000;
+        parm_table[src].expo_times_total += config_data.expo_count_total[src] / 1200000;
 
         cali_data.cycle_count = 0;
 

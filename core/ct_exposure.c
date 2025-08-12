@@ -254,7 +254,7 @@ uint32_t get_filamentRef(float tube_current, uint16_t n)
 //      return parm_table[n].currRef[config_data.tube_curr_index[n]];
     if (tube_current >= parm_table[n].currValue[FILAMENT_CURRENT_TABLE_ORDER - 1])
     {
-        if (ctrl_data.xrayMode == XRAY_MODE_S_CONTINUOUS)
+        if ((ctrl_data.xrayMode == XRAY_MODE_S_CONTINUOUS)||(ctrl_data.xrayMode == XRAY_MODE_S_PULSE))
             return parm_table[n].currRef_c[config_data.tube_curr_index[n]];
         else
             return parm_table[n].currRef[config_data.tube_curr_index[n]];
@@ -262,7 +262,7 @@ uint32_t get_filamentRef(float tube_current, uint16_t n)
 
     uint32_t currRef_uplimit;
     uint32_t currRef_downlimit;
-    if ((ctrl_data.xrayMode == XRAY_MODE_S_CONTINUOUS) && (index >= 8))
+    if (((ctrl_data.xrayMode == XRAY_MODE_S_CONTINUOUS)||(ctrl_data.xrayMode == XRAY_MODE_S_PULSE)) && (index >= 7))
     {
         currRef_uplimit   = parm_table[n].currRef_c[config_data.tube_curr_index[n] + 1];
         currRef_downlimit = parm_table[n].currRef_c[config_data.tube_curr_index[n]];
@@ -420,7 +420,7 @@ void ct_task()
             {
                 parm_table[ct_source].expo_count_total++;
                 /*曝光60s加一次*/
-                parm_table[ct_source].expo_times_total += config_data.expo_count_total[ct_source] / 3000000;
+                parm_table[ct_source].expo_times_total += config_data.expo_count_total[ct_source] / 1200000;
             }
             config_xrayOn_signal(0);
             set_hv_state(HVPS_SM_ID_EXPO_END, ct_source);
@@ -439,8 +439,8 @@ void ct_task()
         config_xrayOn_signal(1);
 
         // 曝光控制：延时 PI 初始化
-        user_pid_2.currValue[ct_source] = 0.00645f * ((float)(adc_buffer3[2]));
-        user_pid.currValue = 0.00645f * ((float)(adc_buffer3[2]));
+        user_pid_2.currValue[ct_source] = 0.0065f * ((float)(adc_buffer3[2]));//0.00645*1.01(校准系数)
+        user_pid.currValue = 0.0065f * ((float)(adc_buffer3[2]));
 
         /*连续模式PI调节*/
         if ((param_pid.pulse_count >= 5) && Is_ContinuousMode_CT() && (xray_data.timmer_count[ct_source] > TIMER6_5_MILSECOND_CYCLES))
@@ -518,7 +518,7 @@ void ct_task()
             config_data.expo_count[ct_source]++;
             config_data.expo_count_total[ct_source]++;
             parm_table[ct_source].expo_count_total++;
-            parm_table[ct_source].expo_times_total += config_data.expo_count_total[ct_source] / 3000000;
+            parm_table[ct_source].expo_times_total += config_data.expo_count_total[ct_source] / 1200000;
 
             // 若未在上面进入 EXPO_END / READY，则此处兜底
             if (get_hv_state(ct_source) == HVPS_SM_ID_EXPOSURING)
@@ -581,7 +581,7 @@ void ct_task()
 
                         // 曝光次数统计
                         parm_table[ct_source].expo_count_total++;
-                        parm_table[ct_source].expo_times_total += config_data.expo_count_total[ct_source] / 3000000;
+                        parm_table[ct_source].expo_times_total += config_data.expo_count_total[ct_source] / 1200000;
                         config_data.expo_count_total[ct_source] = 0;
 
                         // 重置状态
@@ -758,7 +758,7 @@ void ct_task()
 
 //                        // 清除当前统计
 //                        parm_table[ct_source].expo_count_total++;
-//                        parm_table[ct_source].expo_times_total += config_data.expo_count_total[ct_source] / 3000000;
+//                        parm_table[ct_source].expo_times_total += config_data.expo_count_total[ct_source] / 1200000;
 //                        config_data.expo_count_total[ct_source] = 0;
 
 //                        ct_source = 1 - ct_source;
