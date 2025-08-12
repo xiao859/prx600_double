@@ -213,7 +213,7 @@ int main(void)
         cmd_parser();
         cmd_parser_string();
 
-//        Protect_Check_Slow();      //慢速故障检查
+        Protect_Check_Slow();      //慢速故障检查
 //            if ((get_hv_state(0) == HVPS_SM_ID_IDLE) && (get_hv_state(0) == HVPS_SM_ID_IDLE)&&( cali_data.para_save_flag == 1))
 //            {
 //                HAL_TIM_Base_Stop_IT(&htim6);
