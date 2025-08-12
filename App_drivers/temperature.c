@@ -10,7 +10,7 @@
 /* r=(20*AD*3.3*5/4095)/(15-AD*3.3*5/4095)  */
 float get_Resist(float temp_ad)
 {
-    return (float)((3300 * temp_ad) / (614250 - 165 * temp_ad));
+    return (float)((3300 * temp_ad) / (614250 - 165 * temp_ad));//468375
 }
 
 /*
