@@ -1588,11 +1588,6 @@
               <FilePath>..\App_drivers\app_spi.h</FilePath>
             </File>
             <File>
-              <FileName>temperature.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\App_drivers\temperature.c</FilePath>
-            </File>
-            <File>
               <FileName>temperature.h</FileName>
               <FileType>5</FileType>
               <FilePath>..\App_drivers\temperature.h</FilePath>
@@ -1640,6 +1635,11 @@
         <Group>
           <GroupName>Application/core</GroupName>
           <Files>
+            <File>
+              <FileName>temperature.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\App_drivers\temperature.c</FilePath>
+            </File>
             <File>
               <FileName>xray.c</FileName>
               <FileType>1</FileType>

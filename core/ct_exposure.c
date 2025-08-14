@@ -20,7 +20,7 @@ volatile xray_parament_table parm_table[XRAY_NUMS] =
         0, 0, 1,
         {1,    2,    3,    4,    5,    6,    7,    8,    9,    10,  11,   12},
         {1720, 1875, 2050, 2150, 2235, 2300, 2370, 2430, 2485, 2535, 2550, 2600},
-        {1720, 1875, 1920, 2050, 2100, 2120, 2190, 2230, 2290, 2330, 2370, 2430},
+        {1720, 1875, 1920, 2050, 2100, 2120, 2190, 2230, 2290, 2330, 2370, 2370},
     },
     {
         0, 0, 1,
@@ -42,13 +42,13 @@ volatile xray_parament_range para_range =
     100, 100,           /*灯丝电流*/
 
     125, 60,            /*管电压配置门限*/
-    120, 10,            /*管电流配置门限*/
+    140, 10,            /*管电流配置门限*/
 
     1000, 1000,         /*曝光时间保护*/
 
-    4500000,            /*曝光时间1.5min */
+    1800000,            /*曝光时间1.5min 4500000*/
 
-    6000000             /*灯丝开启未曝光最大时间*/
+    2400000             /*灯丝开启未曝光最大时间 6000000*/
 };
 volatile xray_running_data xray_data;
 volatile adc_sampled_value sampled_data =
@@ -169,7 +169,7 @@ void flash_table_init()
 
 void hvState_ilde_init(uint16_t n)
 {
-    xray_data.isCheckAvailable[n] = 0;
+    xray_data.isCheckAvailable = 0;
     /*把曝光中的计数清零 */
 //    debug_data.timmer_count = 0;
 //    cali_data.timmer_count = 0;
@@ -337,7 +337,7 @@ void ct_task()
     bool is_dual_source = false;
     static uint32_t last_expo_count = 0;
 
-    ctrl_data.xray_current = ct_source + 1;
+
     hvps_sm_state ct_source_state = get_hv_state(ct_source);
 
     // Tick自增
@@ -401,7 +401,7 @@ void ct_task()
         break;
 
     case HVPS_SM_ID_READY:
-
+				ctrl_data.xray_current = ct_source + 1;
 
         config_hvref_slope(ct_source);
         if (ctrl_data.enable[ct_source] && ctrl_data.expo[ct_source])
@@ -430,7 +430,7 @@ void ct_task()
     case HVPS_SM_ID_EXPOSURING:
 
         // 曝光后 3.7ms 开始允许采样检查
-        xray_data.isCheckAvailable[ct_source] = (xray_data.timmer_count[ct_source] > 185) ? 1 : 0;
+        xray_data.isCheckAvailable = (xray_data.timmer_count[ct_source] > 75) ? 1 : 0;
 
         // 持续输出高压与准备信号
         config_hvref_slope(ct_source);
@@ -496,12 +496,8 @@ void ct_task()
         if (expo_end)
         {
             // 所有模式通用关闭操作
-            xray_data.isCheckAvailable[ct_source] = 0;
-            config_mcuLock_signal(0);
-            config_HVEn_signal(0);
-            // 曝光完成时间记录
-            last_expo_end_tick[ct_source] = last_expo_count;
-            config_xrayOn_signal(0);
+            xray_data.isCheckAvailable = 0;
+
             if (ctrl_data.enable[0] == 1)
             {
                 user_pid_2.Kp[1] = 50;
@@ -519,7 +515,12 @@ void ct_task()
             config_data.expo_count_total[ct_source]++;
             parm_table[ct_source].expo_count_total++;
             parm_table[ct_source].expo_times_total += config_data.expo_count_total[ct_source] / 1200000;
-
+            
+						config_mcuLock_signal(0);
+            config_HVEn_signal(0);
+            // 曝光完成时间记录
+            last_expo_end_tick[ct_source] = last_expo_count;
+            config_xrayOn_signal(0);
             // 若未在上面进入 EXPO_END / READY，则此处兜底
             if (get_hv_state(ct_source) == HVPS_SM_ID_EXPOSURING)
             {
@@ -576,7 +577,6 @@ void ct_task()
                 case 2:  // 延时后切换射源
                     if (sw_count >= 20)
                     {
-                        ctrl_data.xray_current = 2;
                         set_hv_state(HVPS_SM_ID_READY, 1 - ct_source);
 
                         // 曝光次数统计

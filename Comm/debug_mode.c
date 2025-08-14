@@ -132,13 +132,14 @@ void debug_task()
             if (debug_data.timmer_count >= debug_data.expoTime_expect[xray_active])
             {
                 xray_HV_enable_debug(0);
+								xray_data.isCheckAvailable =0;
                 last_exp_tick = HAL_GetTick(); // 记录曝光结束时间
                 set_hv_state(HVPS_SM_ID_TRAIN_COOLING, xray_active);
                 debug_data.timmer_count = 1;
                 // last_switch_tick = HAL_GetTick();
             }
-
-            xray_data.isCheckAvailable[xray_active] = (debug_data.timmer_count >= TIMER6_5_MILSECOND_CYCLES);
+						if(debug_data.timmer_count >= TIMER6_5_MILSECOND_CYCLES)
+            xray_data.isCheckAvailable =1;
         }
 
         break;

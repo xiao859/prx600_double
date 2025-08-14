@@ -166,10 +166,27 @@ int main(void)
 		 __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_4, 1360);
 		HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_2, DAC_ALIGN_12B_R, 1800);
 		ctrl_data.interlock=1;
-//       xray_HV_enable_debug(1);
-//       HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_1, DAC_ALIGN_12B_R, 1241);
+		
+		
+		
+
     while (1)
     {
+			
+//			 xray_HV_enable_debug(1);
+//       HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_1, DAC_ALIGN_12B_R, 1241);
+//				xray_HV_enable_debug(0);
+//       HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_1, DAC_ALIGN_12B_R, 0);
+//		    config_disable_sw(0);
+//        config_enable_sw(1);
+//       xray_HV_enable_debug(1);
+//       HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_1, DAC_ALIGN_12B_R, 1241);
+//			xray_HV_enable_debug(0);
+//       HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_1, DAC_ALIGN_12B_R, 0);
+//					    config_disable_sw(1);
+//        config_enable_sw(0);
+			
+			
 //              ctrl_data.hv_vol_fault  = get_tube_vol_fault_pin();
 //        ctrl_data.hv_curr_fault = get_tube_curr_fault_pin();
 
@@ -330,7 +347,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
         }
 
         //故障快速检测
-//        xray_fast_protect();
+        xray_fast_protect();
 				xray_system_fault_check();
 
     }

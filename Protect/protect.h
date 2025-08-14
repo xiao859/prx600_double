@@ -6,9 +6,9 @@
 #include "comm_string.h"
 
 #define OVER_RANGE_TIME_LIMIT           5000
-#define FAST_PROTECT_TIME_RANGE         200  //50khz 4ms
+#define FAST_PROTECT_TIME_RANGE         80 //20khz //200  //50khz 4ms
 /*对应1ms */
-#define FAST_PROTECT_ONE_TIME_RANGE     50
+#define FAST_PROTECT_ONE_TIME_RANGE     30
 #define STRIKE_TIEMS_RANGE              5
 
 #define Is_System_Without_Fault()       ((mHVPS_Fault.FAULT_REG1.value == 0) && \

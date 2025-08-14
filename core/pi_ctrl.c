@@ -90,7 +90,7 @@ void tube_current_piControl(uint8_t conflag,uint8_t n)
                 param_pid.thresh_achieve_count++;
             }
 
-            if (param_pid.thresh_achieve_count >= 5)
+            if (param_pid.thresh_achieve_count >= 10)
             {
                 param_pid.threshold_offset++;
                 param_pid.thresh_achieve_count = 0;

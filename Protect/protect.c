@@ -103,10 +103,11 @@ void xray_system_fault_check()
     return;
 }
 
-
+		float err_curr=0;
+		float err_tub=0;
 void xray_fast_protect()
 {
-    if (!Is_Exposing() )//|| !xray_data.isCheckAvailable[0] || !xray_data.isCheckAvailable[1]
+    if ((!Is_Exposing() )|| (!xray_data.isCheckAvailable))//[0] || !xray_data.isCheckAvailable[1]
     {
         return;
     } 
@@ -160,8 +161,8 @@ void xray_fast_protect()
 
     /*欠压 持续1ms 区分AB源*/
     if ((tube_vol_p < para_range.tube_vol_min_protected) ||
-            (tube_vol_n < para_range.tube_vol_min_protected) ||
-            (tube_vol_p < tube_vol_target - 40) || (tube_vol_n < tube_vol_target - 40))
+            (tube_vol_n < para_range.tube_vol_min_protected) || (tube_vol_p < tube_vol_target - 40) || (tube_vol_n < tube_vol_target - 40)
+           )
     {
         xray_data.tube_kv_underCount++;
         if (xray_data.tube_kv_underCount > FAST_PROTECT_TIME_RANGE)
@@ -191,7 +192,10 @@ void xray_fast_protect()
         if (xray_data.oil_strike_times >= STRIKE_TIEMS_RANGE)
         {
             if (ctrl_data.xray_current == 1)
+						{
+							err_tub=tube_vol_p;
                 mHVPS_Fault.FAULT_REG4.bit.ARC1 = 1;
+						}
             else
                 mHVPS_Fault.FAULT_REG4.bit.ARC2 = 1;
         }
@@ -216,7 +220,7 @@ void xray_fast_protect()
     {
         xray_data.tube_strike_count = 0;
     }
-
+		
     /*电压断线 区分AB源*/
     if (tube_vol_p < 1 || tube_vol_n < 1)
     {
@@ -244,7 +248,9 @@ void xray_fast_protect()
         if (xray_data.tube_mA_overCount > FAST_PROTECT_TIME_RANGE)
         {
             if (ctrl_data.xray_current == 1)
-                mHVPS_Fault.FAULT_REG2.bit.MA1_OVER = 1;
+						{ mHVPS_Fault.FAULT_REG2.bit.MA1_OVER = 1;
+							err_curr = tube_curr;
+						}
             else
                 mHVPS_Fault.FAULT_REG3.bit.MA2_OVER = 1;
         }
