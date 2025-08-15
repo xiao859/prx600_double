@@ -168,7 +168,7 @@ int main(void)
 		ctrl_data.interlock=1;
 		
 		
-		
+		 xray_data.isCheckAvailable = 0;
 
     while (1)
     {
@@ -341,7 +341,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 //        {
 //            calibrate_task();
 //        }
-        if (Is_DebugMode())
+        else if (Is_DebugMode())
         {
             debug_task();
         }

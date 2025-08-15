@@ -5,6 +5,7 @@
 
 HVPS_FAULT_REGS mHVPS_Fault;
 
+float oilerr=0;
 void Protect_Check_Slow()
 {
     /* 灯丝开启，长时间不曝光 */
@@ -60,6 +61,7 @@ void Protect_Check_Slow()
     sampled_data.oil_temp = temp_oil;
     if (temp_oil > para_range.temp_oil_max_protected || temp_oil < para_range.temp_oil_min_protected)
     {
+				oilerr= temp_oil;
         mHVPS_Fault.FAULT_REG1.bit.OIL_TEMP1 = 1;
     }
 

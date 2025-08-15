@@ -116,6 +116,8 @@ void tube_current_piControl(uint8_t conflag,uint8_t n)
         param_pid.pulse_count = 6;
         param_pid.conu_start_ref = param_pid.config_ref;
     }
+		
+		uint32_t max_ref = param_pid.conu_start_ref + param_pid.threshold_offset;
 
     /* оч╥Ы */
     if (Is_CalibrateMode())
@@ -124,11 +126,11 @@ void tube_current_piControl(uint8_t conflag,uint8_t n)
     }
     else
     {
-        param_pid.config_ref = MAX(MIN(param_pid.config_ref, param_pid.conu_start_ref + param_pid.threshold_offset), 1000);
+        param_pid.config_ref = MAX(MIN(param_pid.config_ref, max_ref), max_ref - 2);
     }
 
     HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_2, DAC_ALIGN_12B_R, param_pid.config_ref);
-
+//				HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_2, DAC_ALIGN_12B_R, param_pid.conu_start_ref);
     return;
 }
 
@@ -168,12 +170,12 @@ void tube_current_piControl_v2(uint8_t n)
 //		debug_tx3("curt:%f,%f,%f,%d\n", user_pid_2.currValue[n],output, user_pid_2.last_err[n],user_pid_2.config_ref[n]);
 		if(n==0)
 		{
-    user_pid_2.config_ref[n] = MAX(MIN(user_pid_2.config_ref[n], 3000), 1000);
+    user_pid_2.config_ref[n] = MAX(MIN(user_pid_2.config_ref[n], 2400), 1000);
     HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_2, DAC_ALIGN_12B_R, user_pid_2.config_ref[n]);
 		}
 		else
 		{
-		user_pid_2.config_ref[n] = MAX(MIN(user_pid_2.config_ref[n], 1900), 1000);
+		user_pid_2.config_ref[n] = MAX(MIN(user_pid_2.config_ref[n], 1460), 1000);
 		 __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_4,user_pid_2.config_ref[n] );//1360
 		}
 //		debug_tx3("pi_p:%d, %f, %d, %f\n", n, output, user_pid_2.config_ref[n],user_pid_2.err[n]);

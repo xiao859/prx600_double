@@ -19,14 +19,14 @@ volatile xray_parament_table parm_table[XRAY_NUMS] =
     {
         0, 0, 1,
         {1,    2,    3,    4,    5,    6,    7,    8,    9,    10,  11,   12},
-        {1720, 1875, 2050, 2150, 2235, 2300, 2370, 2430, 2485, 2535, 2550, 2600},
-        {1720, 1875, 1920, 2050, 2100, 2120, 2190, 2230, 2290, 2330, 2370, 2370},
+        {1720, 1875, 2050, 2150, 2235, 2300, 2370, 2430, 2485, 2535, 2550, 2560},
+        {1720, 1875, 1920, 2050, 2100, 2110, 2120, 2130, 2190, 2210, 2240, 2250},
     },
     {
         0, 0, 1,
         {1,    2,    3,    4,    5,    6,    7,    8,    9,    10,  11,   12},
-        {1100, 1220, 1300, 1390, 1440, 1490, 1530, 1560, 1605, 1615, 1630, 1640},
-        {1030, 1150, 1210, 1270, 1320, 1360, 1400, 1430, 1460, 1480, 1500, 1530},
+        {1100, 1220, 1300, 1390, 1440, 1490, 1530, 1560, 1565, 1575, 1580, 1600},
+        {1030, 1150, 1210, 1270, 1320, 1360, 1480, 1390, 1400, 1410, 1420, 1445},
     },
 };
 volatile xray_parament_range para_range =
@@ -254,24 +254,24 @@ uint32_t get_filamentRef(float tube_current, uint16_t n)
 //      return parm_table[n].currRef[config_data.tube_curr_index[n]];
     if (tube_current >= parm_table[n].currValue[FILAMENT_CURRENT_TABLE_ORDER - 1])
     {
-        if ((ctrl_data.xrayMode == XRAY_MODE_S_CONTINUOUS)||(ctrl_data.xrayMode == XRAY_MODE_S_PULSE))
+//        if ((ctrl_data.xrayMode == XRAY_MODE_S_CONTINUOUS)||(ctrl_data.xrayMode == XRAY_MODE_S_PULSE))
             return parm_table[n].currRef_c[config_data.tube_curr_index[n]];
-        else
-            return parm_table[n].currRef[config_data.tube_curr_index[n]];
+//        else
+//            return parm_table[n].currRef[config_data.tube_curr_index[n]];
     }
 
     uint32_t currRef_uplimit;
     uint32_t currRef_downlimit;
-    if (((ctrl_data.xrayMode == XRAY_MODE_S_CONTINUOUS)||(ctrl_data.xrayMode == XRAY_MODE_S_PULSE)) && (index >= 7))
-    {
+ //   if (((ctrl_data.xrayMode == XRAY_MODE_S_CONTINUOUS)||(ctrl_data.xrayMode == XRAY_MODE_S_PULSE)) && (index >= 7))
+ //   {
         currRef_uplimit   = parm_table[n].currRef_c[config_data.tube_curr_index[n] + 1];
         currRef_downlimit = parm_table[n].currRef_c[config_data.tube_curr_index[n]];
-    }
-    else
-    {
-        currRef_uplimit   = parm_table[n].currRef[config_data.tube_curr_index[n] + 1];
-        currRef_downlimit = parm_table[n].currRef[config_data.tube_curr_index[n]];
-    }
+//    }
+//    else
+//    {
+//        currRef_uplimit   = parm_table[n].currRef[config_data.tube_curr_index[n] + 1];
+//        currRef_downlimit = parm_table[n].currRef[config_data.tube_curr_index[n]];
+//    }
 
     return (currRef_downlimit + (tube_current - parm_table[n].currValue[index]) * (currRef_uplimit - currRef_downlimit));
 
@@ -430,7 +430,7 @@ void ct_task()
     case HVPS_SM_ID_EXPOSURING:
 
         // 曝光后 3.7ms 开始允许采样检查
-        xray_data.isCheckAvailable = (xray_data.timmer_count[ct_source] > 75) ? 1 : 0;
+        xray_data.isCheckAvailable = (xray_data.timmer_count[ct_source] > 80) ? 1 : 0;
 
         // 持续输出高压与准备信号
         config_hvref_slope(ct_source);
@@ -498,10 +498,16 @@ void ct_task()
             // 所有模式通用关闭操作
             xray_data.isCheckAvailable = 0;
 
+						config_mcuLock_signal(0);
+            config_HVEn_signal(0);
+            // 曝光完成时间记录
+            last_expo_end_tick[ct_source] = last_expo_count;
+            config_xrayOn_signal(0);
+					
             if (ctrl_data.enable[0] == 1)
             {
-                user_pid_2.Kp[1] = 50;
-                user_pid_2.Ki[1] = 30;
+                user_pid_2.Kp[1] = 40;
+                user_pid_2.Ki[1] = 40;
                 user_pid_2.Kp[0] = 40;
                 user_pid_2.Ki[0] = 40;
                 oldref[ct_source] = user_pid_2.config_ref[ct_source];
@@ -516,11 +522,6 @@ void ct_task()
             parm_table[ct_source].expo_count_total++;
             parm_table[ct_source].expo_times_total += config_data.expo_count_total[ct_source] / 1200000;
             
-						config_mcuLock_signal(0);
-            config_HVEn_signal(0);
-            // 曝光完成时间记录
-            last_expo_end_tick[ct_source] = last_expo_count;
-            config_xrayOn_signal(0);
             // 若未在上面进入 EXPO_END / READY，则此处兜底
             if (get_hv_state(ct_source) == HVPS_SM_ID_EXPOSURING)
             {
