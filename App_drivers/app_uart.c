@@ -107,8 +107,8 @@ void send_message(uint8_t msg_id, uint8_t data1, uint8_t data2)
     msg_reply.head1 = SCI_ACK_HEADER1;
     msg_reply.head2 = SCI_ACK_HEADER2;
     msg_reply.msg_id = msg_id;
-    msg_reply.data1  = data1;
-    msg_reply.data2  = data2;
+    msg_reply.data2  = data2;   
+		msg_reply.data1  = data1;
     msg_reply.checksum = (0 - (msg_reply.msg_id + msg_reply.data1 + msg_reply.data2)) & 0xFF;
 
 //    memcpy((uint8_t *)uart4.uart_tx_buf, &msg_reply, MESSAGE_PACK_LENGTH);

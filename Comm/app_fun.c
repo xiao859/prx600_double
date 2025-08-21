@@ -18,8 +18,8 @@
 
 volatile  xray_version version =
 {
-    1, 1,
-    3, 0, 0,            /*软件版本*/
+    1, 0,
+    1, 0, 0,            /*软件版本*/
     2, 1, 9, 0,
     17, 18,             /*球管类型*/
     3, 6, 0
@@ -38,8 +38,8 @@ void invalid_cmd_reply()
 controler_cmd_funcs funcs[APP_FUNC_NUM] =
 {
     {SCI_MSG_INQ_MODE,                      &fun_null},
-    {SCI_MSG_INQ_TUBE_VSET,                 &Inqixay1HVPSCurrentset},
-    {SCI_MSG_INQ_TUBE_ISET,                 &fun_null},
+    {SCI_MSG_INQ_XRAY1,                		  &Inqixay1HVPSCurrentset},
+    {SCI_MSG_INQ_XRAY2,                     &Inqixay2HVPSCurrentset},
     {SCI_MSG_INQ_MAX_TIME,                  &Inqmaxtimeset},
     {SCI_MSG_INQ_TEMP,                      &InqHVPSTemp},
     {SCI_MSG_INQ_FAULT,                     &InqHVPSFault},
@@ -112,8 +112,8 @@ void InqHVPS1LastVandC(message_protocol *msg)
 void HVswversion(message_protocol *msg)
 {
     uint16_t sw_value = (version.sw_ver_high << 12) | (version.sw_ver_mid << 8) | version.sw_ver_low;
-    uint8_t data1 = sw_value >> 8;
-    uint8_t data2 = sw_value & 0xFF;
+    uint8_t data2 = sw_value >> 8;
+    uint8_t data1 = sw_value & 0xFF;
 
     send_message(msg->msg_id, data1, data2);
 
@@ -122,8 +122,8 @@ void HVswversion(message_protocol *msg)
 
 void HVhwversion(message_protocol *msg)
 {
-    uint8_t data1 = version.hw_ver_high;
-    uint8_t data2 = version.hw_ver_low;
+    uint8_t data2 = version.hw_ver_high;
+    uint8_t data1 = version.hw_ver_low;
 
     send_message(msg->msg_id, data1, data2);
 
@@ -132,8 +132,8 @@ void HVhwversion(message_protocol *msg)
 
 void lampswversion(message_protocol *msg)
 {
-    uint8_t data1 = version.tube_ver_high;
-    uint8_t data2 = version.tube_ver_low;
+    uint8_t data2 = version.tube_ver_high;
+    uint8_t data1 = version.tube_ver_low;
 
     send_message(msg->msg_id, data1, data2);
 
@@ -145,8 +145,8 @@ void lamphwversion(message_protocol *msg)
     uint16_t filament_value = (version.fila_ver_high << 11) | (version.fila_ver_mid1 << 7) |
                               (version.fila_ver_mid2 << 3)  | version.fila_ver_low;
 
-    uint8_t data1 = filament_value >> 8;
-    uint8_t data2 = filament_value & 0xFF;
+    uint8_t data2 = filament_value >> 8;
+    uint8_t data1 = filament_value & 0xFF;
 
     send_message(msg->msg_id, data1, data2);
 
@@ -156,10 +156,10 @@ void lamphwversion(message_protocol *msg)
 void InqHVPSTemp(message_protocol *msg)
 {
     /* 单位0.1°*/
-    uint16_t temperature = (uint16_t)(sampled_data.oil_temp);
+    uint16_t temperature = (uint16_t)(sampled_data.oil_temp * 10) + 300;;
 
-    uint8_t data1 = temperature >> 8;
-    uint8_t data2 = temperature & 0xFF;
+    uint8_t data2 = temperature >> 8;
+    uint8_t data1 = temperature & 0xFF;
 
     send_message(msg->msg_id, data1, data2);
 
@@ -169,8 +169,8 @@ void InqHVPSTemp(message_protocol *msg)
 void InqHVPSExpo_Time1(message_protocol *msg)
 {
 
-    uint8_t data1 = parm_table[0].expo_times_total >> 8;
-    uint8_t data2 = parm_table[0].expo_times_total & 0xFF;
+    uint8_t data2 = parm_table[0].expo_times_total >> 8;
+    uint8_t data1 = parm_table[0].expo_times_total & 0xFF;
 
     send_message(msg->msg_id, data1, data2);
 
@@ -180,8 +180,8 @@ void InqHVPSExpo_Time1(message_protocol *msg)
 void InqHVPSExpo_Time2(message_protocol *msg)
 {
 
-    uint8_t data1 = parm_table[1].expo_times_total >> 8;
-    uint8_t data2 = parm_table[1].expo_times_total & 0xFF;
+    uint8_t data2 = parm_table[1].expo_times_total >> 8;
+    uint8_t data1 = parm_table[1].expo_times_total & 0xFF;
 
     send_message(msg->msg_id, data1, data2);
 
@@ -190,8 +190,8 @@ void InqHVPSExpo_Time2(message_protocol *msg)
 
 void InqHVPSExpo_Count1(message_protocol *msg)
 {
-    uint8_t data1 = parm_table[0].expo_count_total >> 8;
-    uint8_t data2 = parm_table[0].expo_count_total & 0xFF;
+    uint8_t data2 = parm_table[0].expo_count_total >> 8;
+    uint8_t data1 = parm_table[0].expo_count_total & 0xFF;
 
     send_message(msg->msg_id, data1, data2);
 
@@ -200,8 +200,8 @@ void InqHVPSExpo_Count1(message_protocol *msg)
 
 void InqHVPSExpo_Count2(message_protocol *msg)
 {
-    uint8_t data1 = parm_table[1].expo_count_total >> 8;
-    uint8_t data2 = parm_table[1].expo_count_total & 0xFF;
+    uint8_t data2 = parm_table[1].expo_count_total >> 8;
+    uint8_t data1 = parm_table[1].expo_count_total & 0xFF;
 
     send_message(msg->msg_id, data1, data2);
 
@@ -402,7 +402,7 @@ void FaultReset(message_protocol *msg)
     }
     else
     {
-        data1 = 0x01;
+        data1 = 0x00;
         data2 = 0x00;
     }
 
@@ -461,9 +461,18 @@ void Setmaxexpotime(message_protocol *msg)
 void Inqixay1HVPSCurrentset(message_protocol *msg)
 {
     uint8_t data1, data2;
+    data1 = config_data.tube_curr[0];
+    data2 = config_data.tube_vol[0];
+    send_message(msg->msg_id, data1, data2);
+    return;
+}
 
-    data1 = 90;
-    data2 = 60;
+void Inqixay2HVPSCurrentset(message_protocol *msg)
+{
+    uint8_t data1, data2;
+
+    data1 = config_data.tube_curr[1];;
+    data2 = config_data.tube_vol[1];
     send_message(msg->msg_id, data1, data2);
     return;
 }
@@ -707,7 +716,7 @@ void Setenable(message_protocol *msg)
         msg->data2 = SETUP_SUCCESS;
    
 
- //   send_message(msg->msg_id, msg->data1, msg->data2);
+   send_message(msg->msg_id, msg->data1, msg->data2);
 
     return;
 }
@@ -815,41 +824,38 @@ void test_func4(message_protocol *msg)
 
 
 void InqHVPSFault(message_protocol *msg)
-{
-    static uint16_t fault_index ;
+{	
+	  static uint16_t fault_index ;
     uint16_t i;
     uint16_t *pFault;
-    uint8_t data1, data2;
+    uint8_t data1 = 0;
+	  uint8_t data2 = 0;
     fault_index ++;
     pFault = (uint16_t*)(&mHVPS_Fault);
-    for (i = 0; i < sizeof(HVPS_FAULT_REGS); i++)
+    for(i=0;i<sizeof(HVPS_FAULT_REGS);i++)
     {
-        uint16_t fault_count = 0;
-        uint16_t i = 0, j, fault_bit;
+        uint16_t fault_count= 0;
+        uint16_t i=0,j,fault_bit;
         uint16_t fault_temp;
 
-        uint16_t start_fault_ID[sizeof(HVPS_FAULT_REGS)] = {0x00, 0x20, 0x30, 0xA0, 0xB0, 0xC0};
+        uint16_t start_fault_ID[sizeof(HVPS_FAULT_REGS)] = {0x00,0x20,0x30,0xA0,0xB0,0xC0};
 
         pFault = (uint16_t*)(&mHVPS_Fault);
-        for (i = 0; i < sizeof(HVPS_FAULT_REGS); i++)
-        {
+        for(i=0;i<sizeof(HVPS_FAULT_REGS);i++) {
             fault_temp = *pFault++;
-            for (j = 0; j < 16; j++)
-            {
-                fault_bit  = fault_temp & 0x1;  // 取最低位
-                fault_temp = fault_temp >> 1;
-                if (fault_bit)  // 有故障
-                {
+            for(j=0; j<16; j++) {
+                fault_bit  = fault_temp & 0x1;  //最地位
+                fault_temp = fault_temp>>1;
+                if(fault_bit) { // 有故障
                     fault_count++;//当前故障计数
-                    if (fault_index == fault_count)
-                    {
-                        data2 = start_fault_ID[i] + j;
+                    if(fault_index ==fault_count) {
+                        data1 = start_fault_ID[i] + j;
                     }
-                    data1 = fault_count;
+                    data2 = fault_count;
                 }
             }
         }
-        if (fault_index >= fault_count) fault_index = 0;
+        if(fault_index >= fault_count) fault_index =0;
     }
     send_message(msg->msg_id, data1, data2);
 

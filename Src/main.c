@@ -169,7 +169,7 @@ int main(void)
 		
 		
 		 xray_data.isCheckAvailable = 0;
-
+xray_on_led(0);
     while (1)
     {
 			

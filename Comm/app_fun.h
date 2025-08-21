@@ -21,8 +21,8 @@
 typedef enum
 {
     SCI_MSG_INQ_MODE = 0x00,
-    SCI_MSG_INQ_TUBE_VSET,
-    SCI_MSG_INQ_TUBE_ISET,
+    SCI_MSG_INQ_XRAY1,
+    SCI_MSG_INQ_XRAY2,
     SCI_MSG_INQ_MAX_TIME,
     SCI_MSG_INQ_TEMP,
     SCI_MSG_INQ_FAULT,
@@ -158,6 +158,8 @@ void StoreStatistics(message_protocol *msg);
 void Setmaxexpotime(message_protocol *msg);
 
 void Inqixay1HVPSCurrentset(message_protocol *msg);
+
+void Inqixay2HVPSCurrentset(message_protocol *msg);
 
 void Inqmaxtimeset(message_protocol *msg);
 
