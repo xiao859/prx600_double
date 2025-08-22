@@ -299,55 +299,70 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
     /* USER CODE END Callback 0 */
     if (htim->Instance == TIM2)
     {
-//        ctrl_data.hv_vol_fault  = get_tube_vol_fault_pin();
-//        ctrl_data.hv_curr_fault = get_tube_curr_fault_pin();
-//          if((ctrl_data.hv_vol_fault = 1) ||  (ctrl_data.hv_curr_fault == 1))
-//          {
-//          uint8_t a=1;
-//              a++;
-//          }
-//        ctrl_data.interlock     = get_interLock_pin();
-//              static uint32_t gh=0;
-//              static uint8_t gh1=1;
-//              gh++;
-//              if(gh > 2500)
-//              {
-//
-//                  if(gh1==0){
-//                      config_enable_sw(1); // 选取射源1采样
-//                      config_disable_sw(0); // 关闭射源0采样
-//                      gh1=1;
-//                  }
-//                  else
-//                  {
-//                      config_enable_sw(0); // 选取射源0采样
-//                          config_disable_sw(1); // 关闭射源1采样
-//                      gh1=0;
-//                  }
-//                  gh=0;
-//              }
-        transform_adc_values();
-//               config_filament_ref_slop_debug(0);
-//                config_filament_ref_slop_debug(1);
-        if (Is_CTMode())
-        {
-            ctrl_data.expo[1]   = get_expo_pin(0);
-
-            ctrl_data.expo[0]   = get_expo_pin(1);
-
-            ct_task();
-        }
-//        else if (Is_CalibrateMode())
+			static uint16_t count=0;
+			count++;
+			
+			if(count >= 40040)
+			{
+				config_enable_sw(0);
+				count =0;
+			}
+			else if (count >= 40020)
+				config_disable_sw(1); // 关闭射源0采
+			else if(count >= 20020)
+				config_enable_sw(1);
+			else if(count >= 20000)
+				config_disable_sw(0); // 关闭射源0采	
+			
+////        ctrl_data.hv_vol_fault  = get_tube_vol_fault_pin();
+////        ctrl_data.hv_curr_fault = get_tube_curr_fault_pin();
+////          if((ctrl_data.hv_vol_fault = 1) ||  (ctrl_data.hv_curr_fault == 1))
+////          {
+////          uint8_t a=1;
+////              a++;
+////          }
+////        ctrl_data.interlock     = get_interLock_pin();
+////              static uint32_t gh=0;
+////              static uint8_t gh1=1;
+////              gh++;
+////              if(gh > 2500)
+////              {
+////
+////                  if(gh1==0){
+////                      config_enable_sw(1); // 选取射源1采样
+////                      config_disable_sw(0); // 关闭射源0采样
+////                      gh1=1;
+////                  }
+////                  else
+////                  {
+////                      config_enable_sw(0); // 选取射源0采样
+////                          config_disable_sw(1); // 关闭射源1采样
+////                      gh1=0;
+////                  }
+////                  gh=0;
+////              }
+//        transform_adc_values();
+////               config_filament_ref_slop_debug(0);
+////                config_filament_ref_slop_debug(1);
+//        if (Is_CTMode())
 //        {
-//            calibrate_task();
-//        }
-        else if (Is_DebugMode())
-        {
-            debug_task();
-        }
+//            ctrl_data.expo[1]   = get_expo_pin(0);
 
-        //故障快速检测
-        xray_fast_protect();
+//            ctrl_data.expo[0]   = get_expo_pin(1);
+
+//            ct_task();
+//        }
+////        else if (Is_CalibrateMode())
+////        {
+////            calibrate_task();
+////        }
+//        else if (Is_DebugMode())
+//        {
+//            debug_task();
+//        }
+
+//        //故障快速检测
+//        xray_fast_protect();
 				xray_system_fault_check();
 
     }
