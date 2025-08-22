@@ -170,7 +170,7 @@ void tube_current_piControl_v2(uint8_t n)
 //		debug_tx3("curt:%f,%f,%f,%d\n", user_pid_2.currValue[n],output, user_pid_2.last_err[n],user_pid_2.config_ref[n]);
 		if(n==0)
 		{
-    user_pid_2.config_ref[n] = MAX(MIN(user_pid_2.config_ref[n], 2400), 1000);
+    user_pid_2.config_ref[n] = MAX(MIN(user_pid_2.config_ref[n], 2200), 1000);
     HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_2, DAC_ALIGN_12B_R, user_pid_2.config_ref[n]);
 		}
 		else
