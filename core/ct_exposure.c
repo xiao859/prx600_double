@@ -255,17 +255,17 @@ uint32_t get_filamentRef(float tube_current, uint16_t n)
     if (tube_current >= parm_table[n].currValue[FILAMENT_CURRENT_TABLE_ORDER - 1])
     {
 //        if ((ctrl_data.xrayMode == XRAY_MODE_S_CONTINUOUS)||(ctrl_data.xrayMode == XRAY_MODE_S_PULSE))
-            return parm_table[n].currRef_c[config_data.tube_curr_index[n]];
+        return parm_table[n].currRef_c[config_data.tube_curr_index[n]];
 //        else
 //            return parm_table[n].currRef[config_data.tube_curr_index[n]];
     }
 
     uint32_t currRef_uplimit;
     uint32_t currRef_downlimit;
- //   if (((ctrl_data.xrayMode == XRAY_MODE_S_CONTINUOUS)||(ctrl_data.xrayMode == XRAY_MODE_S_PULSE)) && (index >= 7))
- //   {
-        currRef_uplimit   = parm_table[n].currRef_c[config_data.tube_curr_index[n] + 1];
-        currRef_downlimit = parm_table[n].currRef_c[config_data.tube_curr_index[n]];
+//   if (((ctrl_data.xrayMode == XRAY_MODE_S_CONTINUOUS)||(ctrl_data.xrayMode == XRAY_MODE_S_PULSE)) && (index >= 7))
+//   {
+    currRef_uplimit   = parm_table[n].currRef_c[config_data.tube_curr_index[n] + 1];
+    currRef_downlimit = parm_table[n].currRef_c[config_data.tube_curr_index[n]];
 //    }
 //    else
 //    {
@@ -336,7 +336,17 @@ void ct_task()
     bool expo_end = false;
     bool is_dual_source = false;
     static uint32_t last_expo_count = 0;
+    bool is_xrayB_mode = 0;
 
+    //------------ 检查是否为单独B源模式 ---------------//B源在最开始就需要切换采样开关
+    if ((ctrl_data.xray_current == 2) && (ctrl_data.enable[0] == 0) && (ctrl_data.enable[1] == 1) &&
+            (ctrl_data.filament_on[0] == 0) && (ctrl_data.filament_on[1] == 1) &&
+            (ctrl_data.interlock == 1))
+        is_xrayB_mode = 1;
+
+
+
+    ct_source = ctrl_data.xray_current - 1;
 
     hvps_sm_state ct_source_state = get_hv_state(ct_source);
 
@@ -401,7 +411,7 @@ void ct_task()
         break;
 
     case HVPS_SM_ID_READY:
-				ctrl_data.xray_current = ct_source + 1;
+        //ctrl_data.xray_current = ct_source + 1;
 
         config_hvref_slope(ct_source);
         if (ctrl_data.enable[ct_source] && ctrl_data.expo[ct_source])
@@ -498,13 +508,13 @@ void ct_task()
             // 所有模式通用关闭操作
             xray_data.isCheckAvailable = 0;
 
-						config_mcuLock_signal(0);
+            config_mcuLock_signal(0);
             config_HVEn_signal(0);
             // 曝光完成时间记录
             last_expo_end_tick[ct_source] = last_expo_count;
             config_xrayOn_signal(0);
-					
-            if (ctrl_data.enable[0] == 1)
+
+            if (ctrl_data.enable[ct_source] == 1)
             {
                 user_pid_2.Kp[1] = 40;
                 user_pid_2.Ki[1] = 40;
@@ -521,7 +531,7 @@ void ct_task()
             config_data.expo_count_total[ct_source]++;
             parm_table[ct_source].expo_count_total++;
             parm_table[ct_source].expo_times_total += config_data.expo_count_total[ct_source] / 1200000;
-            
+
             // 若未在上面进入 EXPO_END / READY，则此处兜底
             if (get_hv_state(ct_source) == HVPS_SM_ID_EXPOSURING)
             {
@@ -549,6 +559,8 @@ void ct_task()
         is_dual_source = (ctrl_data.enable[0] && ctrl_data.enable[1] &&
                           ctrl_data.filament_on[0] && ctrl_data.filament_on[1] &&
                           ctrl_data.interlock);
+
+
 
         if (is_dual_source)
         {
@@ -602,6 +614,37 @@ void ct_task()
         }
         else if (!ctrl_data.enable[ct_source])
         {
+            if (is_xrayB_mode == 1)
+            {
+                uint32_t elapsed = last_expo_count - last_expo_end_tick[ct_source];
+
+                if (elapsed >= 200)
+                {
+                    sw_count++;
+
+                    switch (sw_state)
+                    {
+                    case 0:  // 准备关闭当前采样开关
+                        config_disable_sw(1);
+                        sw_state = 1;
+                        sw_count = 1;
+                        break;
+
+                    case 1:  // 延时后打开下一个采样开关,回A
+                        if (sw_count >= 20)
+                        {
+                            config_enable_sw(0);
+                            sw_state = 2;
+                            sw_count = 1;
+                        }
+                        break;
+                    default:
+                        sw_state = 0;
+                        sw_count = 0;
+                        break;
+                    }
+                }
+            }
             config_disable_sw(1);
             config_enable_sw(0);
             // 单源或失能，直接退出
@@ -612,6 +655,7 @@ void ct_task()
             set_hv_state(HVPS_SM_ID_IDLE, 1);
             last_expo_count = 0;
             ct_source = 0;
+            ctrl_data.xray_current = 1;
         }
         break;
     default:
