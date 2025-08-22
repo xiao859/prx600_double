@@ -173,7 +173,7 @@ xray_on_led(0);
     while (1)
     {
 			
-//			 xray_HV_enable_debug(1);
+			 xray_HV_enable_debug(1);
 //       HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_1, DAC_ALIGN_12B_R, 1241);
 //				xray_HV_enable_debug(0);
 //       HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_1, DAC_ALIGN_12B_R, 0);
