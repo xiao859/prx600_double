@@ -9,7 +9,7 @@
 #include "tim.h"
 #include "stdbool.h"
 #include "pi_ctl.h"
-
+#include "protect.h"
 
 hvps_sm_state volatile hv_state[XRAY_NUMS];
 
@@ -20,13 +20,13 @@ volatile xray_parament_table parm_table[XRAY_NUMS] =
         0, 0, 1,
         {1,    2,    3,    4,    5,    6,    7,    8,    9,    10,  11,   12},
         {1720, 1875, 2050, 2150, 2235, 2300, 2370, 2430, 2485, 2535, 2550, 2560},
-        {1720, 1875, 1920, 2050, 2100, 2110, 2120, 2130, 2190, 2210, 2240, 2250},
+        {1720, 1875, 1920, 2050, 2100, 2110, 2120, 2130, 2190, 2210, 2240, 2290},
     },
     {
         0, 0, 1,
         {1,    2,    3,    4,    5,    6,    7,    8,    9,    10,  11,   12},
         {1100, 1220, 1300, 1390, 1440, 1490, 1530, 1560, 1565, 1575, 1580, 1600},
-        {1030, 1150, 1210, 1270, 1320, 1360, 1480, 1390, 1400, 1410, 1420, 1445},
+        {1030, 1150, 1210, 1270, 1320, 1360, 1480, 1390, 1400, 1410, 1430, 1460},
     },
 };
 volatile xray_parament_range para_range =
@@ -320,6 +320,34 @@ void check_dual_filament_preheat(void)
 }
 
 
+// =================== 互斥采样开关控制 ===================
+static uint8_t sw_status[2] = {0, 0}; // 软件记录开关状态
+
+void config_enable_sw_safe(uint8_t sw)
+{
+    if (sw > 1) return;
+
+    // 打开前，强制关闭另一只
+    if (sw == 0)
+        config_disable_sw(1);
+    else
+        config_disable_sw(0);
+
+    config_enable_sw(sw);
+    sw_status[sw] = 1;
+    sw_status[1 - sw] = 0; // 确保互斥
+}
+
+void config_disable_sw_safe(uint8_t sw)
+{
+    if (sw > 1) return;
+    config_disable_sw(sw);
+    sw_status[sw] = 0;
+}
+
+
+
+
 //float kp_test = 3.5;
 //float ki_test = 0.0009;
 uint32_t pulse_time_base_count = 0;
@@ -336,7 +364,7 @@ void ct_task()
     bool expo_end = false;
     bool is_dual_source = false;
     static uint32_t last_expo_count = 0;
-    bool is_xrayB_mode = 0;
+    bool is_xrayB_mode = false;
 
     //------------ 检查是否为单独B源模式 ---------------//B源在最开始就需要切换采样开关
     if ((ctrl_data.xray_current == 2) && (ctrl_data.enable[0] == 0) && (ctrl_data.enable[1] == 1) &&
@@ -397,9 +425,6 @@ void ct_task()
         }
         else
             config_filamentRef(ct_source); /*灯丝基准值拉到预期*/
-//        HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_2, DAC_ALIGN_12B_R, parm_table[ct_source].currRef[config_data.tube_curr_index[ct_source]]);
-
-//        __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_4, parm_table[1 - ct_source].currRef[config_data.tube_curr_index[1 - ct_source]]); // 1360
 
         config_ready_signal(1);
         set_hv_state(HVPS_SM_ID_READY, ct_source);
@@ -449,7 +474,7 @@ void ct_task()
         config_xrayOn_signal(1);
 
         // 曝光控制：延时 PI 初始化
-        user_pid_2.currValue[ct_source] = 0.0065f * ((float)(adc_buffer3[2]));//0.00645*1.01(校准系数)
+        user_pid_2.currValue[ct_source] = 0.00645f * ((float)(adc_buffer3[2]));//0.00645*1.01(校准系数)
         user_pid.currValue = 0.0065f * ((float)(adc_buffer3[2]));
 
         /*连续模式PI调节*/
@@ -524,7 +549,7 @@ void ct_task()
                 tube_current_piControl_v2(ct_source);
                 param_pid.config_ref = user_pid_2.config_ref[ct_source];
 
-               // debug_tx3("pi:%d,%d,%f\n", ct_source, oldref[ct_source], user_pid_2.currValue[ct_source]);
+                // debug_tx3("pi:%d,%d,%f\n", ct_source, oldref[ct_source], user_pid_2.currValue[ct_source]);
             }
             // 曝光计数
             config_data.expo_count[ct_source]++;
@@ -573,7 +598,7 @@ void ct_task()
                 switch (sw_state)
                 {
                 case 0:  // 准备关闭当前采样开关
-                    config_disable_sw(ct_source);
+                    config_disable_sw_safe(ct_source);// config_disable_sw(ct_source);
                     sw_state = 1;
                     sw_count = 1;
                     break;
@@ -581,7 +606,7 @@ void ct_task()
                 case 1:  // 延时后打开下一个采样开关
                     if (sw_count >= 20)
                     {
-                        config_enable_sw(1 - ct_source);
+                        config_enable_sw_safe(1 - ct_source);// config_enable_sw(1 - ct_source);
                         sw_state = 2;
                         sw_count = 1;
                     }
@@ -601,7 +626,7 @@ void ct_task()
                         sw_state = 0;
                         sw_count = 0;
                         ct_source = 1 - ct_source;
-												ctrl_data.xray_current = ct_source+1;
+                        ctrl_data.xray_current = ct_source + 1;
                         xray_data.timmer_count[ct_source] = 1;
                     }
                     break;
@@ -626,7 +651,7 @@ void ct_task()
                     switch (sw_state)
                     {
                     case 0:  // 准备关闭当前采样开关
-                        config_disable_sw(1);
+                        config_disable_sw_safe(1);//config_disable_sw(1);
                         sw_state = 1;
                         sw_count = 1;
                         break;
@@ -634,7 +659,7 @@ void ct_task()
                     case 1:  // 延时后打开下一个采样开关,回A
                         if (sw_count >= 20)
                         {
-                            config_enable_sw(0);
+                            config_enable_sw_safe(0);//config_enable_sw(0);
                             sw_state = 2;
                             sw_count = 1;
                         }
@@ -646,8 +671,8 @@ void ct_task()
                     }
                 }
             }
-            config_disable_sw(1);
-            config_enable_sw(0);
+            config_disable_sw_safe(1);//config_disable_sw(1);
+            config_enable_sw_safe(0);//config_enable_sw(0);
             // 单源或失能，直接退出
             xray_CT_disable();
             ctrl_data.filament_on[0] = 0;
@@ -663,6 +688,16 @@ void ct_task()
         //set_hv_state(HVPS_SM_ID_IDLE, ct_source);
         break;
     }
+    // --------- 安全检查：禁止SW1和SW2同时开启 ----------
+    if (sw_status[0] && sw_status[1])
+    {
+        // 出现异常，紧急关闭所有采样开关
+        config_disable_sw_safe(0);
+        config_disable_sw_safe(1);
+
+        // 记录故障标志，便于调试
+         mHVPS_Fault.FAULT_REG4.bit.current_broken1 = 1;
+		}
 
     // LED指示
     xray_on_led((get_hv_state(0) == HVPS_SM_ID_EXPOSURING) || (get_hv_state(1) == HVPS_SM_ID_EXPOSURING));

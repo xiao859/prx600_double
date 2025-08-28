@@ -308,12 +308,7 @@
         <Ww>
           <count>30</count>
           <WinNumber>1</WinNumber>
-          <ItemText>debug_source_state</ItemText>
-        </Ww>
-        <Ww>
-          <count>31</count>
-          <WinNumber>1</WinNumber>
-          <ItemText>huart</ItemText>
+          <ItemText>tick</ItemText>
         </Ww>
       </WatchWindow1>
       <MemoryWindow1>
