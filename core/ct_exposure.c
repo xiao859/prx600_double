@@ -465,15 +465,15 @@ void ct_task()
             {
                 param_pid.ki_flag = 1;
                 param_pid.ti_CycleCount = 0;
-                //  debug_tx3("pi:%d,%f\n", param_pid.config_ref, user_pid.currValue);
+                //debug_tx3("pi:%d,%f\n", param_pid.config_ref, user_pid.currValue);
             }
             else
             {
                 param_pid.ki_flag = 0;
             }
 
-            user_pid_2.Kp[ct_source] = pulse_kp;
-            user_pid_2.Ki[ct_source] = pulse_ki;
+//            user_pid_2.Kp[ct_source] = pulse_kp;
+//            user_pid_2.Ki[ct_source] = pulse_ki;
 
             tube_current_piControl(1, ct_source);
         }
@@ -524,7 +524,7 @@ void ct_task()
                 tube_current_piControl_v2(ct_source);
                 param_pid.config_ref = user_pid_2.config_ref[ct_source];
 
-                debug_tx3("pi:%d,%d,%f\n", ct_source, oldref[ct_source], user_pid_2.currValue[ct_source]);
+               // debug_tx3("pi:%d,%d,%f\n", ct_source, oldref[ct_source], user_pid_2.currValue[ct_source]);
             }
             // 曝光计数
             config_data.expo_count[ct_source]++;
@@ -601,6 +601,7 @@ void ct_task()
                         sw_state = 0;
                         sw_count = 0;
                         ct_source = 1 - ct_source;
+												ctrl_data.xray_current = ct_source+1;
                         xray_data.timmer_count[ct_source] = 1;
                     }
                     break;

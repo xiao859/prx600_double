@@ -102,6 +102,7 @@ int main(void)
 
     /* Initialize all configured peripherals */
     MX_GPIO_Init();
+		ctrl_data.xray_current =1;
     MX_DMA_Init();
     MX_ADC2_Init();
     MX_ADC3_Init();
@@ -146,7 +147,7 @@ int main(void)
 //      uint8_t arr1[5]={0};
 //      bsp_read_buffer(arr1,0,5);
 //      bsp_erase_sector(0);
-      bsp_write_buffer((uint8_t *)parm_table, 0, sizeof(parm_table));
+//      bsp_write_buffer((uint8_t *)parm_table, 0, sizeof(parm_table));
 //      bsp_read_buffer(arr1,0,5);
 //      bsp_erase_sector(0);
 //      bsp_read_buffer(arr1,0,5);
@@ -170,6 +171,7 @@ int main(void)
 		
 		 xray_data.isCheckAvailable = 0;
 		xray_on_led(0);
+
     while (1)
     {
 			
@@ -347,11 +349,11 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 //                config_filament_ref_slop_debug(1);
         if (Is_CTMode())
         {
-//            ctrl_data.expo[1]   = get_expo_pin(0);
+            ctrl_data.expo[1]   = get_expo_pin(0);
 
-//            ctrl_data.expo[0]   = get_expo_pin(1);
+            ctrl_data.expo[0]   = get_expo_pin(1);
 
-//            ct_task();
+            ct_task();
         }
 //        else if (Is_CalibrateMode())
 //        {

@@ -126,9 +126,9 @@ void tube_current_piControl(uint8_t conflag,uint8_t n)
     }
     else
     {
-        param_pid.config_ref = MAX(MIN(param_pid.config_ref, max_ref), max_ref - 2);
+        param_pid.config_ref = MAX(MIN(param_pid.config_ref, max_ref), max_ref - 3);
     }
-
+//		debug_tx3("pi:%d,%f\n", param_pid.config_ref, pid_value);
     HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_2, DAC_ALIGN_12B_R, param_pid.config_ref);
 //				HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_2, DAC_ALIGN_12B_R, param_pid.conu_start_ref);
     return;
