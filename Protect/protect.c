@@ -269,7 +269,10 @@ void xray_fast_protect()
         if (xray_data.tube_mA_underCount > FAST_PROTECT_TIME_RANGE)
         {
             if (ctrl_data.xray_current == 1)
-                mHVPS_Fault.FAULT_REG2.bit.MA1_UNDER = 1;
+						{
+							err_curr = tube_curr;
+							mHVPS_Fault.FAULT_REG2.bit.MA1_UNDER = 1;
+						}
             else
                 mHVPS_Fault.FAULT_REG3.bit.MA2_UNDER = 1;
         }

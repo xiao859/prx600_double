@@ -239,6 +239,7 @@ int set_tube_vol_curr2(volatile uint8_t *buff, char *p)
 
     if (para_count == 2)
     {
+				config_data.tube_vol_realtime[1] = 0;
         config_data.tube_curr[1] = ((float)data[1]) / 10;
         config_data.tube_vol[1]  = data[0];
         config_data.tube_vol_step[1] = (float)(config_data.tube_vol[1]) / (20 * 1);

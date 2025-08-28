@@ -163,8 +163,8 @@ int main(void)
 		uint8_t arr[5]={1,2,3,4,5};
 		HAL_UART_Transmit(&huart5, arr, MESSAGE_PACK_LENGTH, 1000);
 		
-		 __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_4, 1360);
-		HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_2, DAC_ALIGN_12B_R, 1800);
+//		 __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_4, 1360);
+//		HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_2, DAC_ALIGN_12B_R, 1800);
 		ctrl_data.interlock=1;
 		
 		
@@ -173,8 +173,8 @@ int main(void)
     while (1)
     {
 			
-			 xray_HV_enable_debug(1);
-//       HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_1, DAC_ALIGN_12B_R, 1241);
+//			 xray_HV_enable_debug(1);
+//       HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_1, DAC_ALIGN_12B_R, 2481);
 //				xray_HV_enable_debug(0);
 //       HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_1, DAC_ALIGN_12B_R, 0);
 //		    config_disable_sw(0);
@@ -204,11 +204,12 @@ int main(void)
 //        HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_1, DAC_ALIGN_12B_R, 1700);
 //        HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_1, DAC_ALIGN_12B_R, 0);
 
-//        HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_2, DAC_ALIGN_12B_R, 1241);
+//				config_filamentOn_signal(1,1);
+//        HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_2, DAC_ALIGN_12B_R, 1600);
 ////          HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_2, DAC_ALIGN_12B_R, 1100);
 //        HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_2, DAC_ALIGN_12B_R, 0);
 //////
-//         __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_4, 801);
+//         __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_4, 1600);
 //                   __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_4, 0);
 ////
 //        uint32_t temp1 = get_tick_ms();

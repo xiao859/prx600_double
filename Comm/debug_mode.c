@@ -124,9 +124,12 @@ void debug_task()
         debug_data.timmer_count = 1;
         break;
     case HVPS_SM_ID_TRAIN_EXPOSURING:
+				        // 曝光后 3.7ms 开始允许采样检查
+        xray_data.isCheckAvailable = (debug_data.timmer_count > 80) ? 1 : 0;
+		    config_hvref_slope(xray_active);
         if (HAL_GetTick() - last_exp_tick >= 10)
         {
-            config_hvref_slope(xray_active);
+
             xray_HV_enable_debug(1);
             config_data.expo_count_total[xray_active]++;
             if (debug_data.timmer_count >= debug_data.expoTime_expect[xray_active])
@@ -138,8 +141,8 @@ void debug_task()
                 debug_data.timmer_count = 1;
                 // last_switch_tick = HAL_GetTick();
             }
-						if(debug_data.timmer_count >= TIMER6_5_MILSECOND_CYCLES)
-            xray_data.isCheckAvailable =1;
+						//if(debug_data.timmer_count >= TIMER6_5_MILSECOND_CYCLES)
+            //xray_data.isCheckAvailable =1;
         }
 
         break;
