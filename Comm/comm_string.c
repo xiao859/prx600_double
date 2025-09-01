@@ -622,7 +622,7 @@ int start_calibrate(volatile uint8_t *buff, char *p)
         token = strtok(NULL, " ");
     }
 
-    if (num == 1)
+    if (num == 0)
     {
         calibrate_para_init();
         set_hv_state(HPVS_SM_ID_CAL_PREPARE, 0);
@@ -636,7 +636,7 @@ int start_calibrate(volatile uint8_t *buff, char *p)
     {
         ctrl_data.enable[0] = 0;
         ctrl_data.enable[1] = 0;
-        debug_tx3("");
+        debug_tx3("error");
     }
 
     return 0;

@@ -271,5 +271,8 @@ void disable_filamentref(uint16_t n);
 void config_filament_ref_slop(uint16_t n);
 void config_hvref_slope(uint16_t n);
 
+void config_enable_sw_safe(uint8_t sw);
+void config_disable_sw_safe(uint8_t sw);
+
 #endif
 

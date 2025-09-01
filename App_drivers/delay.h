@@ -25,7 +25,7 @@
 #define TIMER6_20_MILSECOND_CYCLES              (uint32_t)(0.02 * COUNTER_TIMER6_FREQ)
 
 /*2s*/
-#define TIMER6_2_SECOND_CYCLES                  (uint32_t)(2 * COUNTER_TIMER6_FREQ)
+#define TIMER6_3_SECOND_CYCLES                  (uint32_t)(3 * COUNTER_TIMER6_FREQ)
 
 /*4ms*/
 #define TIMER6_4_MILSECOND_CYCLES                (uint32_t)(0.004 * COUNTER_TIMER6_FREQ)

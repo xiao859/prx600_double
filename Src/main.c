@@ -102,7 +102,7 @@ int main(void)
 
     /* Initialize all configured peripherals */
     MX_GPIO_Init();
-		ctrl_data.xray_current =1;
+    ctrl_data.xray_current = 1;
     MX_DMA_Init();
     MX_ADC2_Init();
     MX_ADC3_Init();
@@ -128,9 +128,9 @@ int main(void)
     registerFunc_init();
     HAL_TIM_PWM_Start(&htim2, TIM_CHANNEL_2);
     HAL_ADCEx_Calibration_Start(&hadc2, ADC_SINGLE_ENDED);
-		HAL_ADC_Start_DMA(&hadc2, (uint32_t*)adc_buffer2, ADC_2_CHANNEL_NUM * ADC_SAMPLE_CYCLE_NUM); 
+    HAL_ADC_Start_DMA(&hadc2, (uint32_t*)adc_buffer2, ADC_2_CHANNEL_NUM * ADC_SAMPLE_CYCLE_NUM);
     HAL_ADCEx_Calibration_Start(&hadc3, ADC_SINGLE_ENDED);
-		HAL_ADC_Start_DMA(&hadc3, (uint32_t*)adc_buffer3, ADC_3_CHANNEL_NUM * ADC_SAMPLE_CYCLE_NUM); 
+    HAL_ADC_Start_DMA(&hadc3, (uint32_t*)adc_buffer3, ADC_3_CHANNEL_NUM * ADC_SAMPLE_CYCLE_NUM);
 
     HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_1, DAC_ALIGN_12B_R, 0);
     HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_2, DAC_ALIGN_12B_R, 0);
@@ -161,34 +161,34 @@ int main(void)
 //      uint16_t pwm=0;
 
     debug_tx3("123\n");
-		uint8_t arr[5]={1,2,3,4,5};
-		HAL_UART_Transmit(&huart5, arr, MESSAGE_PACK_LENGTH, 1000);
-		
-//		 __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_4, 1360);
-//		HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_2, DAC_ALIGN_12B_R, 1800);
-		ctrl_data.interlock=1;
-		
-		
-		 xray_data.isCheckAvailable = 0;
-		xray_on_led(0);
+    uint8_t arr[5] = {1, 2, 3, 4, 5};
+    HAL_UART_Transmit(&huart5, arr, MESSAGE_PACK_LENGTH, 1000);
+
+//       __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_4, 1360);
+//      HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_2, DAC_ALIGN_12B_R, 1800);
+    ctrl_data.interlock = 1;
+		cali_data.para_save_flag =0;
+
+    xray_data.isCheckAvailable = 0;
+    xray_on_led(0);
 
     while (1)
     {
-			
-//			 xray_HV_enable_debug(1);
+
+//           xray_HV_enable_debug(1);
 //       HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_1, DAC_ALIGN_12B_R, 2481);
-//				xray_HV_enable_debug(0);
+//              xray_HV_enable_debug(0);
 //       HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_1, DAC_ALIGN_12B_R, 0);
-//		    config_disable_sw(0);
+//          config_disable_sw(0);
 //        config_enable_sw(1);
 //       xray_HV_enable_debug(1);
 //       HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_1, DAC_ALIGN_12B_R, 1241);
-//			xray_HV_enable_debug(0);
+//          xray_HV_enable_debug(0);
 //       HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_1, DAC_ALIGN_12B_R, 0);
-//					    config_disable_sw(1);
+//                      config_disable_sw(1);
 //        config_enable_sw(0);
-			
-			
+
+
 //              ctrl_data.hv_vol_fault  = get_tube_vol_fault_pin();
 //        ctrl_data.hv_curr_fault = get_tube_curr_fault_pin();
 
@@ -206,7 +206,7 @@ int main(void)
 //        HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_1, DAC_ALIGN_12B_R, 1700);
 //        HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_1, DAC_ALIGN_12B_R, 0);
 
-//				config_filamentOn_signal(1,1);
+//              config_filamentOn_signal(1,1);
 //        HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_2, DAC_ALIGN_12B_R, 1600);
 ////          HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_2, DAC_ALIGN_12B_R, 1100);
 //        HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_2, DAC_ALIGN_12B_R, 0);
@@ -240,7 +240,11 @@ int main(void)
 //                save_parament_to_flash();
 //                HAL_TIM_Base_Start_IT(&htim6);
 //            }
-
+        if (cali_data.para_save_flag == 1)
+        {
+            bsp_write_buffer((uint8_t *)parm_table, 0, sizeof(parm_table));
+            cali_data.para_save_flag = 0;
+        }
 
 
     }
@@ -302,21 +306,21 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
     /* USER CODE END Callback 0 */
     if (htim->Instance == TIM2)
     {
-//			static uint16_t count=0;
-//			count++;
-//			
-//			if(count >= 40040)
-//			{
-//				config_enable_sw(0);
-//				count =0;
-//			}
-//			else if (count >= 40020)
-//				config_disable_sw(1); // 关闭射源0采
-//			else if(count >= 20020)
-//				config_enable_sw(1);
-//			else if(count >= 20000)
-//				config_disable_sw(0); // 关闭射源0采	
-			
+//          static uint16_t count=0;
+//          count++;
+//
+//          if(count >= 40040)
+//          {
+//              config_enable_sw(0);
+//              count =0;
+//          }
+//          else if (count >= 40020)
+//              config_disable_sw(1); // 关闭射源0采
+//          else if(count >= 20020)
+//              config_enable_sw(1);
+//          else if(count >= 20000)
+//              config_disable_sw(0); // 关闭射源0采
+
 //        ctrl_data.hv_vol_fault  = get_tube_vol_fault_pin();
 //        ctrl_data.hv_curr_fault = get_tube_curr_fault_pin();
 //          if((ctrl_data.hv_vol_fault = 1) ||  (ctrl_data.hv_curr_fault == 1))
@@ -355,10 +359,10 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 
             ct_task();
         }
-//        else if (Is_CalibrateMode())
-//        {
-//            calibrate_task();
-//        }
+        else if (Is_CalibrateMode())
+        {
+            calibrate_task();
+        }
         else if (Is_DebugMode())
         {
             debug_task();
@@ -366,8 +370,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 
         //故障快速检测
         xray_fast_protect();
-				xray_system_fault_check();
-
+        xray_system_fault_check();
     }
 
     /* USER CODE END Callback 1 */
