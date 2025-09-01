@@ -157,9 +157,9 @@
         <Bp>
           <Number>0</Number>
           <Type>0</Type>
-          <LineNumber>278</LineNumber>
+          <LineNumber>322</LineNumber>
           <EnabledFlag>1</EnabledFlag>
-          <Address>134257888</Address>
+          <Address>134258286</Address>
           <ByteObject>0</ByteObject>
           <HtxType>0</HtxType>
           <ManyObjects>0</ManyObjects>
@@ -168,7 +168,23 @@
           <BreakIfRCount>1</BreakIfRCount>
           <Filename>..\core\calibrate.c</Filename>
           <ExecCommand></ExecCommand>
-          <Expression>\\PRX600_double\../core/calibrate.c\278</Expression>
+          <Expression>\\PRX600_double\../core/calibrate.c\322</Expression>
+        </Bp>
+        <Bp>
+          <Number>1</Number>
+          <Type>0</Type>
+          <LineNumber>284</LineNumber>
+          <EnabledFlag>1</EnabledFlag>
+          <Address>134258028</Address>
+          <ByteObject>0</ByteObject>
+          <HtxType>0</HtxType>
+          <ManyObjects>0</ManyObjects>
+          <SizeOfObject>0</SizeOfObject>
+          <BreakByAccess>0</BreakByAccess>
+          <BreakIfRCount>1</BreakIfRCount>
+          <Filename>..\core\calibrate.c</Filename>
+          <ExecCommand></ExecCommand>
+          <Expression>\\PRX600_double\../core/calibrate.c\284</Expression>
         </Bp>
       </Breakpoint>
       <WatchWindow1>
