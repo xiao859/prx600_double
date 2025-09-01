@@ -629,6 +629,8 @@ int start_calibrate(volatile uint8_t *buff, char *p)
         set_hv_state(HPVS_SM_ID_CAL_PREPARE, 1);
         ctrl_data.enable[0] = 1;
         ctrl_data.enable[1] = 1;
+				ctrl_data.filament_on[0] =1;
+				ctrl_data.filament_on[1] = 1;
         // pid_Init(1.0);
         debug_tx3("start_calibrate");
     }

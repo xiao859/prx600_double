@@ -181,7 +181,8 @@ void calibrate_task()
 
         config_hvref_slope(cali_source);                               // 设置高压参考
         config_filamentRef_cali(cali_data.curr_index, cali_source);    // 设置灯丝DA/PWM输出
-
+				config_filamentRef_cali(cali_data.curr_index, 1);
+		
         if (cali_data.timmer_count >= TIMER6_3_SECOND_CYCLES)//每个电流间两秒的时钟间隔
         {
             set_hv_state(HPVS_SM_ID_CAL_EXPOSURING, cali_source);
@@ -360,7 +361,7 @@ void calibrate_task()
                         pid_Init_2(parm_table[cali_source].currValue[cali_data.curr_index], currRef, Is_PulseMode_CT(), cali_source);
 												param_pid.pulse_count =0;
                         config_hvref_slope(cali_source);                                // 设置高压参考
-                        config_filamentRef_cali(cali_data.curr_index, cali_source);    // 设置灯丝DA/PWM输出
+          //              config_filamentRef_cali(cali_data.curr_index, cali_source);    // 设置灯丝DA/PWM输出
 
                         set_hv_state(HPVS_SM_ID_CAL_EXPOSURING, cali_source);
                         cali_data.timmer_count = 1;
