@@ -175,50 +175,6 @@ int main(void)
     while (1)
     {
 
-//           xray_HV_enable_debug(1);
-//       HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_1, DAC_ALIGN_12B_R, 2481);
-//              xray_HV_enable_debug(0);
-//       HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_1, DAC_ALIGN_12B_R, 0);
-//          config_disable_sw(0);
-//        config_enable_sw(1);
-//       xray_HV_enable_debug(1);
-//       HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_1, DAC_ALIGN_12B_R, 1241);
-//          xray_HV_enable_debug(0);
-//       HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_1, DAC_ALIGN_12B_R, 0);
-//                      config_disable_sw(1);
-//        config_enable_sw(0);
-
-
-//              ctrl_data.hv_vol_fault  = get_tube_vol_fault_pin();
-//        ctrl_data.hv_curr_fault = get_tube_curr_fault_pin();
-
-//              HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_2, DAC_ALIGN_12B_R, 1241);
-//        config_filamentOn_signal(1, 0);
-//        config_filamentOn_signal(1, 1);
-//
-//           config_filamentOn_signal(0, 0);
-
-//        HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_1, DAC_ALIGN_12B_R, 0);
-//        HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_2, DAC_ALIGN_12B_R, 0);
-//           __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_4, pwm);
-//
-
-//        HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_1, DAC_ALIGN_12B_R, 1700);
-//        HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_1, DAC_ALIGN_12B_R, 0);
-
-//              config_filamentOn_signal(1,1);
-//        HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_2, DAC_ALIGN_12B_R, 1600);
-////          HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_2, DAC_ALIGN_12B_R, 1100);
-//        HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_2, DAC_ALIGN_12B_R, 0);
-//////
-//         __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_4, 1600);
-//                   __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_4, 0);
-////
-//        uint32_t temp1 = get_tick_ms();
-//              for(uint32_t i=0;i <10000000;i++);
-//        uint32_t temp2 = get_tick_ms();
-//        uint32_t temp = temp2 - temp1;
-
         /* USER CODE END WHILE */
 
         /* USER CODE BEGIN 3 */
@@ -234,12 +190,7 @@ int main(void)
         cmd_parser_string();
 
         Protect_Check_Slow();      //慢速故障检查
-//            if ((get_hv_state(0) == HVPS_SM_ID_IDLE) && (get_hv_state(0) == HVPS_SM_ID_IDLE)&&( cali_data.para_save_flag == 1))
-//            {
-//                HAL_TIM_Base_Stop_IT(&htim6);
-//                save_parament_to_flash();
-//                HAL_TIM_Base_Start_IT(&htim6);
-//            }
+
         if (cali_data.para_save_flag == 1)
         {
             bsp_write_buffer((uint8_t *)parm_table, 0, sizeof(parm_table));
