@@ -164,8 +164,6 @@ int main(void)
     uint8_t arr[5] = {1, 2, 3, 4, 5};
     HAL_UART_Transmit(&huart5, arr, MESSAGE_PACK_LENGTH, 1000);
 
-//       __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_4, 1360);
-//      HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_2, DAC_ALIGN_12B_R, 1800);
     ctrl_data.interlock = 1;
 		cali_data.para_save_flag =0;
 
@@ -193,7 +191,9 @@ int main(void)
 
         if (cali_data.para_save_flag == 1)
         {
-            bsp_write_buffer((uint8_t *)parm_table, 0, sizeof(parm_table));
+					  HAL_TIM_Base_Stop_IT(&htim2);
+            save_parament_to_flash();
+						HAL_TIM_Base_Start_IT(&htim2);
             cali_data.para_save_flag = 0;
         }
 
@@ -257,51 +257,9 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
     /* USER CODE END Callback 0 */
     if (htim->Instance == TIM2)
     {
-//          static uint16_t count=0;
-//          count++;
-//
-//          if(count >= 40040)
-//          {
-//              config_enable_sw(0);
-//              count =0;
-//          }
-//          else if (count >= 40020)
-//              config_disable_sw(1); // 关闭射源0采
-//          else if(count >= 20020)
-//              config_enable_sw(1);
-//          else if(count >= 20000)
-//              config_disable_sw(0); // 关闭射源0采
 
-//        ctrl_data.hv_vol_fault  = get_tube_vol_fault_pin();
-//        ctrl_data.hv_curr_fault = get_tube_curr_fault_pin();
-//          if((ctrl_data.hv_vol_fault = 1) ||  (ctrl_data.hv_curr_fault == 1))
-//          {
-//          uint8_t a=1;
-//              a++;
-//          }
-//        ctrl_data.interlock     = get_interLock_pin();
-//              static uint32_t gh=0;
-//              static uint8_t gh1=1;
-//              gh++;
-//              if(gh > 2500)
-//              {
-//
-//                  if(gh1==0){
-//                      config_enable_sw(1); // 选取射源1采样
-//                      config_disable_sw(0); // 关闭射源0采样
-//                      gh1=1;
-//                  }
-//                  else
-//                  {
-//                      config_enable_sw(0); // 选取射源0采样
-//                          config_disable_sw(1); // 关闭射源1采样
-//                      gh1=0;
-//                  }
-//                  gh=0;
-//              }
         transform_adc_values();
-//               config_filament_ref_slop_debug(0);
-//                config_filament_ref_slop_debug(1);
+
         if (Is_CTMode())
         {
             ctrl_data.expo[1]   = get_expo_pin(0);

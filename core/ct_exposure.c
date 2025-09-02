@@ -10,6 +10,7 @@
 #include "stdbool.h"
 #include "pi_ctl.h"
 #include "protect.h"
+#include "calibrate.h"
 
 hvps_sm_state volatile hv_state[XRAY_NUMS];
 
@@ -113,7 +114,7 @@ void set_hv_state(hvps_sm_state state, uint16_t n)
 void save_parament_to_flash()
 {
     bsp_erase_sector(0x80000000);
-    wirte_flash_parament((uint8_t *)&parm_table, sizeof(xray_parament_table));
+    wirte_flash_parament((uint8_t *)&parm_table, sizeof(xray_parament_table)*2);
 
     return;
 }
@@ -451,12 +452,6 @@ void ct_task()
 
         if (!ctrl_data.enable[ct_source])
         {
-            if (config_data.expo_count_total[ct_source] > 1)
-            {
-                parm_table[ct_source].expo_count_total++;
-                /*曝光60s加一次*/
-                parm_table[ct_source].expo_times_total += config_data.expo_count_total[ct_source] / 1200000;
-            }
             config_xrayOn_signal(0);
             set_hv_state(HVPS_SM_ID_EXPO_END, ct_source);
         }
@@ -464,7 +459,7 @@ void ct_task()
 
     case HVPS_SM_ID_EXPOSURING:
 
-        // 曝光后 3.7ms 开始允许采样检查
+        // 曝光后 4ms 开始允许采样检查
         xray_data.isCheckAvailable = (xray_data.timmer_count[ct_source] > 80) ? 1 : 0;
 
         // 持续输出高压与准备信号
@@ -473,9 +468,12 @@ void ct_task()
         config_HVEn_signal(1);
         config_xrayOn_signal(1);
 
+        // 曝光计数
+        config_data.expo_count[ct_source]++;
+
         // 曝光控制：延时 PI 初始化
         user_pid_2.currValue[ct_source] = 0.00645f * ((float)(adc_buffer3[2]));//0.00645*1.01(校准系数)
-        user_pid.currValue = 0.0065f * ((float)(adc_buffer3[2]));
+        user_pid.currValue = 0.00645f * ((float)(adc_buffer3[2]));
 
         /*连续模式PI调节*/
         if ((param_pid.pulse_count >= 5) && Is_ContinuousMode_CT() && (xray_data.timmer_count[ct_source] > TIMER6_5_MILSECOND_CYCLES))
@@ -551,11 +549,8 @@ void ct_task()
 
                 // debug_tx3("pi:%d,%d,%f\n", ct_source, oldref[ct_source], user_pid_2.currValue[ct_source]);
             }
-            // 曝光计数
-            config_data.expo_count[ct_source]++;
-            config_data.expo_count_total[ct_source]++;
+
             parm_table[ct_source].expo_count_total++;
-            parm_table[ct_source].expo_times_total += config_data.expo_count_total[ct_source] / 1200000;
 
             // 若未在上面进入 EXPO_END / READY，则此处兜底
             if (get_hv_state(ct_source) == HVPS_SM_ID_EXPOSURING)
@@ -581,8 +576,7 @@ void ct_task()
         }
 
         // ----------- 检查是否为双源交替切换 -----------
-        is_dual_source = (ctrl_data.enable[0] && ctrl_data.enable[1] &&
-                          ctrl_data.filament_on[0] && ctrl_data.filament_on[1] &&
+        is_dual_source = (ctrl_data.filament_on[0] && ctrl_data.filament_on[1] &&
                           ctrl_data.interlock);
 
 
@@ -619,8 +613,6 @@ void ct_task()
 
                         // 曝光次数统计
                         parm_table[ct_source].expo_count_total++;
-                        parm_table[ct_source].expo_times_total += config_data.expo_count_total[ct_source] / 1200000;
-                        config_data.expo_count_total[ct_source] = 0;
 
                         // 重置状态
                         sw_state = 0;
@@ -671,6 +663,18 @@ void ct_task()
                     }
                 }
             }
+            if (is_dual_source)
+            {
+                parm_table[0].expo_count_total++;
+                parm_table[1].expo_count_total++;
+                parm_table[0].expo_times_total += config_data.expo_count_total[0] / 1200000;
+                parm_table[1].expo_times_total += config_data.expo_count_total[1] / 1200000;
+            }
+            else
+            {
+                parm_table[0].expo_count_total++;
+                parm_table[0].expo_times_total += config_data.expo_count_total[0] / 1200000;
+            }
             config_disable_sw_safe(1);//config_disable_sw(1);
             config_enable_sw_safe(0);//config_enable_sw(0);
             // 单源或失能，直接退出
@@ -679,9 +683,12 @@ void ct_task()
             ctrl_data.filament_on[1] = 0;
             set_hv_state(HVPS_SM_ID_IDLE, 0);
             set_hv_state(HVPS_SM_ID_IDLE, 1);
+            config_data.expo_count_total[0] = 0;
+            config_data.expo_count_total[1] = 0;
             last_expo_count = 0;
             ct_source = 0;
             ctrl_data.xray_current = 1;
+						cali_data.para_save_flag =1;
         }
         break;
     default:
@@ -696,177 +703,11 @@ void ct_task()
         config_disable_sw_safe(1);
 
         // 记录故障标志，便于调试
-         mHVPS_Fault.FAULT_REG4.bit.current_broken1 = 1;
-		}
+        mHVPS_Fault.FAULT_REG4.bit.current_broken1 = 1;
+    }
 
     // LED指示
     xray_on_led((get_hv_state(0) == HVPS_SM_ID_EXPOSURING) || (get_hv_state(1) == HVPS_SM_ID_EXPOSURING));
 }
-
-
-
-
-//void ct_task(void)
-//{
-//    static uint8_t ct_source = 0;                       // 当前射源：0 或 1
-//    static uint8_t sw_state = 0;                        // 采样开关切换状态机
-//    static uint32_t last_expo_end_tick[XRAY_NUMS] = {0};
-//    static uint32_t sw_count = 0;
-
-//    // 当前状态
-//    hvps_sm_state state = get_hv_state(ct_source);
-
-//    // 计时器自增
-//    if (xray_data.timmer_count[ct_source] >= 1)
-//        xray_data.timmer_count[ct_source]++;
-//    else
-//        return;
-
-//    switch (state)
-//    {
-//    case HVPS_SM_ID_IDLE:
-//        preheat_filament(ct_source); // 优化后的灯丝预热
-//        break;
-
-//    case HVPS_SM_ID_PREPARE:
-//        config_filamentRef(ct_source); // 拉到设定电压
-//        config_ready_signal(1);        // 准备完成
-//        set_hv_state(HVPS_SM_ID_READY, ct_source);
-//        xray_data.timmer_count[ct_source] = 1;
-//        break;
-
-//    case HVPS_SM_ID_READY:
-//        config_hvref_slope(ct_source);
-//        if (ctrl_data.enable[ct_source] && ctrl_data.expo[ct_source])
-//        {
-//            // 曝光前确保间隔满足条件
-//            uint8_t other = 1 - ct_source;
-//            if ((HAL_GetTick() - last_expo_end_tick[other]) >= 10)
-//            {
-//                set_hv_state(HVPS_SM_ID_EXPOSURING, ct_source);
-//                xray_data.timmer_count[ct_source] = 1;
-//            }
-//        }
-//        break;
-
-//    case HVPS_SM_ID_EXPOSURING:
-//        // 曝光检查使能
-//        xray_data.isCheckAvailable[ct_source] = (xray_data.timmer_count[ct_source] > 185) ? 1 : 0;
-
-//        config_hvref_slope(ct_source);
-//        config_mcuLock_signal(1);
-//        config_HVEn_signal(1);
-//        config_xrayOn_signal(1);
-
-//        if (xray_data.timmer_count[ct_source] == TIMER6_8_MILSECOND_CYCLES)
-//            user_pid.currValue = sampled_data.tube_curr_value;
-
-//        if (xray_data.timmer_count[ct_source] > TIMER6_8_MILSECOND_CYCLES &&
-//            xray_data.timmer_count[ct_source] % TIMER6_10_MILSECOND_CYCLES == 0)
-//        {
-//            user_pid.currValue = sampled_data.tube_curr_value;
-//            user_pid.Kp = kp_test;
-//            user_pid.Ti = ki_test;
-//            //tube_current_piControl(1, ct_source);
-//        }
-
-//        // 曝光结束判断
-//        if (!ctrl_data.enable[ct_source] || !ctrl_data.expo[ct_source])
-//        {
-//            xray_data.isCheckAvailable[ct_source] = 0;
-//            config_xrayOn_signal(0);
-//            config_mcuLock_signal(0);
-//            config_HVEn_signal(0);
-
-//            // 统计数据
-//            config_data.expo_count[ct_source]++;
-//            config_data.expo_count_total[ct_source]++;
-
-//            if (!ctrl_data.expo[ct_source]) {
-//                if (ctrl_data.enable[1 - ct_source]) {
-//                    set_hv_state(HVPS_SM_ID_EXPO_END, ct_source); // 双源脉冲
-//                } else {
-//                    set_hv_state(HVPS_SM_ID_READY, ct_source);   // 单源脉冲
-//                }
-//            } else {
-//                set_hv_state(HVPS_SM_ID_EXPO_END, ct_source);     // 连续模式，仍需确认
-//            }
-
-//            last_expo_end_tick[ct_source] = HAL_GetTick();
-//        }
-//        break;
-
-//    case HVPS_SM_ID_EXPO_END:
-//        config_hvref_slope(ct_source);
-
-//        // 灯丝保护
-//        for (uint8_t i = 0; i < XRAY_NUMS; i++) {
-//            if (get_filament_pin(i) && get_hv_state(i) != HVPS_SM_ID_EXPOSURING)
-//                config_data.fila_protect_cnt[i]++;
-//            else
-//                config_data.fila_protect_cnt[i] = 0;
-//        }
-
-//        // 双源模式判断
-//        if (ctrl_data.enable[0] && ctrl_data.enable[1] &&
-//            ctrl_data.filament_on[0] && ctrl_data.filament_on[1] &&
-//            ctrl_data.interlock)
-//        {
-//            uint32_t delta = HAL_GetTick() - last_expo_end_tick[ct_source];
-
-//            if (delta >= 8)
-//            {
-//                sw_count++;
-
-//                switch (sw_state)
-//                {
-//                case 0:
-//                    config_disable_sw(ct_source);
-//                    sw_state = 1;
-//                    sw_count = 1;
-//                    break;
-//                case 1:
-//                    if (sw_count >= 50) {
-//                        config_enable_sw(1 - ct_source);
-//                        sw_state = 2;
-//                        sw_count = 1;
-//                    }
-//                    break;
-//                case 2:
-//                    if (sw_count >= 50) {
-//                        ctrl_data.xray_current = 2;
-//                        set_hv_state(HVPS_SM_ID_READY, 1 - ct_source);
-
-//                        // 清除当前统计
-//                        parm_table[ct_source].expo_count_total++;
-//                        parm_table[ct_source].expo_times_total += config_data.expo_count_total[ct_source] / 1200000;
-//                        config_data.expo_count_total[ct_source] = 0;
-
-//                        ct_source = 1 - ct_source;
-//                        sw_state = 0;
-//                        sw_count = 0;
-//                        xray_data.timmer_count[ct_source] = 1;
-//                    }
-//                    break;
-//                }
-//            }
-//        }
-//        else
-//        {
-//            // 关闭所有
-//            xray_CT_disable();
-//            set_hv_state(HVPS_SM_ID_IDLE, 0);
-//            set_hv_state(HVPS_SM_ID_IDLE, 1);
-//        }
-//        break;
-
-//    default:
-//        break;
-//    }
-
-//    // LED指示
-//    xray_on_led((get_hv_state(0) == HVPS_SM_ID_EXPOSURING) || (get_hv_state(1) == HVPS_SM_ID_EXPOSURING));
-//}
-
 
 

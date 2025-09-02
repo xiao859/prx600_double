@@ -339,7 +339,7 @@
               <MiscControls></MiscControls>
               <Define>USE_HAL_DRIVER,STM32G474xx</Define>
               <Undefine></Undefine>
-              <IncludePath>../Inc;../Drivers/STM32G4xx_HAL_Driver/Inc;../Drivers/STM32G4xx_HAL_Driver/Inc/Legacy;../Drivers/CMSIS/Device/ST/STM32G4xx/Include;../Drivers/CMSIS/Include;../../prx600_double;../Upgrade;../State;../Comm;../Protect;../core;../Drivers;../App_drivers</IncludePath>
+              <IncludePath>../Inc;../Drivers/STM32G4xx_HAL_Driver/Inc;../Drivers/STM32G4xx_HAL_Driver/Inc/Legacy;../Drivers/CMSIS/Device/ST/STM32G4xx/Include;../Drivers/CMSIS/Include;../../prx600_double;../Upgrade;../State;../Comm;../Protect;../core;../Drivers;../App_drivers;..\Upgrade</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -1616,6 +1616,28 @@
         </Group>
         <Group>
           <GroupName>Application/Upgrade</GroupName>
+          <Files>
+            <File>
+              <FileName>updata.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Upgrade\updata.c</FilePath>
+            </File>
+            <File>
+              <FileName>updata.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\Upgrade\updata.h</FilePath>
+            </File>
+            <File>
+              <FileName>stmflash.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\Upgrade\stmflash.c</FilePath>
+            </File>
+            <File>
+              <FileName>stmflash.h</FileName>
+              <FileType>5</FileType>
+              <FilePath>..\Upgrade\stmflash.h</FilePath>
+            </File>
+          </Files>
         </Group>
         <Group>
           <GroupName>Application/Protect</GroupName>

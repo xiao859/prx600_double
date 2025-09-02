@@ -2,7 +2,7 @@
 #include "main.h"
 #include "app_uart.h"
 #include <string.h>
-
+#include "spi.h"
 SFLASH_T flash_parpm;
 
 #define SF_CS_0() HAL_GPIO_WritePin(SPI1_NSS_GPIO_Port, SPI1_NSS_Pin, GPIO_PIN_RESET);
@@ -10,22 +10,22 @@ SFLASH_T flash_parpm;
 
 uint8_t g_spiTxBuf[SPI_BUFFER_SIZE];
 uint8_t g_spiRxBuf[SPI_BUFFER_SIZE];
-static uint8_t spi_w_buff[4*1024];	/*用于写函数*/
+static uint8_t spi_w_buff[4*1024];	/* ÓÃÓÚÐ´º¯Êý£¬ÏÈ¶Á³öÕû¸öÉÈÇø£¬ÐÞ¸Ä»º³åÇøºó£¬ÔÙÕû¸öÉÈÇø»ØÐ´ */
 uint32_t g_spiLen;
 __IO uint32_t wTransferState = TRANSFER_WAIT;
-#define CMD_AAI 0xAD	/* AAI连续编程指令(FOR SST25VF016B) */
-#define CMD_DISWR 0x04	/*禁止写*/
-#define CMD_EWRSR 0x50	/*允许写*/
-#define CMD_WRSR 0x01	/*写状态寄存器*/
-#define CMD_WREN 0x06	/*写使能*/
-#define CMD_READ 0x03	/*读数据区*/
-#define CMD_RDSR 0x05	/*读状态寄存器*/
-#define CMD_RDID 0x9F	/*读器件id*/
-#define CMD_SE 0x20		/*擦除扇区*/
-#define CMD_BE 0xC7		/*批量擦除*/
-#define DUMMY_BYTE 0xA5 /*用于读操作*/
+#define CMD_AAI 0xAD	/* AAI Á¬Ðø±à³ÌÖ¸Áî(FOR SST25VF016B) */
+#define CMD_DISWR 0x04	/* ½ûÖ¹Ð´, ÍË³öAAI×´Ì¬ */
+#define CMD_EWRSR 0x50	/* ÔÊÐíÐ´×´Ì¬¼Ä´æÆ÷µÄÃüÁî */
+#define CMD_WRSR 0x01	/* Ð´×´Ì¬¼Ä´æÆ÷ÃüÁî */
+#define CMD_WREN 0x06	/* Ð´Ê¹ÄÜÃüÁî */
+#define CMD_READ 0x03	/* ¶ÁÊý¾ÝÇøÃüÁî */
+#define CMD_RDSR 0x05	/* ¶Á×´Ì¬¼Ä´æÆ÷ÃüÁî */
+#define CMD_RDID 0x9F	/* ¶ÁÆ÷¼þIDÃüÁî */
+#define CMD_SE 0x20		/* ²Á³ýÉÈÇøÃüÁî */
+#define CMD_BE 0xC7		/* ÅúÁ¿²Á³ýÃüÁî */
+#define DUMMY_BYTE 0xA5 /* ÑÆÃüÁî£¬¿ÉÒÔÎªÈÎÒâÖµ£¬ÓÃÓÚ¶Á²Ù×÷ */
 
-#define WIP_FLAG 0x01 	/*正在编程 */
+#define WIP_FLAG 0x01 	/* ×´Ì¬¼Ä´æÆ÷ÖÐµÄÕýÔÚ±à³Ì±êÖ¾£¨WIP) */
 
 void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef *hspi)
 {
@@ -144,7 +144,7 @@ void bsp_erase_sector(uint32_t _uiSectorAddr)
 {
 	bsp_write_enable();
 
-	/* ������������ */
+	/* ²Á³ýÉÈÇø²Ù×÷ */
 	SF_CS_0();
 	g_spiLen = 0;
 	g_spiTxBuf[g_spiLen++] = CMD_SE;
@@ -267,12 +267,12 @@ static uint8_t bsp_cmp_data(uint32_t _uiSrcAddr, uint8_t *_ucpTar, uint32_t _uiS
 		{
 			if (g_spiRxBuf[j] != *_ucpTar++)
 			{
-				goto NOTEQ;		/* ����� */
+				goto NOTEQ;		/* ²»ÏàµÈ */
 			}
 		}
 	}
 
-	rem = _uiSize % SPI_BUFFER_SIZE;	/* ʣ���ֽ� */
+	rem = _uiSize % SPI_BUFFER_SIZE;	/* Ê£Óà×Ö½Ú */
 	if (rem > 0)
 	{
 		g_spiLen = rem;
@@ -282,7 +282,7 @@ static uint8_t bsp_cmp_data(uint32_t _uiSrcAddr, uint8_t *_ucpTar, uint32_t _uiS
 		{
 			if (g_spiRxBuf[j] != *_ucpTar++)
 			{
-				goto NOTEQ;		/* ����� */
+				goto NOTEQ;		/* ²»ÏàµÈ */
 			}
 		}
 	}
@@ -293,7 +293,7 @@ NOTEQ:
 	SF_CS_1();
 	return 1;
 }
-//�� �� ֵ: 0 : ����Ҫ������ 1 ����Ҫ����
+//·µ »Ø Öµ: 0 : ²»ÐèÒª²Á³ý£¬ 1 £ºÐèÒª²Á³ý
 static uint8_t bsp_need_erase(uint8_t * _ucpOldBuf, uint8_t *_ucpNewBuf, uint16_t _usLen)
 {
 	uint16_t i;
@@ -457,7 +457,7 @@ uint8_t bsp_write_buffer(uint8_t* _pBuf, uint32_t _uiWriteAddr, uint32_t _usWrit
 				}
 			}
 		}
-		else	/* ���ݳ��ȴ��ڵ���������С */
+		else	/* Êý¾Ý³¤¶È´óÓÚµÈÓÚÉÈÇø´óÐ¡ */
 		{
 			_usWriteSize -= count;
 			NumOfPage =  _usWriteSize / flash_parpm.SectorSize;
@@ -489,10 +489,10 @@ uint8_t bsp_write_buffer(uint8_t* _pBuf, uint32_t _uiWriteAddr, uint32_t _usWrit
 			}
 		}
 	}
-	return 1;	/* 成功·*/
+	return 1;	/* ³É¹¦ */
 }
 
-/* 读参数*/
+/* ¶Á²ÎÊý£¬Î»ÖÃÔÚw25q64ÉÏ */
 void get_flash_parament(uint8_t *buff, uint32_t size)
 {
 	bsp_read_buffer((uint8_t *)buff, XRAY_PARAMENT_ADDDR, size);
@@ -500,7 +500,7 @@ void get_flash_parament(uint8_t *buff, uint32_t size)
 	return;
 }
 
-/* 写参数 */
+/* ¶Á²ÎÊý£¬Î»ÖÃÔÚw25q64ÉÏ */
 void wirte_flash_parament(uint8_t *buff, uint32_t size)
 {
 	bsp_write_buffer((uint8_t *)buff, XRAY_PARAMENT_ADDDR, size);
