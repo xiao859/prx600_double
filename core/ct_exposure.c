@@ -32,8 +32,8 @@ volatile xray_parament_table parm_table[XRAY_NUMS] =
 };
 volatile xray_parament_range para_range =
 {
-    140, 20,            /*管电压保护值140*/
-    130, 5, 750,        /*管电流保护值*/
+    120, 50,            /*管电压保护值120 50*/
+    130, 5, 750,        /*管电流保护值130 5 */
 
     70, -25, 60, 50,    /*油温*/
 
@@ -47,7 +47,7 @@ volatile xray_parament_range para_range =
 
     1000, 1000,         /*曝光时间保护*/
 
-    1800000,            /*曝光时间1.5min 4500000*/
+    1800000,            /*曝光时间1.5min 1800000 4500000*/
 
     2400000             /*灯丝开启未曝光最大时间 6000000*/
 };
@@ -459,8 +459,8 @@ void ct_task()
 
     case HVPS_SM_ID_EXPOSURING:
 
-        // 曝光后 4ms 开始允许采样检查
-        xray_data.isCheckAvailable = (xray_data.timmer_count[ct_source] > 80) ? 1 : 0;
+        // 曝光后 2ms 开始允许采样检查
+        xray_data.isCheckAvailable = (xray_data.timmer_count[ct_source] > 40) ? 1 : 0;
 
         // 持续输出高压与准备信号
         config_hvref_slope(ct_source);
@@ -581,7 +581,7 @@ void ct_task()
 
 
 
-        if (is_dual_source)
+        if ((is_dual_source)&&(ctrl_data.enable[ct_source]))
         {
             uint32_t elapsed = last_expo_count - last_expo_end_tick[ct_source];
 
@@ -688,7 +688,7 @@ void ct_task()
             last_expo_count = 0;
             ct_source = 0;
             ctrl_data.xray_current = 1;
-						cali_data.para_save_flag =1;
+						//cali_data.para_save_flag =1;
         }
         break;
     default:

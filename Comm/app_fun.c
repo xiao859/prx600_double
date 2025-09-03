@@ -220,12 +220,10 @@ void SetHVPSMode(message_protocol *msg)
             case HVPS_MODE_S_CONTINUOUS:
                 ctrl_data.xrayMode = XRAY_MODE_S_CONTINUOUS;
                 //DMA地址
-                ctrl_data.xray_current = 1;
                 msg->data1 = SETUP_SUCCESS;
                 break;
             case HVPS_MODE_S_PULSE:
                 ctrl_data.xrayMode = XRAY_MODE_S_PULSE;
-                ctrl_data.xray_current = 1;
                 msg->data1 = SETUP_SUCCESS;
                 break;
             case HVPS_MODE_D_CONTINUOUS:
@@ -479,7 +477,7 @@ void Inqixay2HVPSCurrentset(message_protocol *msg)
 
 void Inqmaxtimeset(message_protocol *msg)
 {
-    uint8_t data1 = (uint8_t)(config_data.expo_time_expect[0] / COUNTER_TIMER6_FREQ);
+    uint8_t data1 = (uint8_t)(config_data.expo_time_expect[1] / COUNTER_TIMER6_FREQ);
     uint8_t data2 = (uint8_t)(config_data.expo_time_expect[0] / COUNTER_TIMER6_FREQ);
 
     send_message(msg->msg_id, data1, data2);
@@ -714,8 +712,12 @@ void Setenable(message_protocol *msg)
         ctrl_data.enable[1] = msg->data1;
         msg->data1 = SETUP_SUCCESS;
         msg->data2 = SETUP_SUCCESS;
+	
+				if(ctrl_data.enable[1] == 1)
+					ctrl_data.xray_current =2;
+				else if(ctrl_data.enable[0] == 1)
+					ctrl_data.xray_current =1;
    
-
    send_message(msg->msg_id, msg->data1, msg->data2);
 
     return;

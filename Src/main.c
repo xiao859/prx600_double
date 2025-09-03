@@ -172,6 +172,7 @@ int main(void)
 
     while (1)
     {
+			
 
         /* USER CODE END WHILE */
 
@@ -181,7 +182,7 @@ int main(void)
             if ((get_tick_ms() - rely_time) > 2000)
             {
                 HAL_GPIO_WritePin(HV_RE_GPIO_Port, HV_RE_PIN, Calc_Gpio_State_P(1));
-                rely_state = 1;
+                rely_state = 1;		
             }
         }
         cmd_parser();

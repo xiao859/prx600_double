@@ -157,18 +157,18 @@
         <Bp>
           <Number>0</Number>
           <Type>0</Type>
-          <LineNumber>155</LineNumber>
+          <LineNumber>908</LineNumber>
           <EnabledFlag>1</EnabledFlag>
-          <Address>134267162</Address>
+          <Address>134259060</Address>
           <ByteObject>0</ByteObject>
           <HtxType>0</HtxType>
           <ManyObjects>0</ManyObjects>
           <SizeOfObject>0</SizeOfObject>
           <BreakByAccess>0</BreakByAccess>
           <BreakIfRCount>1</BreakIfRCount>
-          <Filename>../Src/main.c</Filename>
+          <Filename>..\Comm\app_fun.c</Filename>
           <ExecCommand></ExecCommand>
-          <Expression>\\PRX600_double\../Src/main.c\155</Expression>
+          <Expression>\\PRX600_double\../Comm/app_fun.c\908</Expression>
         </Bp>
       </Breakpoint>
       <WatchWindow1>

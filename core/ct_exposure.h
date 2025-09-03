@@ -3,8 +3,8 @@
 
 #include "stdint.h"
 
-#define IDLE_FILAMENT1_REF               2120
-#define IDLE_FILAMENT2_REF               1360
+#define IDLE_FILAMENT1_REF               1500
+#define IDLE_FILAMENT2_REF               950
 
 #define XRAY_NUMS 2
 #define IDLE_HV_REF                     0
