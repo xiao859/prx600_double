@@ -6,7 +6,7 @@
 #include "comm_string.h"
 
 #define OVER_RANGE_TIME_LIMIT           5000
-#define FAST_PROTECT_TIME_RANGE         40 //2ms
+#define FAST_PROTECT_TIME_RANGE         80 //2ms
 /*对应1ms */
 #define FAST_PROTECT_ONE_TIME_RANGE     30
 #define STRIKE_TIEMS_RANGE              5

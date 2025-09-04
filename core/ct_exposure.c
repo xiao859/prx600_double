@@ -32,8 +32,8 @@ volatile xray_parament_table parm_table[XRAY_NUMS] =
 };
 volatile xray_parament_range para_range =
 {
-    120, 50,            /*管电压保护值120 50*/
-    130, 5, 750,        /*管电流保护值130 5 */
+    130, 50,            /*管电压保护值120 50*/
+    140, 5, 750,        /*管电流保护值130 5 */
 
     70, -25, 60, 50,    /*油温*/
 
@@ -282,12 +282,14 @@ void config_filamentRef(uint16_t n)
 {
     config_data.fila_ref_realtime[n] = get_filamentRef(config_data.tube_curr[n], n);
     if (n == 0)
+		{
+//				config_data.fila_ref_realtime[n] = MAX(MIN(config_data.fila_ref_realtime[n], 1600), 2280);
         HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_2, DAC_ALIGN_12B_R, config_data.fila_ref_realtime[n]);
+		}
     else
     {
         //pwm
-        uint32_t rtt = config_data.fila_ref_realtime[n];
-        debug_tx3("rtt:%d\n", rtt);
+//					config_data.fila_ref_realtime[n] = MAX(MIN(config_data.fila_ref_realtime[n], 1000), 1450);
         __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_4, config_data.fila_ref_realtime[n]);//1360
 
     }
