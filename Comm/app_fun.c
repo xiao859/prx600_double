@@ -459,7 +459,7 @@ void Setmaxexpotime(message_protocol *msg)
 void Inqixay1HVPSCurrentset(message_protocol *msg)
 {
     uint8_t data1, data2;
-    data1 = config_data.tube_curr[0];
+    data1 = config_data.tube_curr[0]*10;
     data2 = config_data.tube_vol[0];
     send_message(msg->msg_id, data1, data2);
     return;
@@ -469,7 +469,7 @@ void Inqixay2HVPSCurrentset(message_protocol *msg)
 {
     uint8_t data1, data2;
 
-    data1 = config_data.tube_curr[1];;
+    data1 = config_data.tube_curr[1]*10;
     data2 = config_data.tube_vol[1];
     send_message(msg->msg_id, data1, data2);
     return;
@@ -477,8 +477,8 @@ void Inqixay2HVPSCurrentset(message_protocol *msg)
 
 void Inqmaxtimeset(message_protocol *msg)
 {
-    uint8_t data1 = (uint8_t)(config_data.expo_time_expect[1] / COUNTER_TIMER6_FREQ);
-    uint8_t data2 = (uint8_t)(config_data.expo_time_expect[0] / COUNTER_TIMER6_FREQ);
+    uint8_t data1 = (uint8_t)(para_range.expo_time_limit*50/1000/1000);
+    uint8_t data2 = (uint8_t)(para_range.expo_time_limit*50/1000/1000);
 
     send_message(msg->msg_id, data1, data2);
 
@@ -632,7 +632,7 @@ void exp1countclr(message_protocol *msg)
     uint8_t data1, data2;
     if ((get_hv_state(0) == HVPS_SM_ID_IDLE) && (get_hv_state(1) == HVPS_SM_ID_IDLE))
     {
-        parm_table[0].expo_count_total = (msg->data1 << 8) + msg->data2;
+        parm_table[0].expo_count_total = (msg->data2 << 8) + msg->data1;
         data1 = 0;
         data2 = 0;
         save_parament_to_flash();
@@ -653,7 +653,7 @@ void exp2countclr(message_protocol *msg)
     uint8_t data1, data2;
     if ((get_hv_state(0) == HVPS_SM_ID_IDLE) && (get_hv_state(1) == HVPS_SM_ID_IDLE))
     {
-        parm_table[1].expo_count_total = (msg->data1 << 8) + msg->data2;
+        parm_table[1].expo_count_total = (msg->data2 << 8) + msg->data1;
         data1 = 0;
         data2 = 0;
         save_parament_to_flash();
@@ -673,7 +673,7 @@ void exp1timeclr(message_protocol *msg)
 {
     if ((get_hv_state(0) == HVPS_SM_ID_IDLE) && (get_hv_state(1) == HVPS_SM_ID_IDLE))
     {
-        parm_table[0].expo_times_total = (msg->data1 << 8) + msg->data2;
+        parm_table[0].expo_times_total = (msg->data2 << 8) + msg->data1;
         msg->data1 = SETUP_SUCCESS;
         msg->data2 = SETUP_SUCCESS;
     }
@@ -691,7 +691,7 @@ void exp2timeclr(message_protocol *msg)
 {
     if ((get_hv_state(0) == HVPS_SM_ID_IDLE) && (get_hv_state(1) == HVPS_SM_ID_IDLE))
     {
-        parm_table[1].expo_times_total = (msg->data1 << 8) + msg->data2;
+        parm_table[1].expo_times_total = (msg->data2 << 8) + msg->data1;
         msg->data1 = SETUP_SUCCESS;
         msg->data2 = SETUP_SUCCESS;
     }
