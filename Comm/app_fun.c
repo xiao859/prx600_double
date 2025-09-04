@@ -38,7 +38,7 @@ void invalid_cmd_reply()
 controler_cmd_funcs funcs[APP_FUNC_NUM] =
 {
     {SCI_MSG_INQ_MODE,                      &fun_null},
-    {SCI_MSG_INQ_XRAY1,                		  &Inqixay1HVPSCurrentset},
+    {SCI_MSG_INQ_XRAY1,                       &Inqixay1HVPSCurrentset},
     {SCI_MSG_INQ_XRAY2,                     &Inqixay2HVPSCurrentset},
     {SCI_MSG_INQ_MAX_TIME,                  &Inqmaxtimeset},
     {SCI_MSG_INQ_TEMP,                      &InqHVPSTemp},
@@ -459,7 +459,7 @@ void Setmaxexpotime(message_protocol *msg)
 void Inqixay1HVPSCurrentset(message_protocol *msg)
 {
     uint8_t data1, data2;
-    data1 = config_data.tube_curr[0]*10;
+    data1 = config_data.tube_curr[0] * 10;
     data2 = config_data.tube_vol[0];
     send_message(msg->msg_id, data1, data2);
     return;
@@ -469,7 +469,7 @@ void Inqixay2HVPSCurrentset(message_protocol *msg)
 {
     uint8_t data1, data2;
 
-    data1 = config_data.tube_curr[1]*10;
+    data1 = config_data.tube_curr[1] * 10;
     data2 = config_data.tube_vol[1];
     send_message(msg->msg_id, data1, data2);
     return;
@@ -477,8 +477,8 @@ void Inqixay2HVPSCurrentset(message_protocol *msg)
 
 void Inqmaxtimeset(message_protocol *msg)
 {
-    uint8_t data1 = (uint8_t)(para_range.expo_time_limit*50/1000/1000);
-    uint8_t data2 = (uint8_t)(para_range.expo_time_limit*50/1000/1000);
+    uint8_t data1 = (uint8_t)(para_range.expo_time_limit * 50 / 1000 / 1000);
+    uint8_t data2 = (uint8_t)(para_range.expo_time_limit * 50 / 1000 / 1000);
 
     send_message(msg->msg_id, data1, data2);
 
@@ -570,26 +570,29 @@ void Autocalibra(message_protocol *msg)
 {
     if ((get_hv_state(0) == HVPS_SM_ID_IDLE) && (get_hv_state(1) == HVPS_SM_ID_IDLE))
     {
-        if (msg->data2 == 0)
+        if (msg->data1 == 0)
         {
-            ctrl_data.enable[0] = 1;
-            ctrl_data.enable[1] = 1;
-            calibrate_para_init();
             set_hv_state(HPVS_SM_ID_CAL_PREPARE, 0);
             set_hv_state(HPVS_SM_ID_CAL_PREPARE, 1);
+            ctrl_data.enable[0] = 1;
+            ctrl_data.enable[1] = 1;
+            ctrl_data.filament_on[0] = 1;
+            ctrl_data.filament_on[1] = 1;
+					  calibrate_para_init();
             send_message(msg->msg_id, 0, 0);
         }
-        else if ((msg->data2 == 1) && (Is_CalibrateMode()))
+  
+        else
+        {
+            send_message(msg->msg_id, msg->data1, msg->data2);
+        }
+    }    
+		if ((msg->data1 == 1) && (Is_CalibrateMode()))
         {
             ctrl_data.enable[0] = 0;
             ctrl_data.enable[1] = 0;
             send_message(msg->msg_id, 0, 1);
         }
-        else
-        {
-            send_message(msg->msg_id, msg->data1, msg->data2);
-        }
-    }
     return;
 }
 
@@ -622,7 +625,7 @@ void Inqautocalibra(message_protocol *msg)
         reply = 1;
     }
 
-    send_message(msg->msg_id, 0, reply);
+    send_message(msg->msg_id, reply, 0);
 
     return;
 }
@@ -708,17 +711,19 @@ void exp2timeclr(message_protocol *msg)
 void Setenable(message_protocol *msg)
 {
 
-        ctrl_data.enable[0] = msg->data2;
-        ctrl_data.enable[1] = msg->data1;
-        msg->data1 = SETUP_SUCCESS;
-        msg->data2 = SETUP_SUCCESS;
-	
-				if(ctrl_data.enable[1] == 1)
-					ctrl_data.xray_current =2;
-				else if(ctrl_data.enable[0] == 1)
-					ctrl_data.xray_current =1;
-   
-   send_message(msg->msg_id, msg->data1, msg->data2);
+    ctrl_data.enable[0] = msg->data2;
+    ctrl_data.enable[1] = msg->data1;
+    msg->data1 = SETUP_SUCCESS;
+    msg->data2 = SETUP_SUCCESS;
+
+    if ((ctrl_data.enable[1] == 1) && (ctrl_data.enable[0] == 0))
+        ctrl_data.xray_current = 2;
+		else if(((ctrl_data.enable[1] == 0) && (ctrl_data.enable[0] == 0)))
+				ctrl_data.xray_current = ctrl_data.xray_current;
+    else
+        ctrl_data.xray_current = 1;
+
+    send_message(msg->msg_id, msg->data1, msg->data2);
 
     return;
 }
@@ -826,40 +831,64 @@ void test_func4(message_protocol *msg)
 
 
 void InqHVPSFault(message_protocol *msg)
-{	
-	  static uint16_t fault_index ;
-    uint16_t i;
+{
+    static uint16_t fault_index = 0;   // 当前轮询到的故障序号（从1开始）
+    uint16_t i, j;
     uint16_t *pFault;
-    uint8_t data1 = 0;
-	  uint8_t data2 = 0;
-    fault_index ++;
+    uint16_t fault_count = 0;
+    uint8_t data1 = 0; // 故障ID
+    uint8_t data2 = 0; // 故障总数
+
+    // 每次查询递增索引
+    fault_index++;
+
+    // 每个 group 的起始 Fault ID
+    const uint16_t start_fault_ID[6] = {0x00, 0x20, 0x30, 0xA0, 0xB0, 0xC0};
+
+    // 指针指向故障寄存器结构体
     pFault = (uint16_t*)(&mHVPS_Fault);
-    for(i=0;i<sizeof(HVPS_FAULT_REGS);i++)
+
+    // 遍历每个 Fault Group
+    for (i = 0; i < 6; i++)
     {
-        uint16_t fault_count= 0;
-        uint16_t i=0,j,fault_bit;
-        uint16_t fault_temp;
+        uint16_t fault_temp = *pFault++;
 
-        uint16_t start_fault_ID[sizeof(HVPS_FAULT_REGS)] = {0x00,0x20,0x30,0xA0,0xB0,0xC0};
+        // 遍历 group 内的 16 个 bit
+        for (j = 0; j < 16; j++)
+        {
+            if (fault_temp & 0x1)  // bit 置位 = 有故障
+            {
+                fault_count++;
 
-        pFault = (uint16_t*)(&mHVPS_Fault);
-        for(i=0;i<sizeof(HVPS_FAULT_REGS);i++) {
-            fault_temp = *pFault++;
-            for(j=0; j<16; j++) {
-                fault_bit  = fault_temp & 0x1;  //最地位
-                fault_temp = fault_temp>>1;
-                if(fault_bit) { // 有故障
-                    fault_count++;//当前故障计数
-                    if(fault_index ==fault_count) {
-                        data1 = start_fault_ID[i] + j;
-                    }
-                    data2 = fault_count;
+                if (fault_index == fault_count)
+                {
+                    // 当前轮询到的故障 ID
+                    data1 = start_fault_ID[i] + j;
                 }
+
+                // 故障总数
+                data2 = fault_count;
             }
+
+            fault_temp >>= 1; // 检查下一个 bit
         }
-        if(fault_index >= fault_count) fault_index =0;
     }
-    send_message(msg->msg_id, data1, data2);
+
+    // 没有任何故障
+    if (fault_count == 0)
+    {
+        fault_index = 0;
+        data1 = 0;
+        data2 = 0;
+    }
+    else if (fault_index > fault_count)
+    {
+        // 如果超出范围，则回到第1个故障
+        fault_index = 1;
+    }
+
+    // 发送消息：data1 = 故障ID, data2 = 当前故障总数
+    send_message(msg->msg_id, data1, data2);	
 
     return;
 }

@@ -139,18 +139,6 @@ void calibrate_task()
     ctrl_data.xray_current =  cali_source + 1 ;
     static uint8_t cycle = 1;
 
-    // 如果关闭使能，则强制回到IDLE
-    if (ctrl_data.enable[cali_source] == 0)
-    {
-        xray_system_disable();
-        set_hv_state(HVPS_SM_ID_IDLE, 0);
-        set_hv_state(HVPS_SM_ID_IDLE, 1);
-				parm_table[cali_source].expo_count_total++;
-				parm_table[0].expo_times_total += config_data.expo_count_total[0] / 1200000;
-		    parm_table[1].expo_times_total += config_data.expo_count_total[1] / 1200000;								
-        return;
-    }
-
     if (cali_data.timmer_count >= 1)
         cali_data.timmer_count++;
     else
@@ -213,6 +201,20 @@ void calibrate_task()
                 cali_data.timmer_count = 1;
             }
         }
+				
+				    // 如果关闭使能，则强制回到IDLE
+    if (ctrl_data.enable[cali_source] == 0)
+    {
+        xray_system_disable();
+				config_disable_sw_safe(1);
+				config_enable_sw_safe(0);
+        set_hv_state(HVPS_SM_ID_IDLE, 0);
+        set_hv_state(HVPS_SM_ID_IDLE, 1);
+				parm_table[cali_source].expo_count_total++;
+				parm_table[0].expo_times_total += config_data.expo_count_total[0] / 1200000;
+		    parm_table[1].expo_times_total += config_data.expo_count_total[1] / 1200000;								
+        return;
+    }
         break;
 
     case HPVS_SM_ID_CAL_COOLING:

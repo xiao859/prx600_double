@@ -80,7 +80,9 @@ void xray_CT_disable()
     /*给主控*/
     config_ready_signal(0);
     config_xrayOn_signal(0);
-
+	
+	  config_data.fila_ref_realtime[0]=0;
+	  config_data.fila_ref_realtime[1]=0;
     return;
 }
 
@@ -95,6 +97,9 @@ void xray_system_disable()
     ctrl_data.enable[1] = 0;
     ctrl_data.expo[1]  = 0;
     ctrl_data.filament_on[1]  = 0;
+	
+		config_data.fila_ref_realtime[0] =0;
+		config_data.fila_ref_realtime[1] =0;
 }
 
 hvps_sm_state get_hv_state(uint16_t n)
@@ -273,6 +278,7 @@ uint32_t get_filamentRef(float tube_current, uint16_t n)
 //        currRef_uplimit   = parm_table[n].currRef[config_data.tube_curr_index[n] + 1];
 //        currRef_downlimit = parm_table[n].currRef[config_data.tube_curr_index[n]];
 //    }
+		debug_tx3("ref:%d,%d,%d,%f,%d\n", n, currRef_uplimit,currRef_downlimit,tube_current,index);
 
     return (currRef_downlimit + (tube_current - parm_table[n].currValue[index]) * (currRef_uplimit - currRef_downlimit));
 
@@ -293,6 +299,7 @@ void config_filamentRef(uint16_t n)
         __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_4, config_data.fila_ref_realtime[n]);//1360
 
     }
+		debug_tx3("ref1:%d,%f\n", n, config_data.fila_ref_realtime[n]);
     return;
 }
 void disable_hvref()
@@ -461,8 +468,8 @@ void ct_task()
 
     case HVPS_SM_ID_EXPOSURING:
 
-        // 曝光后 2ms 开始允许采样检查
-        xray_data.isCheckAvailable = (xray_data.timmer_count[ct_source] > 40) ? 1 : 0;
+        // 曝光后 3ms 开始允许采样检查
+        xray_data.isCheckAvailable = (xray_data.timmer_count[ct_source] > 70) ? 1 : 0;
 
         // 持续输出高压与准备信号
         config_hvref_slope(ct_source);
@@ -549,7 +556,7 @@ void ct_task()
                 tube_current_piControl_v2(ct_source);
                 param_pid.config_ref = user_pid_2.config_ref[ct_source];
 
-                // debug_tx3("pi:%d,%d,%f\n", ct_source, oldref[ct_source], user_pid_2.currValue[ct_source]);
+               // debug_tx3("pi:%d,%d,%f\n", ct_source, oldref[ct_source], user_pid_2.currValue[ct_source]);
             }
 
             parm_table[ct_source].expo_count_total++;
