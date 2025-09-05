@@ -2,6 +2,10 @@
 #define __HV_EXPOSURE_H
 
 #include "stdint.h"
+#include "stdbool.h"
+
+#define FLASH_PRIMARY_ADDR 0x000000  // 主存储区
+#define FLASH_BACKUP_ADDR  0x001000  // 备用区，按 4KB 扇区对齐
 
 #define IDLE_FILAMENT1_REF               1500
 #define IDLE_FILAMENT2_REF               950
@@ -66,7 +70,15 @@ typedef enum
 
 #define Is_DebugMode()                  (((hv_state[0] >= HVPS_SM_ID_TRAIN_IDLE) && (hv_state[0] <= HVPS_SM_ID_TRAIN_END))||((hv_state[1] >= HVPS_SM_ID_TRAIN_IDLE) && (hv_state[1] <= HVPS_SM_ID_TRAIN_END)))
 
+typedef struct
+{
+	uint32_t expo_times_total;
+	uint32_t expo_count_total;
+	uint32_t rising_time;       //管电压上升时间
+	
+}Exposure_Parameters;
 
+extern Exposure_Parameters exp_para[XRAY_NUMS];
 
 typedef enum
 {
@@ -236,6 +248,13 @@ typedef struct
 		uint32_t hv_hardware_count;
 } xray_running_data;
 
+typedef struct
+{
+    xray_parament_table data[XRAY_NUMS];
+    uint32_t crc32;  // CRC32 校验
+} xray_parament_flash_t;
+
+
 extern volatile xray_running_data xray_data;
 
 extern volatile xray_parament_range para_range;
@@ -252,7 +271,8 @@ extern volatile adc_sampled_value sampled_data;
 
 extern volatile adc_sampled_value sampled_data_last;
 
-;
+extern uint32_t exp_count[2];
+
 
 hvps_sm_state get_hv_state(uint16_t n);
 void set_hv_state(hvps_sm_state state, uint16_t n);
@@ -273,6 +293,9 @@ void config_hvref_slope(uint16_t n);
 
 void config_enable_sw_safe(uint8_t sw);
 void config_disable_sw_safe(uint8_t sw);
+
+bool save_to_flash(volatile xray_parament_table *parm_table);
+bool load_from_flash(volatile xray_parament_table *parm_table);
 
 #endif
 

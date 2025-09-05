@@ -56,7 +56,7 @@ void unpackCmd_savePara(volatile uint8_t *buff, uint8_t *cmdHead, volatile uint3
         memcpy((uint8_t *)targetAddr, (uint8_t *)&table_temp[0], sizeof(table_temp));
 
         /*写 */
-        save_parament_to_flash();
+        save_to_flash(parm_table);
     }
 
     return;

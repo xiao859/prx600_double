@@ -209,10 +209,7 @@ void calibrate_task()
 				config_disable_sw_safe(1);
 				config_enable_sw_safe(0);
         set_hv_state(HVPS_SM_ID_IDLE, 0);
-        set_hv_state(HVPS_SM_ID_IDLE, 1);
-				parm_table[cali_source].expo_count_total++;
-				parm_table[0].expo_times_total += config_data.expo_count_total[0] / 1200000;
-		    parm_table[1].expo_times_total += config_data.expo_count_total[1] / 1200000;								
+        set_hv_state(HVPS_SM_ID_IDLE, 1);							
         return;
     }
         break;
@@ -374,8 +371,12 @@ void calibrate_task()
         }
         break;
     case HPVS_SM_ID_CAL_END:
-        parm_table[0].expo_times_total += config_data.expo_count_total[0] / 1200000;
-		    parm_table[1].expo_times_total += config_data.expo_count_total[1] / 1200000;
+				exp_count[0] += config_data.expo_count_total[0];
+				exp_count[1] += config_data.expo_count_total[1];
+				parm_table[0].expo_times_total +=  exp_count[0] / 1200000;
+				exp_count[0] = exp_count[1] % 1200000;
+				parm_table[1].expo_times_total += exp_count[1] / 1200000;
+				exp_count[1] = exp_count[1] % 1200000;
         xray_system_disable();
         cali_data.timmer_count = 0;
         set_hv_state(HVPS_SM_ID_IDLE, 0);

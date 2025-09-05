@@ -355,7 +355,7 @@ void SetHVTubeRisingTime(message_protocol *msg)
     {
         parm_table[msg->data2].rising_time = (uint32_t)msg->data1;
         send_message(msg->msg_id, SETUP_SUCCESS, SETUP_SUCCESS);
-        save_parament_to_flash();
+        save_to_flash(parm_table);
     }
     else
     {
@@ -638,7 +638,7 @@ void exp1countclr(message_protocol *msg)
         parm_table[0].expo_count_total = (msg->data2 << 8) + msg->data1;
         data1 = 0;
         data2 = 0;
-        save_parament_to_flash();
+        save_to_flash(parm_table);
     }
     else
     {
@@ -659,7 +659,7 @@ void exp2countclr(message_protocol *msg)
         parm_table[1].expo_count_total = (msg->data2 << 8) + msg->data1;
         data1 = 0;
         data2 = 0;
-        save_parament_to_flash();
+        save_to_flash(parm_table);
     }
     else
     {
@@ -679,6 +679,7 @@ void exp1timeclr(message_protocol *msg)
         parm_table[0].expo_times_total = (msg->data2 << 8) + msg->data1;
         msg->data1 = SETUP_SUCCESS;
         msg->data2 = SETUP_SUCCESS;
+			  save_to_flash(parm_table);
     }
     else
     {
@@ -697,6 +698,7 @@ void exp2timeclr(message_protocol *msg)
         parm_table[1].expo_times_total = (msg->data2 << 8) + msg->data1;
         msg->data1 = SETUP_SUCCESS;
         msg->data2 = SETUP_SUCCESS;
+			  save_to_flash(parm_table);
     }
     else
     {

@@ -45,4 +45,5 @@ void bsp_read_buffer(uint8_t * _pBuf, uint32_t _uiReadAddr, uint32_t _uiSize);
 void get_flash_parament(uint8_t *buff, uint32_t size);
 void wirte_flash_parament(uint8_t *buff, uint32_t size);
 void bsp_erase_sector(uint32_t _uiSectorAddr);
+
 #endif

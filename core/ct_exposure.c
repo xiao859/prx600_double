@@ -12,7 +12,11 @@
 #include "protect.h"
 #include "calibrate.h"
 
+uint32_t exp_count[2] = {0};
+
 hvps_sm_state volatile hv_state[XRAY_NUMS];
+
+Exposure_Parameters exp_para[XRAY_NUMS] = {0};
 
 volatile xray_config_data config_data;
 volatile xray_parament_table parm_table[XRAY_NUMS] =
@@ -80,9 +84,9 @@ void xray_CT_disable()
     /*给主控*/
     config_ready_signal(0);
     config_xrayOn_signal(0);
-	
-	  config_data.fila_ref_realtime[0]=0;
-	  config_data.fila_ref_realtime[1]=0;
+
+    config_data.fila_ref_realtime[0] = 0;
+    config_data.fila_ref_realtime[1] = 0;
     return;
 }
 
@@ -97,9 +101,9 @@ void xray_system_disable()
     ctrl_data.enable[1] = 0;
     ctrl_data.expo[1]  = 0;
     ctrl_data.filament_on[1]  = 0;
-	
-		config_data.fila_ref_realtime[0] =0;
-		config_data.fila_ref_realtime[1] =0;
+
+    config_data.fila_ref_realtime[0] = 0;
+    config_data.fila_ref_realtime[1] = 0;
 }
 
 hvps_sm_state get_hv_state(uint16_t n)
@@ -118,8 +122,9 @@ void set_hv_state(hvps_sm_state state, uint16_t n)
 
 void save_parament_to_flash()
 {
+
     bsp_erase_sector(0x80000000);
-    wirte_flash_parament((uint8_t *)&parm_table, sizeof(xray_parament_table)*2);
+    wirte_flash_parament((uint8_t *)&parm_table, sizeof(xray_parament_table) * 2);
 
     return;
 }
@@ -142,17 +147,102 @@ void config_filament0_ref_slop()
     HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_2, DAC_ALIGN_12B_R, filament_ref);
 }
 
+
+static uint32_t calc_crc32(const uint8_t *data, uint32_t length)
+{
+    uint32_t crc = 0xFFFFFFFF;
+    for (uint32_t i = 0; i < length; i++)
+    {
+        crc ^= data[i];
+        for (uint8_t j = 0; j < 8; j++)
+        {
+            if (crc & 1) crc = (crc >> 1) ^ 0xEDB88320;
+            else crc >>= 1;
+        }
+    }
+    return crc ^ 0xFFFFFFFF;
+}
+
+
+bool load_from_flash(volatile xray_parament_table *parm_table)
+{
+
+    xray_parament_flash_t flash_data;
+
+    // 1. 读取主区
+    bsp_read_buffer((uint8_t*)&flash_data, FLASH_PRIMARY_ADDR, sizeof(flash_data));
+
+    // 2. 校验 CRC
+    uint32_t CRC1 = calc_crc32((const uint8_t*)flash_data.data, sizeof(flash_data.data));
+    if (CRC1 == flash_data.crc32)
+    {
+        memcpy((void*)parm_table, flash_data.data, sizeof(flash_data.data));
+        parm_table[0].rising_time = 1;
+        parm_table[1].rising_time = 1;
+        return true;
+    }
+    else
+    {
+        // 尝试读取备用区
+        bsp_read_buffer((uint8_t*)&flash_data, FLASH_BACKUP_ADDR,  sizeof(flash_data));
+
+        if (calc_crc32((const uint8_t *)flash_data.data, sizeof(flash_data.data)) == flash_data.crc32)
+        {
+            memcpy((void*)parm_table, flash_data.data, sizeof(flash_data.data));
+            return true;
+        }
+    }
+
+    return false; // 两个区都损坏
+}
+bool save_to_flash(volatile xray_parament_table *parm_table)
+{
+
+    xray_parament_flash_t flash_data;
+
+    // 1. 拷贝数据到临时结构（非 volatile）
+    memcpy(flash_data.data, (const void*)parm_table, sizeof(flash_data.data));
+
+    // 2. 计算 CRC
+    flash_data.crc32 = calc_crc32((const uint8_t*)flash_data.data, sizeof(flash_data.data));
+    flash_data.crc32 = calc_crc32((const uint8_t*)flash_data.data, sizeof(flash_data.data));
+
+    // 3. 擦除备用区扇区
+    bsp_erase_sector(FLASH_BACKUP_ADDR);
+
+    // 4. 写入备用区
+    bsp_write_buffer((uint8_t*)&flash_data, FLASH_BACKUP_ADDR,  sizeof(flash_data));
+
+
+    // 5. 读取回读并校验
+    xray_parament_flash_t read_back;
+    bsp_read_buffer((uint8_t*)&read_back, FLASH_BACKUP_ADDR, sizeof(read_back));
+
+    if (read_back.crc32 != flash_data.crc32) return false; // 写入失败
+
+    // 6. 擦除主区并写入
+    bsp_erase_sector(FLASH_PRIMARY_ADDR);
+    bsp_write_buffer((uint8_t*)&flash_data, FLASH_PRIMARY_ADDR,  sizeof(flash_data));
+
+    return true;
+}
+
+
 void flash_table_init()
 {
-    get_flash_parament((uint8_t *)&parm_table, sizeof(xray_parament_table) * 2);
+    //  load_from_flash(parm_table);
 
-    uint32_t currRef[FILAMENT_CURRENT_TABLE_ORDER] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
+    xray_parament_table parm_table_temp[XRAY_NUMS];
+
+    get_flash_parament((uint8_t *)&parm_table_temp, sizeof(xray_parament_table) * 2);
+
+    if (parm_table_temp[0].rising_time > 5)
+        return;
+
+//    uint32_t currRef[FILAMENT_CURRENT_TABLE_ORDER] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12};
+
     int i;
 
-    if (memcmp((uint8_t *)&parm_table[0].currValue[0], (uint8_t *)&currRef[0], FILAMENT_CURRENT_TABLE_ORDER * sizeof(uint32_t)) != 0)
-    {
-        //
-    }
     for (i = 0; i < FILAMENT_CURRENT_TABLE_ORDER; i++)
     {
         parm_table[0].currRef[i]   = MIN(MAX(parm_table[0].currRef[i], 1000), 3000);
@@ -160,11 +250,6 @@ void flash_table_init()
     }
     config_data.expo_count_total[0] = 0;     //
 
-
-    if (memcmp((uint8_t *)&parm_table[1].currValue[0], (uint8_t *)&currRef[0], FILAMENT_CURRENT_TABLE_ORDER * sizeof(uint32_t)) != 0)
-    {
-        //
-    }
     for (i = 0; i < FILAMENT_CURRENT_TABLE_ORDER; i++)
     {
         parm_table[1].currRef[i]   = MIN(MAX(parm_table[1].currRef[i], 1000), 1900);
@@ -278,7 +363,7 @@ uint32_t get_filamentRef(float tube_current, uint16_t n)
 //        currRef_uplimit   = parm_table[n].currRef[config_data.tube_curr_index[n] + 1];
 //        currRef_downlimit = parm_table[n].currRef[config_data.tube_curr_index[n]];
 //    }
-		debug_tx3("ref:%d,%d,%d,%f,%d\n", n, currRef_uplimit,currRef_downlimit,tube_current,index);
+    debug_tx3("ref:%d,%d,%d,%f,%d\n", n, currRef_uplimit, currRef_downlimit, tube_current, index);
 
     return (currRef_downlimit + (tube_current - parm_table[n].currValue[index]) * (currRef_uplimit - currRef_downlimit));
 
@@ -288,18 +373,18 @@ void config_filamentRef(uint16_t n)
 {
     config_data.fila_ref_realtime[n] = get_filamentRef(config_data.tube_curr[n], n);
     if (n == 0)
-		{
-//				config_data.fila_ref_realtime[n] = MAX(MIN(config_data.fila_ref_realtime[n], 1600), 2280);
+    {
+//              config_data.fila_ref_realtime[n] = MAX(MIN(config_data.fila_ref_realtime[n], 1600), 2280);
         HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_2, DAC_ALIGN_12B_R, config_data.fila_ref_realtime[n]);
-		}
+    }
     else
     {
         //pwm
-//					config_data.fila_ref_realtime[n] = MAX(MIN(config_data.fila_ref_realtime[n], 1000), 1450);
+//                  config_data.fila_ref_realtime[n] = MAX(MIN(config_data.fila_ref_realtime[n], 1000), 1450);
         __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_4, config_data.fila_ref_realtime[n]);//1360
 
     }
-		debug_tx3("ref1:%d,%f\n", n, config_data.fila_ref_realtime[n]);
+    debug_tx3("ref1:%d,%f\n", n, config_data.fila_ref_realtime[n]);
     return;
 }
 void disable_hvref()
@@ -377,7 +462,7 @@ void ct_task()
     bool is_xrayB_mode = false;
 
     //------------ 检查是否为单独B源模式 ---------------//B源在最开始就需要切换采样开关
-    if ((ctrl_data.xray_current == 2)&&
+    if ((ctrl_data.xray_current == 2) &&
             (ctrl_data.filament_on[0] == 0) && (ctrl_data.filament_on[1] == 1) &&
             (ctrl_data.interlock == 1))
         is_xrayB_mode = 1;
@@ -554,7 +639,7 @@ void ct_task()
                 tube_current_piControl_v2(ct_source);
                 param_pid.config_ref = user_pid_2.config_ref[ct_source];
 
-               // debug_tx3("pi:%d,%d,%f\n", ct_source, oldref[ct_source], user_pid_2.currValue[ct_source]);
+                // debug_tx3("pi:%d,%d,%f\n", ct_source, oldref[ct_source], user_pid_2.currValue[ct_source]);
             }
 
             parm_table[ct_source].expo_count_total++;
@@ -588,7 +673,7 @@ void ct_task()
 
 
 
-        if ((is_dual_source)&&(ctrl_data.enable[ct_source]))
+        if ((is_dual_source) && (ctrl_data.enable[ct_source]))
         {
             uint32_t elapsed = last_expo_count - last_expo_end_tick[ct_source];
 
@@ -674,13 +759,20 @@ void ct_task()
             {
                 parm_table[0].expo_count_total++;
                 parm_table[1].expo_count_total++;
-                parm_table[0].expo_times_total += config_data.expo_count_total[0] / 1200000;
-                parm_table[1].expo_times_total += config_data.expo_count_total[1] / 1200000;
+                exp_count[0] += config_data.expo_count_total[0];
+                exp_count[1] += config_data.expo_count_total[1];
+                parm_table[0].expo_times_total +=  exp_count[0] / 1200000;
+                exp_count[0] = exp_count[1] % 1200000;
+                parm_table[1].expo_times_total += exp_count[1] / 1200000;
+                exp_count[1] = exp_count[1] % 1200000;
+
             }
             else
             {
-                parm_table[0].expo_count_total++;
-                parm_table[0].expo_times_total += config_data.expo_count_total[0] / 1200000;
+                parm_table[ct_source].expo_count_total++;
+                exp_count[ct_source] += config_data.expo_count_total[ct_source];
+                parm_table[ct_source].expo_times_total += exp_count[ct_source] / 1200000;
+                exp_count[ct_source] = exp_count[ct_source] % 1200000;
             }
             config_disable_sw_safe(1);//config_disable_sw(1);
             config_enable_sw_safe(0);//config_enable_sw(0);
@@ -695,7 +787,7 @@ void ct_task()
             last_expo_count = 0;
             ct_source = 0;
             ctrl_data.xray_current = 1;
-						//cali_data.para_save_flag =1;
+            cali_data.para_save_flag =1;
         }
         break;
     default:

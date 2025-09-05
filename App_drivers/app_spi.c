@@ -155,6 +155,7 @@ void bsp_erase_sector(uint32_t _uiSectorAddr)
 	SF_CS_1();
 
 	bsp_waitfor_write_end();
+	
 }
 void bsp_erase_chip(void)
 {
@@ -507,3 +508,4 @@ void wirte_flash_parament(uint8_t *buff, uint32_t size)
 
 	return;
 }
+

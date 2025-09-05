@@ -148,11 +148,13 @@ int main(void)
 //      bsp_read_buffer(arr1,0,5);
 //      bsp_erase_sector(0);
 //      bsp_write_buffer((uint8_t *)parm_table, 0, sizeof(parm_table));
+//			bsp_erase_sector(0x1000);
+//			bsp_write_buffer((uint8_t *)parm_table, 0, sizeof(parm_table));
 //      bsp_read_buffer(arr1,0,5);
 //      bsp_erase_sector(0);
 //      bsp_read_buffer(arr1,0,5);
 //      bsp_erase_sector(0);
-    flash_table_init();
+    load_from_flash(parm_table);
 
     //默认单源模式
     ctrl_data.xray_current = 1;
@@ -161,10 +163,7 @@ int main(void)
 //      uint16_t pwm=0;
 
     debug_tx3("123\n");
-    uint8_t arr[5] = {1, 2, 3, 4, 5};
-    HAL_UART_Transmit(&huart5, arr, MESSAGE_PACK_LENGTH, 1000);
-
-
+			
     ctrl_data.interlock = 1;
     cali_data.para_save_flag = 0;
 
@@ -203,7 +202,8 @@ int main(void)
         if (cali_data.para_save_flag == 1)
         {
             HAL_TIM_Base_Stop_IT(&htim2);
-            save_parament_to_flash();
+            //save_parament_to_flash();
+						save_to_flash(parm_table);
             HAL_TIM_Base_Start_IT(&htim2);
             cali_data.para_save_flag = 0;
         }

@@ -310,6 +310,11 @@
           <WinNumber>1</WinNumber>
           <ItemText>tick</ItemText>
         </Ww>
+        <Ww>
+          <count>31</count>
+          <WinNumber>1</WinNumber>
+          <ItemText>flash_data</ItemText>
+        </Ww>
       </WatchWindow1>
       <MemoryWindow1>
         <Mm>
