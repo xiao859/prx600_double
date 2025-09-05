@@ -377,7 +377,7 @@ void ct_task()
     bool is_xrayB_mode = false;
 
     //------------ 检查是否为单独B源模式 ---------------//B源在最开始就需要切换采样开关
-    if ((ctrl_data.xray_current == 2) && (ctrl_data.enable[0] == 0) && (ctrl_data.enable[1] == 1) &&
+    if ((ctrl_data.xray_current == 2)&&
             (ctrl_data.filament_on[0] == 0) && (ctrl_data.filament_on[1] == 1) &&
             (ctrl_data.interlock == 1))
         is_xrayB_mode = 1;
@@ -413,8 +413,6 @@ void ct_task()
         {
             config_filament_ref_slop(ct_source);
         }
-        else if (ctrl_data.filament_on[0] == 0)
-            break;
 
         // 仅当满足时间、interlock后才允许进入下一状态
         if (ctrl_data.interlock && ctrl_data.filament_on[ct_source] &&
