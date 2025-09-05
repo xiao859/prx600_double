@@ -832,63 +832,124 @@ void test_func4(message_protocol *msg)
 
 void InqHVPSFault(message_protocol *msg)
 {
-    static uint16_t fault_index = 0;   // 当前轮询到的故障序号（从1开始）
-    uint16_t i, j;
-    uint16_t *pFault;
+    static uint16_t fault_index = 0; 
     uint16_t fault_count = 0;
-    uint8_t data1 = 0; // 故障ID
-    uint8_t data2 = 0; // 故障总数
+    uint16_t *pFault;
+    uint8_t data1 = 0;
+    uint8_t data2 = 0;
 
-    // 每次查询递增索引
-    fault_index++;
+    uint16_t start_fault_ID[6] = {0x00, 0x20, 0x30, 0xA0, 0xB0, 0xC0};
 
-    // 每个 group 的起始 Fault ID
-    const uint16_t start_fault_ID[6] = {0x00, 0x20, 0x30, 0xA0, 0xB0, 0xC0};
-
-    // 指针指向故障寄存器结构体
     pFault = (uint16_t*)(&mHVPS_Fault);
-
-    // 遍历每个 Fault Group
-    for (i = 0; i < 6; i++)
+    for (uint16_t i = 0; i < 6; i++)
     {
         uint16_t fault_temp = *pFault++;
-
-        // 遍历 group 内的 16 个 bit
-        for (j = 0; j < 16; j++)
+        for (uint16_t j = 0; j < 16; j++)
         {
-            if (fault_temp & 0x1)  // bit 置位 = 有故障
+            if (fault_temp & 0x1)  // 有故障
             {
                 fault_count++;
-
                 if (fault_index == fault_count)
                 {
-                    // 当前轮询到的故障 ID
-                    data1 = start_fault_ID[i] + j;
+                    data1 = start_fault_ID[i] + j; // 故障码
                 }
-
-                // 故障总数
-                data2 = fault_count;
+                data2 = fault_count; // 总故障数
             }
-
-            fault_temp >>= 1; // 检查下一个 bit
+            fault_temp >>= 1;
         }
     }
 
-    // 没有任何故障
-    if (fault_count == 0)
-    {
-        fault_index = 0;
+    // === 修复关键点 ===
+    if (fault_count == 0) {
+        fault_index = 0;  
         data1 = 0;
         data2 = 0;
-    }
-    else if (fault_index > fault_count)
-    {
-        // 如果超出范围，则回到第1个故障
-        fault_index = 1;
+    } else {
+        if (fault_index == 0 || fault_index > fault_count) {
+            fault_index = 1;  // 初始化或越界时从1开始
+            // 重新匹配一次
+            pFault = (uint16_t*)(&mHVPS_Fault);
+            uint16_t cnt = 0;
+            for (uint16_t i = 0; i < 6; i++) {
+                uint16_t fault_temp = *pFault++;
+                for (uint16_t j = 0; j < 16; j++) {
+                    if (fault_temp & 0x1) {
+                        cnt++;
+                        if (cnt == fault_index) {
+                            data1 = start_fault_ID[i] + j;
+                        }
+                    }
+                    fault_temp >>= 1;
+                }
+            }
+        }
     }
 
-    // 发送消息：data1 = 故障ID, data2 = 当前故障总数
-    send_message(msg->msg_id, data1, data2);	
+    send_message(msg->msg_id, data1, data2);
+
+    // ⚡ 最后再自增，保证下次查询不会错位
+    if (fault_count > 0) {
+        fault_index++;
+        if (fault_index > fault_count) fault_index = 1;  // 循环
+    }
+	
+//    static uint16_t fault_index = 0;   // 当前轮询到的故障序号（从1开始）
+//    uint16_t i, j;
+//    uint16_t *pFault;
+//    uint16_t fault_count = 0;
+//    uint8_t data1 = 0; // 故障ID
+//    uint8_t data2 = 0; // 故障总数
+
+//    // 每次查询递增索引
+//    fault_index++;
+
+//    // 每个 group 的起始 Fault ID
+//    const uint16_t start_fault_ID[6] = {0x00, 0x20, 0x30, 0xA0, 0xB0, 0xC0};
+
+//    // 指针指向故障寄存器结构体
+//    pFault = (uint16_t*)(&mHVPS_Fault);
+
+//    // 遍历每个 Fault Group
+//    for (i = 0; i < 6; i++)
+//    {
+//        uint16_t fault_temp = *pFault++;
+
+//        // 遍历 group 内的 16 个 bit
+//        for (j = 0; j < 16; j++)
+//        {
+//            if (fault_temp & 0x1)  // bit 置位 = 有故障
+//            {
+//                fault_count++;
+
+//                if (fault_index == fault_count)
+//                {
+//                    // 当前轮询到的故障 ID
+//                    data1 = start_fault_ID[i] + j;
+//                }
+
+//                // 故障总数
+//                data2 = fault_count;
+//            }
+
+//            fault_temp >>= 1; // 检查下一个 bit
+//        }
+//    }
+
+//    // 没有任何故障
+//    if (fault_count == 0)
+//    {
+//        fault_index = 0;
+//        data1 = 0;
+//        data2 = 0;
+//    }
+//    else if (fault_index > fault_count)
+//    {
+//        // 如果超出范围，则回到第1个故障
+//        fault_index = 1;
+//    }
+
+//    // 发送消息：data1 = 故障ID, data2 = 当前故障总数
+//    send_message(msg->msg_id, data1, data2);	
 
     return;
 }

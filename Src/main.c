@@ -164,15 +164,25 @@ int main(void)
     uint8_t arr[5] = {1, 2, 3, 4, 5};
     HAL_UART_Transmit(&huart5, arr, MESSAGE_PACK_LENGTH, 1000);
 
+
     ctrl_data.interlock = 1;
-		cali_data.para_save_flag =0;
+    cali_data.para_save_flag = 0;
 
     xray_data.isCheckAvailable = 0;
     xray_on_led(0);
 
+    config_data.tube_vol[0] = 60;
+    config_data.tube_curr[0] = 2;
+    config_data.tube_vol_step[0] = 3;
+    config_data.tube_vol_realtime[0] = 0;
+
+    config_data.tube_vol[1] = 60;
+    config_data.tube_curr[1] = 2;
+    config_data.tube_vol_step[1] = 3;
+    config_data.tube_vol_realtime[1] = 0;
     while (1)
     {
-			
+
 
         /* USER CODE END WHILE */
 
@@ -182,7 +192,7 @@ int main(void)
             if ((get_tick_ms() - rely_time) > 2000)
             {
                 HAL_GPIO_WritePin(HV_RE_GPIO_Port, HV_RE_PIN, Calc_Gpio_State_P(1));
-                rely_state = 1;		
+                rely_state = 1;
             }
         }
         cmd_parser();
@@ -192,9 +202,9 @@ int main(void)
 
         if (cali_data.para_save_flag == 1)
         {
-					  HAL_TIM_Base_Stop_IT(&htim2);
+            HAL_TIM_Base_Stop_IT(&htim2);
             save_parament_to_flash();
-						HAL_TIM_Base_Start_IT(&htim2);
+            HAL_TIM_Base_Start_IT(&htim2);
             cali_data.para_save_flag = 0;
         }
 
