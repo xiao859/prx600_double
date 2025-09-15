@@ -56,7 +56,7 @@ void calibrate_mode_config()
 
     return;
 }
-
+uint32_t arr[8]={0};
 void config_filamentRef_cali(uint8_t curr_index, uint16_t n)
 {
     uint32_t fila_vol_ref = parm_table[n].currRef_c[curr_index] ;
@@ -126,6 +126,7 @@ void filament_ref_update(uint8_t curr_idx, uint16_t n)
     parm_table[n].currRef_c[curr_idx]   = user_pid_2.config_ref[n];
     return;
 }
+
 
 
 //故障指示灯  高压

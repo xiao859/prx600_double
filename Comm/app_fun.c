@@ -38,7 +38,7 @@ void invalid_cmd_reply()
 controler_cmd_funcs funcs[APP_FUNC_NUM] =
 {
     {SCI_MSG_INQ_MODE,                      &fun_null},
-    {SCI_MSG_INQ_XRAY1,                       &Inqixay1HVPSCurrentset},
+    {SCI_MSG_INQ_XRAY1,                     &Inqixay1HVPSCurrentset},
     {SCI_MSG_INQ_XRAY2,                     &Inqixay2HVPSCurrentset},
     {SCI_MSG_INQ_MAX_TIME,                  &Inqmaxtimeset},
     {SCI_MSG_INQ_TEMP,                      &InqHVPSTemp},
