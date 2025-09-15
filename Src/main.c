@@ -71,7 +71,6 @@ void SystemClock_Config(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-uint32_t sw_timer = 0;
 /* USER CODE END 0 */
 
 /**
@@ -182,10 +181,6 @@ int main(void)
     config_data.tube_vol_realtime[1] = 0;
 		
 		HAL_GPIO_WritePin(GPIOD, GPIO_PIN_13, GPIO_PIN_SET);
-		
-		config_HVEn_signal(1);
-		HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_2, DAC_ALIGN_12B_R, 2000);
-		__HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_4, 1400);//1360
 //	cali_data.para_save_flag =1;
     while (1)
     {
@@ -193,19 +188,7 @@ int main(void)
 
         /* USER CODE END WHILE */
 
-        /* USER CODE BEGIN 3 */
-				if(sw_timer >= 80040)
-				{
-					config_enable_sw_safe(1);//config_disable_sw(1);
-						sw_timer = 0;
-				}
-				else if(sw_timer >= 80020)
-						config_disable_sw_safe(0);//config_disable_sw(1);
-				else if(sw_timer >= 40020)	
-						config_enable_sw_safe(0);//config_disable_sw(1);
-				else if(sw_timer >= 40000)
-					config_disable_sw_safe(1);//config_disable_sw(1);
-				
+        /* USER CODE BEGIN 3 */			
         if (rely_state == 0)
         {
             if ((get_tick_ms() - rely_time) > 2000)
@@ -288,7 +271,6 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
     /* USER CODE END Callback 0 */
     if (htim->Instance == TIM2)
     {
-				sw_timer++;
         transform_adc_values();
 
         if (Is_CTMode())
