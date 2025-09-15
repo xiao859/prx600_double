@@ -184,6 +184,8 @@ int main(void)
 		HAL_GPIO_WritePin(GPIOD, GPIO_PIN_13, GPIO_PIN_SET);
 		
 		config_HVEn_signal(1);
+		  config_filamentOn_signal(1, 0);                     // 打开灯丝0
+			  config_filamentOn_signal(1, 1);                     // 打开灯丝0
 		HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_2, DAC_ALIGN_12B_R, 2000);
 		__HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_4, 1400);//1360
 //	cali_data.para_save_flag =1;
@@ -217,7 +219,7 @@ int main(void)
         cmd_parser();
         cmd_parser_string();
 
-        Protect_Check_Slow();      //慢速故障检查
+//        Protect_Check_Slow();      //慢速故障检查
 
         if (cali_data.para_save_flag == 1)
         {
@@ -289,28 +291,28 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
     if (htim->Instance == TIM2)
     {
 				sw_timer++;
-        transform_adc_values();
+//        transform_adc_values();
 
-        if (Is_CTMode())
-        {
-            ctrl_data.expo[0]   = get_expo_pin(0);
+//        if (Is_CTMode())
+//        {
+//            ctrl_data.expo[0]   = get_expo_pin(0);
 
-            ctrl_data.expo[1]   = get_expo_pin(1);
+//            ctrl_data.expo[1]   = get_expo_pin(1);
 
-            ct_task();
-        }
-        else if (Is_CalibrateMode())
-        {
-            calibrate_task();
-        }
-        else if (Is_DebugMode())
-        {
-            debug_task();
-        }
+//            ct_task();
+//        }
+//        else if (Is_CalibrateMode())
+//        {
+//            calibrate_task();
+//        }
+//        else if (Is_DebugMode())
+//        {
+//            debug_task();
+//        }
 
-        //故障快速检测
-        xray_fast_protect();
-        xray_system_fault_check();
+//        //故障快速检测
+//        xray_fast_protect();
+//        xray_system_fault_check();
     }
 
     /* USER CODE END Callback 1 */
