@@ -203,6 +203,8 @@ void debug_expo_ctrl(message_protocol *msg);
 
 void fun_null(message_protocol *msg);
 
+void firmUpgrade(message_protocol *msg);
+
 void cmd_parser(void);
 
 #endif

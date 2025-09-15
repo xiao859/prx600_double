@@ -1,15 +1,13 @@
 #ifndef _UPDATA_H
 #define _UPDATA_H
 
-/* 1、头文件包含 */
-#include "stdbool.h"
 #include "stdint.h"
-#include "sys.h"
 
 #define APP_FLASH_SIZE         (1024 * 100)   // 208KB
 #define BOOT_FLASH_START_ADDR  0x08000000
 #define APP1_FLASH_START_ADDR  0x0800C000
 #define APP2_FLASH_START_ADDR  0x08040000
+#define ADDR_FLASH_BANK2_START_ADDR  0x08040000
 #define APP1_FLASH_END_ADDR (APP1_FLASH_START_ADDR + APP_FLASH_SIZE - 1)
 #define APP2_FLASH_END_ADDR (APP2_FLASH_START_ADDR + APP_FLASH_SIZE - 1)
 
@@ -42,6 +40,9 @@ typedef void (*iapfun)(void);                   /* 定义一个函数类型的参数 */
 
 void update_process(void);
 
+void upgrade_proc(void);
+
+uint32_t crc_calculate(uint8_t byte, uint32_t crc);
 
 #endif
 

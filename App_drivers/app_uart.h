@@ -17,6 +17,16 @@
 #define SCI_ACK_HEADER2         0xBB
 
 #define FRAME_BUF_NUM      10
+
+typedef struct
+{
+    uint32_t time_cnt;              // 接收计时
+    uint32_t crc_rslt;
+    uint32_t recv_cnt;               //接收计数
+    uint8_t uart_idx;               //索引
+    uint8_t recv_buff[60*1024];     //接收buff
+} upgrade_uart;
+extern upgrade_uart upgrade_buf;
 typedef struct
 {
     uint8_t head1;

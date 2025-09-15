@@ -148,13 +148,13 @@ int main(void)
 //      bsp_read_buffer(arr1,0,5);
 //      bsp_erase_sector(0);
 //      bsp_write_buffer((uint8_t *)parm_table, 0, sizeof(parm_table));
-//			bsp_erase_sector(0x1000);
-//			bsp_write_buffer((uint8_t *)parm_table, 0, sizeof(parm_table));
+//          bsp_erase_sector(0x1000);
+//          bsp_write_buffer((uint8_t *)parm_table, 0, sizeof(parm_table));
 //      bsp_read_buffer(arr1,0,5);
 //      bsp_erase_sector(0);
 //      bsp_read_buffer(arr1,0,5);
 //      bsp_erase_sector(0);
-   load_from_flash(parm_table);
+    load_from_flash(parm_table);
 
     //默认单源模式
     ctrl_data.xray_current = 1;
@@ -163,7 +163,7 @@ int main(void)
 //      uint16_t pwm=0;
 
     debug_tx3("123\n");
-			
+
     ctrl_data.interlock = 1;
     cali_data.para_save_flag = 0;
 
@@ -179,16 +179,16 @@ int main(void)
     config_data.tube_curr[1] = 2;
     config_data.tube_vol_step[1] = 3;
     config_data.tube_vol_realtime[1] = 0;
-		
-		HAL_GPIO_WritePin(GPIOD, GPIO_PIN_13, GPIO_PIN_SET);
-//	cali_data.para_save_flag =1;
+
+    HAL_GPIO_WritePin(GPIOD, GPIO_PIN_13, GPIO_PIN_SET);
+//  cali_data.para_save_flag =1;
     while (1)
     {
 
 
         /* USER CODE END WHILE */
 
-        /* USER CODE BEGIN 3 */			
+        /* USER CODE BEGIN 3 */
         if (rely_state == 0)
         {
             if ((get_tick_ms() - rely_time) > 2000)
@@ -197,6 +197,13 @@ int main(void)
                 rely_state = 1;
             }
         }
+
+        if ((get_hv_state(0) == HVPS_SM_ID_UPDATE_RUN) && (get_hv_state(1) == HVPS_SM_ID_UPDATE_RUN))
+        {
+            upgrade_proc();
+            continue;
+        }
+				
         cmd_parser();
         cmd_parser_string();
 
@@ -206,11 +213,11 @@ int main(void)
         {
             HAL_TIM_Base_Stop_IT(&htim2);
             //save_parament_to_flash();
-						save_to_flash(parm_table);
+            save_to_flash(parm_table);
             HAL_TIM_Base_Start_IT(&htim2);
             cali_data.para_save_flag = 0;
         }
-			//heartBeat_led();
+        //heartBeat_led();
 
     }
     /* USER CODE END 3 */

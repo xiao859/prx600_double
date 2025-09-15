@@ -15,6 +15,7 @@
 #include <string.h>
 #include "ct_exposure.h"
 #include "calibrate.h"
+#include "app_uart.h"
 
 volatile  xray_version version =
 {
@@ -72,7 +73,7 @@ controler_cmd_funcs funcs[APP_FUNC_NUM] =
     {SCI_MSG_CTRL_RST,                      &FaultReset},
     {SCI_MSG_CTRL_CAL,                      &Autocalibra},
     {SCI_MSG_CTRL_TRAIN,                    &fun_null},
-    {SCI_MSG_CTRL_UPDATE,                   &fun_null},
+    {SCI_MSG_CTRL_UPDATE,                   &firmUpgrade},
     {SCI_MSG_CTRL_STORE_TABLE,              &StoreLookupTable},
     {SCI_MSG_CTRL_STORE_TABLE_INQ,          &StoreLookupTableINQ},
     {SCI_MSG_CTRL_STORE_STATISTICS,         &StoreStatistics},
@@ -99,6 +100,28 @@ controler_cmd_funcs funcs[APP_FUNC_NUM] =
 
 void fun_null(message_protocol *msg)
 {
+    return;
+}
+
+void firmUpgrade(message_protocol *msg)
+{
+    uint8_t data1, data2;
+    if((get_hv_state(1) == HVPS_SM_ID_IDLE )&& (get_hv_state(1) == HVPS_SM_ID_IDLE ))
+		{
+        data1 = 0;
+        data2 = 0;
+        upgrade_buf.time_cnt = 0;
+        upgrade_buf.recv_cnt = 0;
+        upgrade_buf.crc_rslt = 0XFFFFFFFF;
+        set_hv_state(HVPS_SM_ID_UPDATE_RUN,0);
+			  set_hv_state(HVPS_SM_ID_UPDATE_RUN,1);
+    } else {
+        data1 = 0xFF;
+        data2 = 0xFF;
+    }
+
+    send_message(msg->msg_id, data1, data2);
+
     return;
 }
 
@@ -772,62 +795,21 @@ void debug_expo_ctrl(message_protocol *msg)
 
 void test_func1(message_protocol *msg)
 {
-//    gpio_input_trigger();
-
-//    //return;
-
-//    gpio_output_set1_test();
-
-//    //return;
-//    tube_vol_ref = (uint32_t)(0 / ADDA_FULL_SCALE_VIL_VALUE * 4095);
-
-//    fila_vol_ref = (uint32_t)(1 / ADDA_FULL_SCALE_VIL_VALUE * 4095);
-
-//    HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_1, DAC_ALIGN_12B_R, tube_vol_ref);
-//    HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_2, DAC_ALIGN_12B_R, fila_vol_ref);
-
     return;
 }
 
 void test_func2(message_protocol *msg)
 {
-//    gpio_input_nottrigger();
-
-//    //return;
-
-//    gpio_output_set2_test();
-//    //return;
-//    tube_vol_ref = (uint32_t)(1 / ADDA_FULL_SCALE_VIL_VALUE * 4095);
-
-//    fila_vol_ref = (uint32_t)(2 / ADDA_FULL_SCALE_VIL_VALUE * 4095);
-
-//    HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_1, DAC_ALIGN_12B_R, tube_vol_ref);
-//    HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_2, DAC_ALIGN_12B_R, fila_vol_ref);
-
-    return;
+	return;
 }
 
 void test_func3(message_protocol *msg)
 {
-//    tube_vol_ref = (uint32_t)(3.3f / ADDA_FULL_SCALE_VIL_VALUE * 4095);
-
-//    fila_vol_ref = (uint32_t)(1 / ADDA_FULL_SCALE_VIL_VALUE * 4095);
-
-//    HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_1, DAC_ALIGN_12B_R, tube_vol_ref);
-//    HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_2, DAC_ALIGN_12B_R, fila_vol_ref);
-
     return;
 }
 
 void test_func4(message_protocol *msg)
 {
-//    tube_vol_ref = 4095;
-
-//    fila_vol_ref = 4095;
-
-//    HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_1, DAC_ALIGN_12B_R, tube_vol_ref);
-//    HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_2, DAC_ALIGN_12B_R, fila_vol_ref);
-
     return;
 }
 
@@ -893,65 +875,7 @@ void InqHVPSFault(message_protocol *msg)
     if (fault_count > 0) {
         fault_index++;
         if (fault_index > fault_count) fault_index = 1;  // 循环
-    }
-	
-//    static uint16_t fault_index = 0;   // 当前轮询到的故障序号（从1开始）
-//    uint16_t i, j;
-//    uint16_t *pFault;
-//    uint16_t fault_count = 0;
-//    uint8_t data1 = 0; // 故障ID
-//    uint8_t data2 = 0; // 故障总数
-
-//    // 每次查询递增索引
-//    fault_index++;
-
-//    // 每个 group 的起始 Fault ID
-//    const uint16_t start_fault_ID[6] = {0x00, 0x20, 0x30, 0xA0, 0xB0, 0xC0};
-
-//    // 指针指向故障寄存器结构体
-//    pFault = (uint16_t*)(&mHVPS_Fault);
-
-//    // 遍历每个 Fault Group
-//    for (i = 0; i < 6; i++)
-//    {
-//        uint16_t fault_temp = *pFault++;
-
-//        // 遍历 group 内的 16 个 bit
-//        for (j = 0; j < 16; j++)
-//        {
-//            if (fault_temp & 0x1)  // bit 置位 = 有故障
-//            {
-//                fault_count++;
-
-//                if (fault_index == fault_count)
-//                {
-//                    // 当前轮询到的故障 ID
-//                    data1 = start_fault_ID[i] + j;
-//                }
-
-//                // 故障总数
-//                data2 = fault_count;
-//            }
-
-//            fault_temp >>= 1; // 检查下一个 bit
-//        }
-//    }
-
-//    // 没有任何故障
-//    if (fault_count == 0)
-//    {
-//        fault_index = 0;
-//        data1 = 0;
-//        data2 = 0;
-//    }
-//    else if (fault_index > fault_count)
-//    {
-//        // 如果超出范围，则回到第1个故障
-//        fault_index = 1;
-//    }
-
-//    // 发送消息：data1 = 故障ID, data2 = 当前故障总数
-//    send_message(msg->msg_id, data1, data2);	
+    }	
 
     return;
 }
@@ -1028,16 +952,6 @@ uint8_t message_check(USART_TypeDef *Instance)
 
 void cmd_parser()
 {
-//    if (uart4_frame_fifo.count > 0)
-//    {
-//        uint8_t idx = uart4_frame_fifo.head;
-//        message_protocol* frame = & uart4_frame_fifo.data[idx];
-
-//        cmd_process(frame->msg_id, frame, UART4);
-//        // 出队
-//        uart4_frame_fifo.head = (uart4_frame_fifo.head + 1) % FRAME_BUF_NUM;
-//        uart4_frame_fifo.count--;
-//    }
 
     if (uart5_frame_fifo.count > 0)
     {
