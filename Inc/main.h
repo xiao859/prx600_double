@@ -135,11 +135,6 @@ void Error_Handler(void);
 #define EXP_B_Pin GPIO_PIN_0
 #define EXP_B_GPIO_Port GPIOE
 
-//#define ENABLE_A_Pin GPIO_PIN_10
-//#define ENABLE_A_GPIO_Port GPIOD
-//#define ENABLE_B_Pin GPIO_PIN_8
-//#define ENABLE_B_GPIO_Port GPIOD
-
 #define INTERLOCK_Pin GPIO_PIN_3
 #define INTERLOCK_GPIO_Port GPIOE
 #define INTERLOCK_EXTI_IRQn EXTI3_IRQn

@@ -18,7 +18,36 @@ hvps_sm_state volatile hv_state[XRAY_NUMS];
 
 Exposure_Parameters exp_para[XRAY_NUMS] = {0};
 
-volatile xray_config_data config_data;
+volatile xray_config_data config_data = {
+    0,        //准备就绪
+    0,        //射源出信号
+    0,        //故障
+
+    /* output to HV*/
+    0,        //高压使能
+    0,        //高压互锁
+    0,        //故障复位
+		{60,60},  //串口配置的管电压
+    {2,2},    //串口配置的管电流
+    {0,0}, 		//管电流查表索引
+
+    {0,0}, 		//管电压基准实时配置值
+    {3,3},    //管电压基准上升步长
+
+    {0,0},    //灯丝基准目标值
+    {0,0},  	//灯丝基准实时配置
+    {0,0},    //灯丝基准上升步长
+
+    /* output to filament*/
+    {0,0},    //灯丝使能
+
+    /* other data */
+    {0,0},   //射源单次曝光计时
+    {0,0},   //射源总曝光计时
+    {0,0},   //曝光时间设置
+    {0,0},   //灯丝开启未曝光计数
+
+};
 volatile xray_parament_table parm_table[XRAY_NUMS] =
 {
     {
@@ -342,27 +371,20 @@ uint32_t get_filamentRef(float tube_current, uint16_t n)
             break;
         }
     }
-//      return parm_table[n].currRef[config_data.tube_curr_index[n]];
+
     if (tube_current >= parm_table[n].currValue[FILAMENT_CURRENT_TABLE_ORDER - 1])
     {
-//        if ((ctrl_data.xrayMode == XRAY_MODE_S_CONTINUOUS)||(ctrl_data.xrayMode == XRAY_MODE_S_PULSE))
+
         return parm_table[n].currRef_c[config_data.tube_curr_index[n]];
-//        else
-//            return parm_table[n].currRef[config_data.tube_curr_index[n]];
+
     }
 
     uint32_t currRef_uplimit;
     uint32_t currRef_downlimit;
-//   if (((ctrl_data.xrayMode == XRAY_MODE_S_CONTINUOUS)||(ctrl_data.xrayMode == XRAY_MODE_S_PULSE)) && (index >= 7))
-//   {
+
     currRef_uplimit   = parm_table[n].currRef_c[config_data.tube_curr_index[n] + 1];
     currRef_downlimit = parm_table[n].currRef_c[config_data.tube_curr_index[n]];
-//    }
-//    else
-//    {
-//        currRef_uplimit   = parm_table[n].currRef[config_data.tube_curr_index[n] + 1];
-//        currRef_downlimit = parm_table[n].currRef[config_data.tube_curr_index[n]];
-//    }
+
     debug_tx3("ref:%d,%d,%d,%f,%d\n", n, currRef_uplimit, currRef_downlimit, tube_current, index);
 
     return (currRef_downlimit + (tube_current - parm_table[n].currValue[index]) * (currRef_uplimit - currRef_downlimit));
@@ -374,13 +396,12 @@ void config_filamentRef(uint16_t n)
     config_data.fila_ref_realtime[n] = get_filamentRef(config_data.tube_curr[n], n);
     if (n == 0)
     {
-//              config_data.fila_ref_realtime[n] = MAX(MIN(config_data.fila_ref_realtime[n], 1600), 2280);
+
         HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_2, DAC_ALIGN_12B_R, config_data.fila_ref_realtime[n]);
     }
     else
     {
         //pwm
-//                  config_data.fila_ref_realtime[n] = MAX(MIN(config_data.fila_ref_realtime[n], 1000), 1450);
         __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_4, config_data.fila_ref_realtime[n]);//1360
 
     }
@@ -389,10 +410,6 @@ void config_filamentRef(uint16_t n)
 }
 void disable_hvref()
 {
-//    config_data.tube_vol_realtime[n] = 0;
-//    config_data.tube_vol[n] = 0;
-//    config_data.tube_vol_step[n] = 0;
-
     HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_1, DAC_ALIGN_12B_R, 0);
 }
 
@@ -441,10 +458,6 @@ void config_disable_sw_safe(uint8_t sw)
 }
 
 
-
-
-//float kp_test = 3.5;
-//float ki_test = 0.0009;
 uint32_t pulse_time_base_count = 0;
 float pulse_kp = 100;
 float pulse_ki = 1;
@@ -587,9 +600,6 @@ void ct_task()
                 param_pid.ki_flag = 0;
             }
 
-//            user_pid_2.Kp[ct_source] = pulse_kp;
-//            user_pid_2.Ki[ct_source] = pulse_ki;
-
             tube_current_piControl(1, ct_source);
         }
 
@@ -654,9 +664,6 @@ void ct_task()
         break;
 
     case HVPS_SM_ID_EXPO_END:
-
-//        // 高压基准维持
-//        config_hvref_slope(ct_source);
 
         // ----------- 灯丝保护计数 -----------
         for (uint8_t i = 0; i < XRAY_NUMS; i++)
@@ -791,7 +798,7 @@ void ct_task()
         }
         break;
     default:
-        //set_hv_state(HVPS_SM_ID_IDLE, ct_source);
+        set_hv_state(HVPS_SM_ID_IDLE, ct_source);
         break;
     }
     // --------- 安全检查：禁止SW1和SW2同时开启 ----------

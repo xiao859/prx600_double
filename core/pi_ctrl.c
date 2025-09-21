@@ -16,14 +16,15 @@ User_PID_2   user_pid_2;
 //        __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_4, config_data.fila_ref_realtime[ct_source]);//max 1999
 //    }
 
-uint32_t fila_ref_offset[2][FILAMENT_CURRENT_TABLE_ORDER] = {
+uint32_t fila_ref_offset[2][FILAMENT_CURRENT_TABLE_ORDER] =
+{
     /* 1   2   3   4   5   6   7    8   9   10   11   12 */
-      { 2,  5,  5,  8,  10,  15, 15, 15, 20, 20,  20,  23},
-			{ 2,  3,  3,  3,   3,   4,  5,  6,  6,  7,   7,  8}
-};		
-		
-		
-		
+    { 2,  5,  5,  8,  10,  15, 15, 15, 20, 20,  20,  23},
+    { 2,  3,  3,  3,   3,   4,  5,  6,  6,  7,   7,  8}
+};
+
+
+
 void pid_Init(float target, uint32_t ref_init, uint8_t isPulseMode)
 {
     if (isPulseMode)
@@ -56,7 +57,7 @@ void pid_Init(float target, uint32_t ref_init, uint8_t isPulseMode)
     return;
 }
 
-void pid_Init_2(float target, uint32_t ref_init, uint8_t isPulseMode,uint8_t n)
+void pid_Init_2(float target, uint32_t ref_init, uint8_t isPulseMode, uint8_t n)
 {
     user_pid_2.config_ref[n] = ref_init;
     user_pid_2.currTarget[n]  = target;
@@ -71,7 +72,7 @@ void pid_Init_2(float target, uint32_t ref_init, uint8_t isPulseMode,uint8_t n)
 /* 管电流闭环调节：单位0.1mA
  * 管电流-灯丝电源基准闭环功能，软启功能
  */
-void tube_current_piControl(uint8_t conflag,uint8_t n)
+void tube_current_piControl(uint8_t conflag, uint8_t n)
 {
     param_pid.Error = user_pid.currTarget - user_pid.currValue;
     /* 积分限幅 */
@@ -117,8 +118,8 @@ void tube_current_piControl(uint8_t conflag,uint8_t n)
         param_pid.pulse_count = 6;
         param_pid.conu_start_ref = param_pid.config_ref;
     }
-		
-		uint32_t max_ref = param_pid.conu_start_ref + param_pid.threshold_offset;
+
+    uint32_t max_ref = param_pid.conu_start_ref + param_pid.threshold_offset;
 
     /* 限幅 */
     if (Is_CalibrateMode())
@@ -129,13 +130,12 @@ void tube_current_piControl(uint8_t conflag,uint8_t n)
     {
         param_pid.config_ref = MAX(MIN(param_pid.config_ref, max_ref), max_ref - 2);
     }
-//		debug_tx3("pi:%d,%f\n", param_pid.config_ref, pid_value);
-		if(n == 0)
-			HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_2, DAC_ALIGN_12B_R, param_pid.config_ref);
-		else
-//				user_pid_2.config_ref[n] = MAX(MIN(user_pid_2.config_ref[n], 1600), 1000);
-		 __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_4,param_pid.config_ref);//1360
-//				HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_2, DAC_ALIGN_12B_R, param_pid.conu_start_ref);
+
+    if (n == 0)
+        HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_2, DAC_ALIGN_12B_R, param_pid.config_ref);
+    else
+        __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_4, param_pid.config_ref); //1360
+
     return;
 }
 
@@ -157,11 +157,10 @@ void tube_current_pid_pulseInit(uint8_t n)
 void tube_current_piControl_v2(uint8_t n)
 {
     user_pid_2.err[n] = user_pid_2.currTarget[n] - user_pid_2.currValue[n];
-		float output;
-//		if(config_data.tube_curr_index[n]<=10)
-				output = user_pid_2.Kp[n] * (user_pid_2.err[n] - user_pid_2.last_err[n]) + user_pid_2.Ki[n] * user_pid_2.err[n];
-//		else
-//			output = (user_pid_2.Kp[n]+20) * (user_pid_2.err[n] - user_pid_2.last_err[n]) + user_pid_2.Ki[n] * user_pid_2.err[n];
+    float output;
+
+    output = user_pid_2.Kp[n] * (user_pid_2.err[n] - user_pid_2.last_err[n]) + user_pid_2.Ki[n] * user_pid_2.err[n];
+
 
     if (param_pid.pulse_count >= 10)
     {
@@ -171,17 +170,16 @@ void tube_current_piControl_v2(uint8_t n)
     user_pid_2.last_err[n] = user_pid_2.err[n];
 
     user_pid_2.config_ref[n] = (uint32_t)(user_pid_2.config_ref[n] + output);
-//		if(n==0)
-//		debug_tx3("curt:%f,%f,%f,%d\n", user_pid_2.currValue[n],output, user_pid_2.last_err[n],user_pid_2.config_ref[n]);
-		if(n==0)
-		{
-    user_pid_2.config_ref[n] = MAX(MIN(user_pid_2.config_ref[n], 2400), 1000);
-    HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_2, DAC_ALIGN_12B_R, user_pid_2.config_ref[n]);
-		}
-		else
-		{
-		user_pid_2.config_ref[n] = MAX(MIN(user_pid_2.config_ref[n], 1600), 1000);
-		 __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_4,user_pid_2.config_ref[n] );//1360
-		}
-//		debug_tx3("pi_p:%d, %f, %d, %f\n", n, user_pid_2.currTarget[n], user_pid_2.config_ref[n],user_pid_2.err[n]);
+
+    if (n == 0)
+    {
+        user_pid_2.config_ref[n] = MAX(MIN(user_pid_2.config_ref[n], 2400), 1000);
+        HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_2, DAC_ALIGN_12B_R, user_pid_2.config_ref[n]);
+    }
+    else
+    {
+        user_pid_2.config_ref[n] = MAX(MIN(user_pid_2.config_ref[n], 1600), 1000);
+        __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_4, user_pid_2.config_ref[n]);//1360
+    }
+//      debug_tx3("pi_p:%d, %f, %d, %f\n", n, user_pid_2.currTarget[n], user_pid_2.config_ref[n],user_pid_2.err[n]);
 }

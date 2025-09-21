@@ -563,17 +563,9 @@ int set_filament_ref_onoff1(volatile uint8_t *buff, char *p)
     ctrl_data.filament_on[0] = 1;
     debug_data.timmer_count = 0;
 
-    // uint32_t a = (uint32_t)(num * 1.2409);  /* ((num / 1000) / 3.3) * 4095 */
-		 HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_2, DAC_ALIGN_12B_R, num);
+		HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_2, DAC_ALIGN_12B_R, num);
 		    debug_tx3("A lam ref:%d\n", num);
-//    config_data.fila_ref_target[0] = (float)num / 1000;
-//    config_data.fila_ref_realtime[0] = IDLE_FILAMENT_REF_DEBUG;
-//    config_data.fila_ref_step[0] = (config_data.fila_ref_target[0] - IDLE_FILAMENT_REF_DEBUG) / (5 * 1);
 
-//    debug_tx3("A lam ref:%f,%f\n", config_data.fila_ref_target[0], config_data.fila_ref_step[0]);
-
-//    // HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_2, DAC_ALIGN_12B_R, a);
-//    config_filament_ref_slop_debug(0);
     return 0;
 }
 
@@ -591,20 +583,13 @@ int set_filament_ref_onoff2(volatile uint8_t *buff, char *p)
     }
 
     ctrl_data.filament_on[1] = 1;
-//   set_hv_state(HVPS_SM_ID_TRAIN_IDLE, 1);
     debug_data.timmer_count = 0;
 
-    // uint32_t a = (uint32_t)(num * 1.2409);  /* ((num / 1000) / 3.3) * 4095 */
+
 		__HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_4, num);
-//    config_data.fila_ref_target[1] = (float)num / 1000;
-//    config_data.fila_ref_realtime[1] = (float)IDLE_FILAMENT_REF_DEBUG;
-//    config_data.fila_ref_step[1] = (config_data.fila_ref_target[1] - (float)IDLE_FILAMENT_REF_DEBUG) / (50 * 1);
+
 
     debug_tx3("B lam ref:%d\n", num);
-
-
-//    config_filament_ref_slop_debug(1);
-    // HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_2, DAC_ALIGN_12B_R, a);
 
     return 0;
 }

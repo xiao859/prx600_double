@@ -116,7 +116,6 @@ int main(void)
     MX_TIM5_Init();
     MX_TIM2_Init();
     /* USER CODE BEGIN 2 */
-    message_protocol tmp_msg;
     /* USER CODE END 2 */
 
     /* Infinite loop */
@@ -143,43 +142,14 @@ int main(void)
     //关于占空比 需定义 duty_max / duty_min  Vout ≈ Duty * VDD 需测试做类比线性关系
     HAL_ADC_Start_DMA(&hadc2, (uint32_t*)adc_buffer2, ADC_2_CHANNEL_NUM * ADC_SAMPLE_CYCLE_NUM);
     HAL_ADC_Start_DMA(&hadc3, (uint32_t*)adc_buffer3, ADC_3_CHANNEL_NUM * ADC_SAMPLE_CYCLE_NUM);
-
-//      uint8_t arr[5]={1,2,3,4,5};
-//      uint8_t arr1[5]={0};
-//      bsp_read_buffer(arr1,0,5);
-//      bsp_erase_sector(0);
-//      bsp_write_buffer((uint8_t *)parm_table, 0, sizeof(parm_table));
-//          bsp_erase_sector(0x1000);
-//          bsp_write_buffer((uint8_t *)parm_table, 0, sizeof(parm_table));
-//      bsp_read_buffer(arr1,0,5);
-//      bsp_erase_sector(0);
-//      bsp_read_buffer(arr1,0,5);
-//      bsp_erase_sector(0);
     load_from_flash(parm_table);
 
     //默认单源模式
-    ctrl_data.xray_current = 1;
-    tmp_msg.data1 = HVPS_MODE_S_CONTINUOUS;
-    send_message(SCI_MSG_SET_MODE, tmp_msg.data1, 0);
-//      uint16_t pwm=0;
-
-    debug_tx3("123\n");
-
     ctrl_data.interlock = 1;
     cali_data.para_save_flag = 0;
 
     xray_data.isCheckAvailable = 0;
     xray_on_led(0);
-
-    config_data.tube_vol[0] = 60;
-    config_data.tube_curr[0] = 2;
-    config_data.tube_vol_step[0] = 3;
-    config_data.tube_vol_realtime[0] = 0;
-
-    config_data.tube_vol[1] = 60;
-    config_data.tube_curr[1] = 2;
-    config_data.tube_vol_step[1] = 3;
-    config_data.tube_vol_realtime[1] = 0;
 
     HAL_GPIO_WritePin(GPIOD, GPIO_PIN_13, GPIO_PIN_SET);
 //  cali_data.para_save_flag =1;
@@ -204,7 +174,7 @@ int main(void)
             upgrade_proc();
             continue;
         }
-				
+
         cmd_parser();
         cmd_parser_string();
 
@@ -213,7 +183,6 @@ int main(void)
         if (cali_data.para_save_flag == 1)
         {
             HAL_TIM_Base_Stop_IT(&htim2);
-            //save_parament_to_flash();
             save_to_flash(parm_table);
             HAL_TIM_Base_Start_IT(&htim2);
             cali_data.para_save_flag = 0;
