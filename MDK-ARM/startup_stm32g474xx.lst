@@ -820,10 +820,10 @@ ARM Macro Assembler    Page 13
               00000000 
 Command Line: --debug --xref --diag_suppress=9931 --cpu=Cortex-M4.fp.sp --apcs=
 interwork --depend=prx600_double\startup_stm32g474xx.d -oprx600_double\startup_
-stm32g474xx.o -I.\RTE\_PRX600_double -I"D:\Program Files\UV5\Arm\Packs\ARM\CMSI
-S\5.8.0\CMSIS\Core\Include" --predefine="__UVISION_VERSION SETA 535" --predefin
-e="_RTE_ SETA 1" --predefine="STM32G474xx SETA 1" --predefine="_RTE_ SETA 1" --
-list=startup_stm32g474xx.lst startup_stm32g474xx.s
+stm32g474xx.o -I.\RTE\_PRX600_double -ID:\UV5\Arm\Packs\ARM\CMSIS\5.8.0\CMSIS\C
+ore\Include --predefine="__UVISION_VERSION SETA 535" --predefine="_RTE_ SETA 1"
+ --predefine="STM32G474xx SETA 1" --predefine="_RTE_ SETA 1" --list=startup_stm
+32g474xx.lst startup_stm32g474xx.s
 
 
 
