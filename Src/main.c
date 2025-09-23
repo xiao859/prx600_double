@@ -120,6 +120,8 @@ int main(void)
 
     /* Infinite loop */
     /* USER CODE BEGIN WHILE */
+		 debug_tx3("123\r\n");
+		
     uint8_t rely_state = 0;
     uint32_t rely_time = 0;
     HAL_TIM_Base_Start_IT(&htim2);
@@ -135,14 +137,13 @@ int main(void)
     HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_1, DAC_ALIGN_12B_R, 0);
     HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_2, DAC_ALIGN_12B_R, 0);
 
-
     HAL_TIM_PWM_Start(&htim5, TIM_CHANNEL_4);
     //PWM输出强制为低
     __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_4, 0); //占空比的设置直接决定了输出电压的高低（经过滤波器后作为类DA使用）
     //关于占空比 需定义 duty_max / duty_min  Vout ≈ Duty * VDD 需测试做类比线性关系
     HAL_ADC_Start_DMA(&hadc2, (uint32_t*)adc_buffer2, ADC_2_CHANNEL_NUM * ADC_SAMPLE_CYCLE_NUM);
     HAL_ADC_Start_DMA(&hadc3, (uint32_t*)adc_buffer3, ADC_3_CHANNEL_NUM * ADC_SAMPLE_CYCLE_NUM);
-    load_from_flash(parm_table);
+   load_from_flash(parm_table);
 
     //默认单源模式
     ctrl_data.interlock = 1;
@@ -252,9 +253,9 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 
         if (Is_CTMode())
         {
-            ctrl_data.expo[0]   = get_expo_pin(0);
+            ctrl_data.expo[1]   = get_expo_pin(0);
 
-            ctrl_data.expo[1]   = get_expo_pin(1);
+            ctrl_data.expo[0]   = get_expo_pin(1);
 
             ct_task();
         }
