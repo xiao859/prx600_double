@@ -19,8 +19,8 @@ User_PID_2   user_pid_2;
 uint32_t fila_ref_offset[2][FILAMENT_CURRENT_TABLE_ORDER] =
 {
     /* 1   2   3   4   5   6   7    8   9   10   11   12 */
-    { 2,  5,  5,  8,  10,  15, 15, 15, 20, 20,  20,  23},
-    { 2,  3,  3,  3,   3,   4,  5,  6,  6,  7,   7,  8}
+    { 2,  5,  5,  8,  10,  15, 15, 15, 16, 17,  18,  18},
+    { 2,  3,  3,  3,   3,   4,  5,  5,  6,  6,   8,  9}
 };
 
 
@@ -124,7 +124,7 @@ void tube_current_piControl(uint8_t conflag, uint8_t n)
     /* оч╥Ы */
     if (Is_CalibrateMode())
     {
-        param_pid.config_ref = MAX(MIN(param_pid.config_ref, 2850), 1000);
+					param_pid.config_ref = MAX(MIN(param_pid.config_ref, 2850), 1000);
     }
     else
     {

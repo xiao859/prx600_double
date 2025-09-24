@@ -60,7 +60,7 @@ volatile xray_parament_table parm_table[XRAY_NUMS] =
         0, 0, 1,
         {1,    2,    3,    4,    5,    6,    7,    8,    9,    10,  11,   12},
         {1030, 1050, 1110, 1170, 1220, 1260, 1320, 1360, 1400, 1410, 1430, 1460},
-        {1030, 1050, 1110, 1170, 1220, 1240, 1260, 1280, 1300, 1310, 1330, 1350},
+        {1030, 1050, 1110, 1170, 1220, 1240, 1260, 1280, 1300, 1310, 1330, 1355},
     },
 };
 volatile xray_parament_range para_range =
@@ -641,8 +641,8 @@ void ct_task()
 
             if (ctrl_data.enable[ct_source] == 1)
             {
-                user_pid_2.Kp[1] = 40;
-                user_pid_2.Ki[1] = 40;
+                user_pid_2.Kp[1] = 30;
+                user_pid_2.Ki[1] = 30;
                 user_pid_2.Kp[0] = 40;
                 user_pid_2.Ki[0] = 40;
                 oldref[ct_source] = user_pid_2.config_ref[ct_source];
@@ -794,7 +794,7 @@ void ct_task()
             last_expo_count = 0;
             ct_source = 0;
             ctrl_data.xray_current = 1;
-            cali_data.para_save_flag =1;
+            //cali_data.para_save_flag =1;
         }
         break;
     default:
