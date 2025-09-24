@@ -57,20 +57,20 @@ void Protect_Check_Slow()
 //        xray_data.pwr_24_underCount = 0;
 //    }
 
-//    float temp_oil = get_temp(sampled_data.temp_oil_value);
-//    sampled_data.oil_temp = temp_oil;
-//    if (temp_oil > para_range.temp_oil_max_protected || temp_oil < para_range.temp_oil_min_protected)
-//    {
-//				oilerr= temp_oil;
-//        mHVPS_Fault.FAULT_REG1.bit.OIL_TEMP1 = 1;
-//    }
+    float temp_oil = get_temp(sampled_data.temp_oil_value);
+    sampled_data.oil_temp = temp_oil;
+    if (temp_oil > para_range.temp_oil_max_protected || temp_oil < para_range.temp_oil_min_protected)
+    {
+				oilerr= temp_oil;
+        mHVPS_Fault.FAULT_REG1.bit.OIL_TEMP1 = 1;
+    }
 
-//    if (temp_oil > para_range.temp_oil_warning)
-//    {
-//        mHVPS_Fault.FAULT_REG1.bit.OIL_OT1 = 1;
-//        // xray_data.oil_temp_errCount++;
-//        // if (xray_data.oil_temp_errCount > OVER_RANGE_TIME_LIMIT) mHVPS_Fault.FAULT_REG1.bit.OIL_OT1 = 1;
-//    }
+    if (temp_oil > para_range.temp_oil_warning)
+    {
+        mHVPS_Fault.FAULT_REG1.bit.OIL_OT1 = 1;
+        // xray_data.oil_temp_errCount++;
+        // if (xray_data.oil_temp_errCount > OVER_RANGE_TIME_LIMIT) mHVPS_Fault.FAULT_REG1.bit.OIL_OT1 = 1;
+    }
 
 //    if (mHVPS_Fault.FAULT_REG1.bit.OIL_OT1 == 1)
 //    {
