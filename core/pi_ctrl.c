@@ -16,7 +16,7 @@ User_PID_2   user_pid_2;
 //        __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_4, config_data.fila_ref_realtime[ct_source]);//max 1999
 //    }
 
-uint32_t fila_ref_offset[2][FILAMENT_CURRENT_TABLE_ORDER] =
+uint32_t fila_ref_offset[2][12] =
 {
     /* 1   2   3   4   5   6   7    8   9   10   11   12 */
     { 2,  5,  5,  8,  10,  15, 15, 15, 16, 17,  18,  18},

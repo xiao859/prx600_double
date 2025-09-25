@@ -14,6 +14,9 @@
 
 uint32_t exp_count[2] = {0};
 
+uint8_t B_pulse_KP = 30;
+uint8_t B_pulse_KI = 30;
+
 hvps_sm_state volatile hv_state[XRAY_NUMS];
 
 Exposure_Parameters exp_para[XRAY_NUMS] = {0};
@@ -48,16 +51,53 @@ volatile xray_config_data config_data = {
     {0,0},   //灯丝开启未曝光计数
 
 };
+
+
+xray_type xray_tube_table[XRAY_TUBE_TYPES] =
+{
+    // ---------- 球管 A ----------
+    {
+        .pluse_kp = 40,
+        .pluse_ki = 40,
+        .currRef1 = {1720, 1735, 1770, 1810, 1880, 1920, 1950, 1980, 2000, 2020, 2040, 2060},
+        .currRef2 = {1030, 1050, 1110, 1170, 1220, 1240, 1260, 1280, 1300, 1310, 1330, 1355},
+        .fila_ref_offset =
+        {
+            {10, 12, 14, 15, 16, 18, 20, 21, 22, 23, 24, 25},  // 射源0 偏置
+            {5,  7,  8,  9, 10, 11, 12, 13, 14, 15, 16, 17},   // 射源1 偏置
+        }
+    },
+
+    // ---------- 球管 B ----------
+    {
+        .pluse_kp = 30,
+        .pluse_ki = 25,
+				.currRef1 = {1720, 1735, 1770, 1810, 1880, 1920, 1950, 1980, 2000, 2020, 2040, 2060},
+        .currRef2 = {1030, 1050, 1110, 1170, 1220, 1240, 1260, 1280, 1300, 1310, 1330, 1355},
+        .fila_ref_offset =
+        {
+            {2,  5,  5,  8,  10,  15, 15, 15, 16, 17,  18,  18},  // 射源0
+            {2,  3,  3,  3,   3,   4,  5,  5,  6,  6,   8,  9},  // 射源1
+        }
+    },
+
+    // ---------- 球管 C ----------
+    {
+			0,
+    },
+};
+
+
 volatile xray_parament_table parm_table[XRAY_NUMS] =
 {
     {
-        0, 0, 1,
+        1,0, 0, 1,
         {1,    2,    3,    4,    5,    6,    7,    8,    9,    10,  11,   12},
         {1720, 1875, 1920, 2050, 2100, 2110, 2120, 2130, 2195, 2215, 2240, 2260},
         {1720, 1735, 1770, 1810, 1880, 1920, 1950, 1980, 2000, 2020, 2040, 2060},
     },
     {
-        0, 0, 1,
+        1,0, 0, 1,
         {1,    2,    3,    4,    5,    6,    7,    8,    9,    10,  11,   12},
         {1030, 1050, 1110, 1170, 1220, 1260, 1320, 1360, 1400, 1410, 1430, 1460},
         {1030, 1050, 1110, 1170, 1220, 1240, 1260, 1280, 1300, 1310, 1330, 1355},
@@ -206,6 +246,18 @@ bool load_from_flash(volatile xray_parament_table *parm_table)
     if (CRC1 == flash_data.crc32)
     {
         memcpy((void*)parm_table, flash_data.data, sizeof(flash_data.data));
+				if(parm_table[0].xray_type == 0)
+				{
+					B_pulse_KP = xray_tube_table[0].pluse_kp;
+					B_pulse_KI = xray_tube_table[0].pluse_ki;
+					memcpy((void*)fila_ref_offset,xray_tube_table[0].fila_ref_offset,24);
+				}
+				else if(parm_table[0].xray_type == 1)
+				{
+					B_pulse_KP = xray_tube_table[1].pluse_kp;
+					B_pulse_KI = xray_tube_table[1].pluse_ki;
+					memcpy((void*)fila_ref_offset,xray_tube_table[0].fila_ref_offset,24);
+				}
         parm_table[0].rising_time = 1;
         parm_table[1].rising_time = 1;
         return true;
@@ -218,6 +270,20 @@ bool load_from_flash(volatile xray_parament_table *parm_table)
         if (calc_crc32((const uint8_t *)flash_data.data, sizeof(flash_data.data)) == flash_data.crc32)
         {
             memcpy((void*)parm_table, flash_data.data, sizeof(flash_data.data));
+						if(parm_table[0].xray_type == 0)
+						{
+							B_pulse_KP = xray_tube_table[0].pluse_kp;
+							B_pulse_KI = xray_tube_table[0].pluse_ki;
+							memcpy((void*)fila_ref_offset,xray_tube_table[0].fila_ref_offset,24);
+						}
+						else if(parm_table[0].xray_type == 1)
+						{
+							B_pulse_KP = xray_tube_table[1].pluse_kp;
+							B_pulse_KI = xray_tube_table[1].pluse_ki;
+							memcpy((void*)fila_ref_offset,xray_tube_table[0].fila_ref_offset,24);
+						}
+					  parm_table[0].rising_time = 1;
+						parm_table[1].rising_time = 1;
             return true;
         }
     }
@@ -641,8 +707,8 @@ void ct_task()
 
             if (ctrl_data.enable[ct_source] == 1)
             {
-                user_pid_2.Kp[1] = 30;
-                user_pid_2.Ki[1] = 30;
+                user_pid_2.Kp[1] = B_pulse_KP;
+                user_pid_2.Ki[1] = B_pulse_KI;
                 user_pid_2.Kp[0] = 40;
                 user_pid_2.Ki[0] = 40;
                 oldref[ct_source] = user_pid_2.config_ref[ct_source];
@@ -794,7 +860,7 @@ void ct_task()
             last_expo_count = 0;
             ct_source = 0;
             ctrl_data.xray_current = 1;
-            //cali_data.para_save_flag =1;
+            cali_data.para_save_flag =1;
         }
         break;
     default:

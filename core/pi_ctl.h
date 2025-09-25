@@ -55,6 +55,8 @@ typedef struct
 } User_PID_2;
 extern User_PID_2   user_pid_2;
 
+extern uint32_t fila_ref_offset[2][12];
+
 /* 4¡¢º¯ÊıÉùÃ÷ */
 void tube_current_piControl(uint8_t conflag,uint8_t n);
 void pid_Init(float target, uint32_t ref_init, uint8_t isPulseMode);

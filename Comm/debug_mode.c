@@ -317,14 +317,14 @@ void debug_task()
                 config_enable_sw(0);
                 set_hv_state(HVPS_SM_ID_IDLE, 0);
                 set_hv_state(HVPS_SM_ID_IDLE, 1);
-								 //cali_data.para_save_flag = 1;
+								cali_data.para_save_flag = 1;
             }
         }
         else if (xray_active == 0)
         {
             set_hv_state(HVPS_SM_ID_IDLE, 0);
             set_hv_state(HVPS_SM_ID_IDLE, 1);
-						//cali_data.para_save_flag = 1;
+						cali_data.para_save_flag = 1;
         }
 
         break;

@@ -6,7 +6,7 @@
 
 #define FLASH_PRIMARY_ADDR 0x000000  // 主存储区
 #define FLASH_BACKUP_ADDR  0x001000  // 备用区，按 4KB 扇区对齐
-
+#define XRAY_TUBE_TYPES   3   // 三种球管
 #define IDLE_FILAMENT1_REF               1500
 #define IDLE_FILAMENT2_REF               950
 
@@ -18,6 +18,9 @@
 #define ADC_2_CHANNEL_NUM               4
 #define ADC_3_CHANNEL_NUM               4
 #define ADDA_FULL_SCALE_VIL_VALUE       (3.3f)
+
+extern uint8_t B_pulse_KP;
+extern uint8_t B_pulse_KI;
 
 #define     Is_PulseMode_CT()           ((ctrl_data.xrayMode == XRAY_MODE_S_PULSE) || (ctrl_data.xrayMode == XRAY_MODE_D_PULSE))
 
@@ -146,6 +149,7 @@ typedef struct
 //电流查表
 typedef struct
 {
+		uint8_t     xray_type;
     uint32_t    expo_times_total;  //总曝光时间
     uint32_t    expo_count_total;  //总曝光次数
     uint32_t    rising_time;       //管电压上升时间
@@ -154,6 +158,15 @@ typedef struct
     uint32_t    currRef_c[FILAMENT_CURRENT_TABLE_ORDER];      //连续电流基准表
 } xray_parament_table;
 
+typedef struct
+{
+	uint8_t pluse_kp;
+	uint8_t pluse_ki;
+	uint32_t  currRef1[FILAMENT_CURRENT_TABLE_ORDER];      //连续电流基准表
+	uint32_t  currRef2[FILAMENT_CURRENT_TABLE_ORDER];      //连续电流基准表
+	uint32_t 	fila_ref_offset[XRAY_NUMS][FILAMENT_CURRENT_TABLE_ORDER];
+}xray_type;
+extern xray_type xray_tube_table[XRAY_TUBE_TYPES];
 /* ADC2:4\5\11\12  adc3:14\2\4\6 */
 typedef struct
 {

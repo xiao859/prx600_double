@@ -143,7 +143,7 @@ int main(void)
     //关于占空比 需定义 duty_max / duty_min  Vout ≈ Duty * VDD 需测试做类比线性关系
     HAL_ADC_Start_DMA(&hadc2, (uint32_t*)adc_buffer2, ADC_2_CHANNEL_NUM * ADC_SAMPLE_CYCLE_NUM);
     HAL_ADC_Start_DMA(&hadc3, (uint32_t*)adc_buffer3, ADC_3_CHANNEL_NUM * ADC_SAMPLE_CYCLE_NUM);
-   load_from_flash(parm_table);
+		load_from_flash(parm_table);
 
     //默认单源模式
     ctrl_data.interlock = 1;
@@ -253,9 +253,9 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 
         if (Is_CTMode())
         {
-            ctrl_data.expo[1]   = get_expo_pin(0);
+            ctrl_data.expo[0]   = get_expo_pin(0);
 
-            ctrl_data.expo[0]   = get_expo_pin(1);
+            ctrl_data.expo[1]   = get_expo_pin(1);
 
             ct_task();
         }

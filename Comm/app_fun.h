@@ -51,7 +51,8 @@ typedef enum
     SCI_MSG_SET_EXP2_TIMECLR,
     SCI_MSG_SET_NULL,
     SCI_MSG_SET_ENABLE, //30
-
+		SCI_MSG_SET_RAY_TUBE,//31
+		
     SCI_MSG_CTRL_RST = 0x30,
     SCI_MSG_CTRL_CAL,
     SCI_MSG_CTRL_TRAIN,
@@ -59,18 +60,18 @@ typedef enum
     SCI_MSG_CTRL_STORE_TABLE,
     SCI_MSG_CTRL_STORE_TABLE_INQ,
     SCI_MSG_CTRL_STORE_STATISTICS,
-    SCI_MSG_LAMP_CONTROL,//38
+    SCI_MSG_LAMP_CONTROL,//38//39
 
     SCI_MSG_SET_PFCTHRESHOLD = 0x40,
     SCI_MSG_SET_24VTHRESHOLD,
     SCI_MSG_SET_KVMATHRESHOLD,
-    SCI_MSG_SET_BUCKLLCTHRESHOLD,//42
+    SCI_MSG_SET_BUCKLLCTHRESHOLD,//42//43
 
     SCI_MSG_DEBUG_LAMP_I_SET = 0xA0,
     SCI_MSG_DEBUG_TUBE_VIDLE_SET,
     SCI_MSG_DEBUG_TUBE_VRISE_TIME_SET,
     SCI_MSG_DEBUG_ONLINE_PI,
-    SCI_MSG_DEBUG_EXPO_CTRL,
+    SCI_MSG_DEBUG_EXPO_CTRL,//48
 
     SCI_MSG_TEST_1 = 0xB0,
     SCI_MSG_TEST_2,
@@ -206,5 +207,7 @@ void fun_null(message_protocol *msg);
 void firmUpgrade(message_protocol *msg);
 
 void cmd_parser(void);
+
+void setraytube(message_protocol *msg);
 
 #endif

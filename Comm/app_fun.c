@@ -16,6 +16,7 @@
 #include "ct_exposure.h"
 #include "calibrate.h"
 #include "app_uart.h"
+#include "pi_ctl.h"
 
 volatile  xray_version version =
 {
@@ -69,6 +70,7 @@ controler_cmd_funcs funcs[APP_FUNC_NUM] =
     {SCI_MSG_SET_EXP2_TIMECLR,              &exp2timeclr},
     {SCI_MSG_SET_NULL,                      &fun_null},
     {SCI_MSG_SET_ENABLE,                    &Setenable},
+		{SCI_MSG_SET_RAY_TUBE,                  &setraytube},
 
     {SCI_MSG_CTRL_RST,                      &FaultReset},
     {SCI_MSG_CTRL_CAL,                      &Autocalibra},
@@ -100,6 +102,31 @@ controler_cmd_funcs funcs[APP_FUNC_NUM] =
 
 void fun_null(message_protocol *msg)
 {
+    return;
+}
+
+void setraytube(message_protocol *msg)
+{
+	  msg->data2 = msg->data1;
+    if ((get_hv_state(0) == HVPS_SM_ID_IDLE) && get_hv_state(1) == HVPS_SM_ID_IDLE)
+    {
+        if (msg->data1 < 4)
+        {
+					parm_table[0].xray_type = msg->data1;
+					memcpy((void*)parm_table[0].currRef_c,xray_tube_table[msg->data1].currRef1,12);
+					memcpy((void*)parm_table[1].currRef_c,xray_tube_table[msg->data1].currRef2,12);
+					B_pulse_KP = xray_tube_table[0].pluse_kp;
+					B_pulse_KI = xray_tube_table[0].pluse_ki;
+					memcpy((void*)fila_ref_offset,xray_tube_table[msg->data1].fila_ref_offset,24);
+					cali_data.para_save_flag =1;
+        }
+        else
+            msg->data1 = SETUP_OUT_LIMIT;
+    }
+    else
+        msg->data1 = SETUP_SM_ERROR;
+
+    send_message(msg->msg_id, msg->data1, msg->data2);
     return;
 }
 
@@ -887,19 +914,19 @@ void cmd_process(int32_t message_idx, message_protocol* msg, USART_TypeDef *Inst
 
     if (message_idx >= SCI_MSG_TEST_1)
     {
-        func_idx = message_idx - SCI_MSG_TEST_1 + 47;
+        func_idx = message_idx - SCI_MSG_TEST_1 + 48;
     }
     else if (message_idx >= SCI_MSG_DEBUG_LAMP_I_SET)
     {
-        func_idx = message_idx - SCI_MSG_DEBUG_LAMP_I_SET + 42;
+        func_idx = message_idx - SCI_MSG_DEBUG_LAMP_I_SET + 43;
     }
     else if (message_idx >= SCI_MSG_SET_PFCTHRESHOLD)
     {
-        func_idx = message_idx - SCI_MSG_SET_PFCTHRESHOLD + 38;
+        func_idx = message_idx - SCI_MSG_SET_PFCTHRESHOLD + 39;
     }
     else if (message_idx >= SCI_MSG_CTRL_RST)
     {
-        func_idx = message_idx - SCI_MSG_CTRL_RST + 30;
+        func_idx = message_idx - SCI_MSG_CTRL_RST + 31;
     }
     else if (message_idx >= SCI_MSG_SET_MODE)
     {
