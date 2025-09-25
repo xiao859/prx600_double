@@ -6,7 +6,7 @@
 
 #define FLASH_PRIMARY_ADDR 0x000000  // 主存储区
 #define FLASH_BACKUP_ADDR  0x001000  // 备用区，按 4KB 扇区对齐
-#define XRAY_TUBE_TYPES   3   // 三种球管
+#define XRAY_TUBE_TYPES   4   // 球管
 #define IDLE_FILAMENT1_REF               1500
 #define IDLE_FILAMENT2_REF               950
 

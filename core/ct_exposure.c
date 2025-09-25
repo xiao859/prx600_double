@@ -11,6 +11,7 @@
 #include "pi_ctl.h"
 #include "protect.h"
 #include "calibrate.h"
+#include "app_fun.h"
 
 uint32_t exp_count[2] = {0};
 
@@ -55,7 +56,7 @@ volatile xray_config_data config_data = {
 
 xray_type xray_tube_table[XRAY_TUBE_TYPES] =
 {
-    // ---------- 球管 A ----------
+    // ---------- KL181球管 ----------
     {
         .pluse_kp = 40,
         .pluse_ki = 40,
@@ -67,8 +68,13 @@ xray_type xray_tube_table[XRAY_TUBE_TYPES] =
             {5,  7,  8,  9, 10, 11, 12, 13, 14, 15, 16, 17},   // 射源1 偏置
         }
     },
-
-    // ---------- 球管 B ----------
+		
+    // ---------- KL3球管 ----------
+    {
+			0,
+    },
+		
+    // ---------- 万森球管 ----------
     {
         .pluse_kp = 30,
         .pluse_ki = 25,
@@ -81,7 +87,7 @@ xray_type xray_tube_table[XRAY_TUBE_TYPES] =
         }
     },
 
-    // ---------- 球管 C ----------
+    // ---------- KL29球管 ----------
     {
 			0,
     },
@@ -91,13 +97,13 @@ xray_type xray_tube_table[XRAY_TUBE_TYPES] =
 volatile xray_parament_table parm_table[XRAY_NUMS] =
 {
     {
-        1,0, 0, 1,
+        2,0, 0, 1,
         {1,    2,    3,    4,    5,    6,    7,    8,    9,    10,  11,   12},
         {1720, 1875, 1920, 2050, 2100, 2110, 2120, 2130, 2195, 2215, 2240, 2260},
         {1720, 1735, 1770, 1810, 1880, 1920, 1950, 1980, 2000, 2020, 2040, 2060},
     },
     {
-        1,0, 0, 1,
+        2,0, 0, 1,
         {1,    2,    3,    4,    5,    6,    7,    8,    9,    10,  11,   12},
         {1030, 1050, 1110, 1170, 1220, 1260, 1320, 1360, 1400, 1410, 1430, 1460},
         {1030, 1050, 1110, 1170, 1220, 1240, 1260, 1280, 1300, 1310, 1330, 1355},
@@ -246,18 +252,33 @@ bool load_from_flash(volatile xray_parament_table *parm_table)
     if (CRC1 == flash_data.crc32)
     {
         memcpy((void*)parm_table, flash_data.data, sizeof(flash_data.data));
-				if(parm_table[0].xray_type == 0)
+				if(parm_table[0].xray_type < 4)
 				{
-					B_pulse_KP = xray_tube_table[0].pluse_kp;
-					B_pulse_KI = xray_tube_table[0].pluse_ki;
-					memcpy((void*)fila_ref_offset,xray_tube_table[0].fila_ref_offset,24);
+					B_pulse_KP = xray_tube_table[parm_table[0].xray_type].pluse_kp;
+					B_pulse_KI = xray_tube_table[parm_table[0].xray_type].pluse_ki;
+					memcpy((void*)fila_ref_offset,xray_tube_table[parm_table[0].xray_type].fila_ref_offset,24);
+					if(parm_table[0].xray_type == 0)
+					{
+						version.tube_ver_high = 0x11;
+						version.tube_ver_low = 0x13;
+					}
+					else if(parm_table[0].xray_type == 1)
+					{
+						version.tube_ver_high = 0x12;
+						version.tube_ver_low = 0x11;
+					}
+					else if(parm_table[0].xray_type == 2)
+					{
+						version.tube_ver_high = 0x11;
+						version.tube_ver_low = 0x11;
+					}
+					else if(parm_table[0].xray_type == 3)
+					{
+						version.tube_ver_high = 0x11;
+						version.tube_ver_low = 0x12;
+					}
 				}
-				else if(parm_table[0].xray_type == 1)
-				{
-					B_pulse_KP = xray_tube_table[1].pluse_kp;
-					B_pulse_KI = xray_tube_table[1].pluse_ki;
-					memcpy((void*)fila_ref_offset,xray_tube_table[0].fila_ref_offset,24);
-				}
+
         parm_table[0].rising_time = 1;
         parm_table[1].rising_time = 1;
         return true;

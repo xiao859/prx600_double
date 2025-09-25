@@ -153,7 +153,7 @@ int main(void)
     xray_on_led(0);
 
     HAL_GPIO_WritePin(GPIOD, GPIO_PIN_13, GPIO_PIN_SET);
-//  cali_data.para_save_flag =1;
+ // cali_data.para_save_flag =1;
     while (1)
     {
 

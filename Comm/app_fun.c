@@ -107,17 +107,31 @@ void fun_null(message_protocol *msg)
 
 void setraytube(message_protocol *msg)
 {
-	  msg->data2 = msg->data1;
+	uint8_t type = 2;
+	  if(msg->data2 == 0x11)
+		{
+			if(msg->data1 == 0x11)
+				type = 2;
+			else if(msg->data1 == 0x12)
+				type = 3;
+			else if(msg->data1 == 0x13)
+				type = 0;
+		}
+		else if((msg->data2 == 0x12)&&(msg->data2 == 0x13))
+			type = 1;
+		
     if ((get_hv_state(0) == HVPS_SM_ID_IDLE) && get_hv_state(1) == HVPS_SM_ID_IDLE)
     {
-        if (msg->data1 < 4)
+        if (type < 4)
         {
-					parm_table[0].xray_type = msg->data1;
-					memcpy((void*)parm_table[0].currRef_c,xray_tube_table[msg->data1].currRef1,12);
-					memcpy((void*)parm_table[1].currRef_c,xray_tube_table[msg->data1].currRef2,12);
-					B_pulse_KP = xray_tube_table[0].pluse_kp;
-					B_pulse_KI = xray_tube_table[0].pluse_ki;
-					memcpy((void*)fila_ref_offset,xray_tube_table[msg->data1].fila_ref_offset,24);
+					parm_table[0].xray_type = type;
+					memcpy((void*)parm_table[0].currRef_c,xray_tube_table[type].currRef1,12);
+					memcpy((void*)parm_table[1].currRef_c,xray_tube_table[type].currRef2,12);
+					B_pulse_KP = xray_tube_table[type].pluse_kp;
+					B_pulse_KI = xray_tube_table[type].pluse_ki;
+					memcpy((void*)fila_ref_offset,xray_tube_table[type].fila_ref_offset,24);
+					version.tube_ver_high = msg->data2;
+					version.tube_ver_low = msg->data1;
 					cali_data.para_save_flag =1;
         }
         else
@@ -481,28 +495,17 @@ void Setmaxexpotime(message_protocol *msg)
     if ((get_hv_state(0) != HVPS_SM_ID_IDLE) && (get_hv_state(1) != HVPS_SM_ID_IDLE))
     {
         send_message(msg->msg_id, SETUP_SM_ERROR, SETUP_SM_ERROR);
-        return;
     }
 
-    if ((msg->data1 > para_range.expo_time_min) && (msg->data1 > para_range.expo_time_max))
+    if (msg->data1 >= 2 && msg->data1 <= 200)
     {
-        /* 换算成实际周期值 */
-        config_data.expo_time_expect[1] = msg->data1 * COUNTER_TIMER6_FREQ;
-
+        para_range.expo_time_limit = (uint32_t)(msg->data1*1000*1000/50);
         send_message(msg->msg_id, SETUP_SUCCESS, SETUP_SUCCESS);
     }
     else
-        send_message(msg->msg_id, SETUP_OUT_LIMIT, SETUP_OUT_LIMIT);
-
-    if ((msg->data2 > para_range.expo_time_min) && (msg->data2 > para_range.expo_time_max))
     {
-        config_data.expo_time_expect[0] = msg->data2 * COUNTER_TIMER6_FREQ;
-
-        send_message(msg->msg_id, SETUP_SUCCESS, SETUP_SUCCESS);
-    }
-    else
         send_message(msg->msg_id, SETUP_OUT_LIMIT, SETUP_OUT_LIMIT);
-
+    }
     return;
 }
 
