@@ -12,6 +12,12 @@
 /*2.5s*/
 #define TIMER6_2P5_SECOND_CYCLES                (uint32_t)(2.5 * COUNTER_TIMER6_FREQ)
 
+/*1.5s*/
+#define TIMER6_1P5_SECOND_CYCLES                (uint32_t)(1.5 * COUNTER_TIMER6_FREQ)
+
+/*1s*/
+#define TIMER6_1_SECOND_CYCLES                (uint32_t)(1 * COUNTER_TIMER6_FREQ)
+
 /*6ms*/
 #define TIMER6_8_MILSECOND_CYCLES              (uint32_t)(0.006 * COUNTER_TIMER6_FREQ)
 

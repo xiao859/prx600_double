@@ -125,11 +125,11 @@ void setraytube(message_protocol *msg)
         if (type < 4)
         {
 					parm_table[0].xray_type = type;
-					memcpy((void*)parm_table[0].currRef_c,xray_tube_table[type].currRef1,12);
-					memcpy((void*)parm_table[1].currRef_c,xray_tube_table[type].currRef2,12);
+					memcpy((void*)parm_table[0].currRef_c,xray_tube_table[type].currRef1,12*4);
+					memcpy((void*)parm_table[1].currRef_c,xray_tube_table[type].currRef2,12*4);
 					B_pulse_KP = xray_tube_table[type].pluse_kp;
 					B_pulse_KI = xray_tube_table[type].pluse_ki;
-					memcpy((void*)fila_ref_offset,xray_tube_table[type].fila_ref_offset,24);
+					memcpy((void*)fila_ref_offset,xray_tube_table[type].fila_ref_offset,24*4);
 					version.tube_ver_high = msg->data2;
 					version.tube_ver_low = msg->data1;
 					cali_data.para_save_flag =1;

@@ -61,7 +61,7 @@ xray_type xray_tube_table[XRAY_TUBE_TYPES] =
         .pluse_kp = 40,
         .pluse_ki = 40,
         .currRef1 = {1720, 1735, 1770, 1810, 1880, 1920, 1950, 1980, 2000, 2020, 2040, 2060},
-        .currRef2 = {1030, 1050, 1110, 1170, 1220, 1240, 1260, 1280, 1300, 1310, 1330, 1355},
+        .currRef2 = {1031, 1051, 1111, 1171, 1221, 1241, 1261, 1281, 1301, 1311, 1331, 1356},
         .fila_ref_offset =
         {
             {10, 12, 14, 15, 16, 18, 20, 21, 22, 23, 24, 25},  // 射源0 偏置
@@ -601,7 +601,7 @@ void ct_task()
 
         // 仅当满足时间、interlock后才允许进入下一状态
         if (ctrl_data.interlock && ctrl_data.filament_on[ct_source] &&
-                xray_data.timmer_count[ct_source] > TIMER6_2P5_SECOND_CYCLES)
+                xray_data.timmer_count[ct_source] > TIMER6_1P5_SECOND_CYCLES)//1.5s
         {
             config_mcuLock_signal(1);
             set_hv_state(HVPS_SM_ID_PREPARE, ct_source);
@@ -618,14 +618,17 @@ void ct_task()
         }
         else
             config_filamentRef(ct_source); /*灯丝基准值拉到预期*/
-
-        config_ready_signal(1);
-        set_hv_state(HVPS_SM_ID_READY, ct_source);
-        xray_data.timmer_count[ct_source] = 1;
-        pid_Init(config_data.tube_curr[ct_source], config_data.fila_ref_realtime[ct_source], Is_PulseMode_CT());
-        param_pid.pulse_count = 0;
-        pid_Init_2(config_data.tube_curr[0], config_data.fila_ref_realtime[0], Is_PulseMode_CT(), 0);
-        pid_Init_2(config_data.tube_curr[1], config_data.fila_ref_realtime[1], Is_PulseMode_CT(), 1);
+				
+        if (xray_data.timmer_count[ct_source] > TIMER6_1_SECOND_CYCLES)//1s
+        {
+					config_ready_signal(1);
+					set_hv_state(HVPS_SM_ID_READY, ct_source);
+					xray_data.timmer_count[ct_source] = 1;
+					pid_Init(config_data.tube_curr[ct_source], config_data.fila_ref_realtime[ct_source], Is_PulseMode_CT());
+					param_pid.pulse_count = 0;
+					pid_Init_2(config_data.tube_curr[0], config_data.fila_ref_realtime[0], Is_PulseMode_CT(), 0);
+					pid_Init_2(config_data.tube_curr[1], config_data.fila_ref_realtime[1], Is_PulseMode_CT(), 1);
+				}
         break;
 
     case HVPS_SM_ID_READY:

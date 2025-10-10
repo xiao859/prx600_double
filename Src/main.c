@@ -155,7 +155,7 @@ int main(void)
     HAL_GPIO_WritePin(GPIOD, GPIO_PIN_13, GPIO_PIN_SET);
 		//config_HVEn_signal(1);
 		//HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_1, DAC_ALIGN_12B_R, 1551);
- // cali_data.para_save_flag =1;
+//  cali_data.para_save_flag =1;
     while (1)
     {
 
@@ -181,7 +181,7 @@ int main(void)
         cmd_parser();
         cmd_parser_string();
 
-        Protect_Check_Slow();      //慢速故障检查
+//        Protect_Check_Slow();      //慢速故障检查
 
         if (cali_data.para_save_flag == 1)
         {
@@ -276,7 +276,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
         }
 
         //故障快速检测
-        xray_fast_protect();
+//        xray_fast_protect();
         xray_system_fault_check();
     }
 
