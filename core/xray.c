@@ -47,6 +47,11 @@ uint16_t get_expo_pin(uint16_t n)
     return ((HAL_GPIO_ReadPin(EXP_A_GPIO_Port, EXP_A_Pin) == GPIO_PIN_RESET) ? 1 : 0);
 	else
 		return ((HAL_GPIO_ReadPin(EXP_B_GPIO_Port, EXP_B_Pin) == GPIO_PIN_RESET) ? 1 : 0);
+	
+//		if(n==0)
+//    return ((HAL_GPIO_ReadPin(EXP_A_GPIO_Port, EXP_A_Pin) == GPIO_PIN_SET) ? 1 : 0);
+//	else
+//		return ((HAL_GPIO_ReadPin(EXP_B_GPIO_Port, EXP_B_Pin) == GPIO_PIN_SET) ? 1 : 0);
 }
 
 /*输出给高压电源----------------------------------------------------------------------------------------*/

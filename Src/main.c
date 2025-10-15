@@ -181,7 +181,7 @@ int main(void)
         cmd_parser();
         cmd_parser_string();
 
-//        Protect_Check_Slow();      //慢速故障检查
+        Protect_Check_Slow();      //慢速故障检查
 
         if (cali_data.para_save_flag == 1)
         {
@@ -256,13 +256,13 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
         if (Is_CTMode())
         {
 					//测试B源连续模式及整机烧录
-					  ctrl_data.expo[0]   = get_expo_pin(0);
+//					  ctrl_data.expo[0]   = get_expo_pin(0);
 
-            ctrl_data.expo[1]   = get_expo_pin(1);
+//            ctrl_data.expo[1]   = get_expo_pin(1);
 					//其余模式
-//            ctrl_data.expo[1]   = get_expo_pin(0);
+            ctrl_data.expo[1]   = get_expo_pin(0);
 
-//            ctrl_data.expo[0]   = get_expo_pin(1);
+            ctrl_data.expo[0]   = get_expo_pin(1);
 
             ct_task();
         }
@@ -276,7 +276,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
         }
 
         //故障快速检测
-//        xray_fast_protect();
+        xray_fast_protect();
         xray_system_fault_check();
     }
 

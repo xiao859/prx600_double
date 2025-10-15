@@ -126,7 +126,7 @@ volatile xray_parament_range para_range =
 
     1000, 1000,         /*曝光时间保护*/
 
-    1400000,            /*曝光时间1.5min 1800000 4500000*/
+    1400000,            /*曝光时间70S */
 
     2400000             /*灯丝开启未曝光最大时间 6000000*/
 };
@@ -619,8 +619,8 @@ void ct_task()
         else
             config_filamentRef(ct_source); /*灯丝基准值拉到预期*/
 				
-        if (xray_data.timmer_count[ct_source] > TIMER6_1_SECOND_CYCLES)//1s
-        {
+//        if (xray_data.timmer_count[ct_source] > TIMER6_2P5_SECOND_CYCLES)//1s
+//        {
 					config_ready_signal(1);
 					set_hv_state(HVPS_SM_ID_READY, ct_source);
 					xray_data.timmer_count[ct_source] = 1;
@@ -628,7 +628,7 @@ void ct_task()
 					param_pid.pulse_count = 0;
 					pid_Init_2(config_data.tube_curr[0], config_data.fila_ref_realtime[0], Is_PulseMode_CT(), 0);
 					pid_Init_2(config_data.tube_curr[1], config_data.fila_ref_realtime[1], Is_PulseMode_CT(), 1);
-				}
+//				}
         break;
 
     case HVPS_SM_ID_READY:
@@ -667,8 +667,8 @@ void ct_task()
         config_data.expo_count[ct_source]++;
 
         // 曝光控制：延时 PI 初始化
-        user_pid_2.currValue[ct_source] = 0.00645f * ((float)(adc_buffer3[2]));//0.00645*1.01(校准系数)
-        user_pid.currValue = 0.00645f * ((float)(adc_buffer3[2]));
+        user_pid_2.currValue[ct_source] = 0.0065f * ((float)(adc_buffer3[2]));//0.0064*1.01(校准系数)
+        user_pid.currValue = 0.0065f * ((float)(adc_buffer3[2]));
 
         /*连续模式PI调节*/
         if ((param_pid.pulse_count >= 5) && Is_ContinuousMode_CT() && (xray_data.timmer_count[ct_source] > TIMER6_5_MILSECOND_CYCLES))
@@ -858,6 +858,8 @@ void ct_task()
                 parm_table[1].expo_count_total++;
                 exp_count[0] += config_data.expo_count_total[0];
                 exp_count[1] += config_data.expo_count_total[1];
+								config_data.expo_count_total[0] = 0;
+								config_data.expo_count_total[1] = 0;
                 parm_table[0].expo_times_total +=  exp_count[0] / 1200000;
                 exp_count[0] = exp_count[1] % 1200000;
                 parm_table[1].expo_times_total += exp_count[1] / 1200000;
@@ -870,6 +872,7 @@ void ct_task()
                 exp_count[ct_source] += config_data.expo_count_total[ct_source];
                 parm_table[ct_source].expo_times_total += exp_count[ct_source] / 1200000;
                 exp_count[ct_source] = exp_count[ct_source] % 1200000;
+								config_data.expo_count[ct_source]=0;
             }
             config_disable_sw_safe(1);//config_disable_sw(1);
             config_enable_sw_safe(0);//config_enable_sw(0);
