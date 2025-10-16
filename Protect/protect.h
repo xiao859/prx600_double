@@ -152,7 +152,7 @@ typedef union
 			  uint16_t INTERLOCK2: 1;
 				uint16_t spark1: 1;
 				uint16_t spark2: 1;
-        uint16_t rsv: 1;
+        uint16_t sw_err: 1;
     }  bit;
 } HVPS_FAULT_GROUP4_REG;
 

@@ -118,8 +118,8 @@ volatile xray_parament_range para_range =
 
     28, 20,             /* 24V供电*/
     100, 100,           /*散热器温度*/
-    30, 8,              /*灯丝电压*/
-    100, 100,           /*灯丝电流*/
+    23, 8,              /*灯丝电压*/
+    24, 100,           /*灯丝电流*/
 
     120, 60,            /*管电压配置门限*/
     120, 10,            /*管电流配置门限*/
@@ -667,8 +667,8 @@ void ct_task()
         config_data.expo_count[ct_source]++;
 
         // 曝光控制：延时 PI 初始化
-        user_pid_2.currValue[ct_source] = 0.0065f * ((float)(adc_buffer3[2]));//0.0064*1.01(校准系数)
-        user_pid.currValue = 0.0065f * ((float)(adc_buffer3[2]));
+        user_pid_2.currValue[ct_source] = 0.00645f * ((float)(adc_buffer3[2]));//0.00645*1.01(校准系数)
+        user_pid.currValue = 0.00645f * ((float)(adc_buffer3[2]));
 
         /*连续模式PI调节*/
         if ((param_pid.pulse_count >= 5) && Is_ContinuousMode_CT() && (xray_data.timmer_count[ct_source] > TIMER6_5_MILSECOND_CYCLES))
@@ -902,7 +902,7 @@ void ct_task()
         config_disable_sw_safe(1);
 
         // 记录故障标志，便于调试
-        mHVPS_Fault.FAULT_REG4.bit.current_broken1 = 1;
+        mHVPS_Fault.FAULT_REG4.bit.sw_err = 1;
     }
 
     // LED指示

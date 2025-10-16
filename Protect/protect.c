@@ -2,6 +2,7 @@
 #include "xray.h"
 #include "temperature.h"
 #include "calibrate.h"
+#include "pi_ctl.h"
 
 HVPS_FAULT_REGS mHVPS_Fault;
 
@@ -299,39 +300,33 @@ void xray_fast_protect()
         xray_data.tube_curr_broken_count = 0;
     }
 
-//    float fila_vol = sampled_data.filament_vol_value;
-//    /*灯丝电压过压*/
-//    if (fila_vol > para_range.filament_vol_max_protected)
-//    {
-//        xray_data.fila_vol_overCount++;
-//        if (xray_data.fila_vol_overCount > FAST_PROTECT_TIME_RANGE)
-//        {
-//            if (ctrl_data.xray_current == 1)
-//                mHVPS_Fault.FAULT_REG4.bit.LAMP1_OV = 1;
-//            else
-//                mHVPS_Fault.FAULT_REG4.bit.LAMP2_OV = 1;
-//        }
-//    }
-//    else
-//    {
-//        xray_data.fila_vol_overCount = 0;
-//    }
-//    /*灯丝电压欠压*/
-//    if (fila_vol < para_range.filament_vol_min_protected)
-//    {
-//        xray_data.fila_vol_underCount++;
-//        if (xray_data.fila_vol_underCount > FAST_PROTECT_TIME_RANGE)
-//        {
-//            if (ctrl_data.xray_current == 1)
-//                mHVPS_Fault.FAULT_REG1.bit.LAMP1_UV = 1;
-//            else
-//                mHVPS_Fault.FAULT_REG4.bit.LAMP2_UV = 1;
-//        }
-//    }
-//    else
-//    {
-//        xray_data.fila_vol_underCount = 0;
-//    }
+    float fila_vol = sampled_data.filament_vol_value;
+    /*灯丝2过流*/
+    if (fila_vol > para_range.filament_vol_max_protected)
+    {
+        xray_data.fila_vol_overCount++;
+        if (xray_data.fila_vol_overCount > FAST_PROTECT_TIME_RANGE)
+        {
+                mHVPS_Fault.FAULT_REG3.bit.LAMP2_OC = 1;
+        }
+    }
+    else
+    {
+        xray_data.fila_vol_overCount = 0;
+    }
+    /*灯丝1过流*/
+    if (fila_vol > para_range.filament_curr_max_protected)
+    {
+        xray_data.fila_curr_overCount++;
+        if (xray_data.fila_curr_overCount > FAST_PROTECT_TIME_RANGE)
+        {
+                mHVPS_Fault.FAULT_REG2.bit.LAMP1_OC = 1;
+        }
+    }
+    else
+    {
+        xray_data.fila_vol_underCount = 0;
+    }
 
     return;
 }
@@ -347,6 +342,10 @@ void transform_adc_values()
     sampled_data.tube_vol_n_value       = 0.02579f * ((float)(adc_buffer3[1]));
     sampled_data.tube_curr_value        = 0.00645f * ((float)(adc_buffer3[2]));
     sampled_data.temp_oil_value         = ((float)(adc_buffer3[3]));
-
+//		if(param_pid.pulse_count >= 20)
+//		{
+//			sampled_data.tube_vol_p_value = 5;
+//			sampled_data.tube_vol_n_value = 5;
+//		}
 
 }

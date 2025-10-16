@@ -190,7 +190,7 @@ int main(void)
             HAL_TIM_Base_Start_IT(&htim2);
             cali_data.para_save_flag = 0;
         }
-        //heartBeat_led();
+        heartBeat_led();
 
     }
     /* USER CODE END 3 */

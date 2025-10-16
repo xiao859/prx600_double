@@ -509,7 +509,7 @@ int set_filament_onoff(volatile uint8_t *buff, char *p)
     {
         config_filamentOn_signal(1, 0);
         ctrl_data.filament_on[0] = 0;
-        HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_2, DAC_ALIGN_12B_R, 0);
+        //HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_2, DAC_ALIGN_12B_R, 0);
         debug_tx3("A lam on");
     }
     else if (num == 1)
@@ -517,7 +517,7 @@ int set_filament_onoff(volatile uint8_t *buff, char *p)
         config_filamentOn_signal(1, 1);
         ctrl_data.filament_on[1] = 0;
         //PWM
-        __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_4, 0);
+        //__HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_4, 0);
         debug_tx3("B lam on");
     }
     else if (num == 2)
@@ -527,8 +527,8 @@ int set_filament_onoff(volatile uint8_t *buff, char *p)
         config_filamentOn_signal(1, 1);
         ctrl_data.filament_on[1] = 0;
         //PWM
-        HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_2, DAC_ALIGN_12B_R, 0);
-        __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_4, 499);
+       // HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_2, DAC_ALIGN_12B_R, 0);
+       // __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_4, 499);
         debug_tx3("A&B lam on");
     }
     else if (num == 3)

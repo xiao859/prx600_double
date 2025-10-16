@@ -136,11 +136,17 @@ uint16_t get_filament_pin(uint16_t n)
 
 void heartBeat_led()
 {
-    //HAL_GPIO_TogglePin(HEART_LED_GPIO_Port, HEART_LED_Pin);
-	if((ctrl_data.filament_on[0] == 1)||(ctrl_data.filament_on[1] == 1))
-		    HAL_GPIO_WritePin(HEART_LED_GPIO_Port, HEART_LED_Pin, GPIO_PIN_RESET);
-	else
-				HAL_GPIO_WritePin(HEART_LED_GPIO_Port, HEART_LED_Pin, GPIO_PIN_SET);
+	static uint32_t count=0;
+	count++;
+	if(count>10000)
+	{
+    HAL_GPIO_TogglePin(HEART_LED_GPIO_Port, HEART_LED_Pin);
+		count = 0;
+	}
+//	if((ctrl_data.filament_on[0] == 1)||(ctrl_data.filament_on[1] == 1))
+//		    HAL_GPIO_WritePin(HEART_LED_GPIO_Port, HEART_LED_Pin, GPIO_PIN_RESET);
+//	else
+//				HAL_GPIO_WritePin(HEART_LED_GPIO_Port, HEART_LED_Pin, GPIO_PIN_SET);
 }
 
 void xray_on_led(uint16_t value)
