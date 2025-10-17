@@ -179,6 +179,7 @@ int main(void)
     config_data.tube_curr[1] = 2;
     config_data.tube_vol_step[1] = 3;
     config_data.tube_vol_realtime[1] = 0;
+		//cali_data.para_save_flag = 1;
     while (1)
     {
 
