@@ -155,7 +155,7 @@ int main(void)
     HAL_GPIO_WritePin(GPIOD, GPIO_PIN_13, GPIO_PIN_SET);
 		//config_HVEn_signal(1);
 		//HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_1, DAC_ALIGN_12B_R, 1551);
-//  cali_data.para_save_flag =1;
+  //cali_data.para_save_flag =1;
     while (1)
     {
 
@@ -256,13 +256,13 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
         if (Is_CTMode())
         {
 					//测试B源连续模式及整机烧录
-//					  ctrl_data.expo[0]   = get_expo_pin(0);
+					  ctrl_data.expo[0]   = get_expo_pin(0);
 
-//            ctrl_data.expo[1]   = get_expo_pin(1);
-					//其余模式
-            ctrl_data.expo[1]   = get_expo_pin(0);
+            ctrl_data.expo[1]   = get_expo_pin(1);
+//					//其余模式
+//            ctrl_data.expo[1]   = get_expo_pin(0);
 
-            ctrl_data.expo[0]   = get_expo_pin(1);
+//            ctrl_data.expo[0]   = get_expo_pin(1);
 
             ct_task();
         }
