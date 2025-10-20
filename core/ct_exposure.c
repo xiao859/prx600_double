@@ -140,7 +140,17 @@ volatile adc_sampled_value sampled_data =
     30, 30, 10, 1000, 24, 0, 24, 0, 20
 };
 volatile adc_sampled_value sampled_data_last = {0};
-volatile cmd_control_data ctrl_data;
+volatile cmd_control_data ctrl_data = {
+    .enable = {0},             // 其他字段可以初始化为0
+    .expo = {0},
+    .interlock = 0,
+    .hv_vol_fault = 0,
+    .hv_curr_fault = 0,
+    .filament_on = {0},
+    .xrayMode = XRAY_MODE_S_CONTINUOUS, 
+    .xray_current = 1,          // 直接赋初值为1
+    .xray_switch_counter = 0
+};
 
 uint16_t adc_buffer2[ADC_2_CHANNEL_NUM * ADC_SAMPLE_CYCLE_NUM];
 uint16_t adc_buffer3[ADC_3_CHANNEL_NUM * ADC_SAMPLE_CYCLE_NUM];

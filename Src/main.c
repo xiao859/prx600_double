@@ -103,7 +103,6 @@ int main(void)
 
     /* Initialize all configured peripherals */
     MX_GPIO_Init();
-    ctrl_data.xray_current = 1;
     MX_DMA_Init();
     MX_ADC2_Init();
     MX_ADC3_Init();
@@ -155,7 +154,7 @@ int main(void)
     HAL_GPIO_WritePin(GPIOD, GPIO_PIN_13, GPIO_PIN_SET);
 		//config_HVEn_signal(1);
 		//HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_1, DAC_ALIGN_12B_R, 1551);
-  //cali_data.para_save_flag =1;
+		//cali_data.para_save_flag =1;
     while (1)
     {
 
