@@ -80,45 +80,45 @@ void SystemClock_Config(void);
 int main(void)
 {
 
-  /* USER CODE BEGIN 1 */
+    /* USER CODE BEGIN 1 */
 
-  /* USER CODE END 1 */
+    /* USER CODE END 1 */
 
-  /* MCU Configuration--------------------------------------------------------*/
+    /* MCU Configuration--------------------------------------------------------*/
 
-  /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
-  HAL_Init();
+    /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
+    HAL_Init();
 
-  /* USER CODE BEGIN Init */
+    /* USER CODE BEGIN Init */
 
-  /* USER CODE END Init */
+    /* USER CODE END Init */
 
-  /* Configure the system clock */
-  SystemClock_Config();
+    /* Configure the system clock */
+    SystemClock_Config();
 
-  /* USER CODE BEGIN SysInit */
+    /* USER CODE BEGIN SysInit */
 
-  /* USER CODE END SysInit */
+    /* USER CODE END SysInit */
 
-  /* Initialize all configured peripherals */
-  MX_GPIO_Init();
-  MX_DMA_Init();
-  MX_ADC2_Init();
-  MX_ADC3_Init();
-  MX_DAC1_Init();
-  MX_UART4_Init();
-  MX_UART5_Init();
-  MX_USART3_UART_Init();
-  MX_SPI1_Init();
-  MX_TIM5_Init();
-  MX_TIM2_Init();
-  /* USER CODE BEGIN 2 */
-  /* USER CODE END 2 */
+    /* Initialize all configured peripherals */
+    MX_GPIO_Init();
+    MX_DMA_Init();
+    MX_ADC2_Init();
+    MX_ADC3_Init();
+    MX_DAC1_Init();
+    MX_UART4_Init();
+    MX_UART5_Init();
+    MX_USART3_UART_Init();
+    MX_SPI1_Init();
+    MX_TIM5_Init();
+    MX_TIM2_Init();
+    /* USER CODE BEGIN 2 */
+    /* USER CODE END 2 */
 
-  /* Infinite loop */
-  /* USER CODE BEGIN WHILE */
-		 debug_tx3("123\r\n");
-		
+    /* Infinite loop */
+    /* USER CODE BEGIN WHILE */
+    debug_tx3("123\r\n");
+
     uint8_t rely_state = 0;
     uint32_t rely_time = 0;
     HAL_TIM_Base_Start_IT(&htim2);
@@ -140,26 +140,29 @@ int main(void)
     //关于占空比 需定义 duty_max / duty_min  Vout ≈ Duty * VDD 需测试做类比线性关系
     HAL_ADC_Start_DMA(&hadc2, (uint32_t*)adc_buffer2, ADC_2_CHANNEL_NUM * ADC_SAMPLE_CYCLE_NUM);
     HAL_ADC_Start_DMA(&hadc3, (uint32_t*)adc_buffer3, ADC_3_CHANNEL_NUM * ADC_SAMPLE_CYCLE_NUM);
-		load_from_flash(parm_table);
+    load_from_flash(parm_table);
 
-    //默认单源模式
-    ctrl_data.interlock = 1;
+    ctrl_data.interlock = 1;//整机不用
     cali_data.para_save_flag = 0;
 
     xray_data.isCheckAvailable = 0;
     xray_on_led(0);
 
+    if (ctrl_data.hv_vol_fault || ctrl_data.hv_curr_fault)
+    {
+        /*灯丝复位*/
+        config_reset_signal(1);
+        fault_value_clear();
+    }
+
     HAL_GPIO_WritePin(GPIOD, GPIO_PIN_13, GPIO_PIN_SET);
-		//config_HVEn_signal(1);
-		//HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_1, DAC_ALIGN_12B_R, 1551);
-		//cali_data.para_save_flag =1;
+
+    //cali_data.para_save_flag =1;
     while (1)
     {
+        /* USER CODE END WHILE */
 
-
-    /* USER CODE END WHILE */
-
-    /* USER CODE BEGIN 3 */
+        /* USER CODE BEGIN 3 */
         if (rely_state == 0)
         {
             if ((get_tick_ms() - rely_time) > 2000)
@@ -190,7 +193,7 @@ int main(void)
         heartBeat_led();
 
     }
-  /* USER CODE END 3 */
+    /* USER CODE END 3 */
 }
 
 /**
@@ -199,43 +202,43 @@ int main(void)
   */
 void SystemClock_Config(void)
 {
-  RCC_OscInitTypeDef RCC_OscInitStruct = {0};
-  RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
+    RCC_OscInitTypeDef RCC_OscInitStruct = {0};
+    RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
 
-  /** Configure the main internal regulator output voltage
-  */
-  HAL_PWREx_ControlVoltageScaling(PWR_REGULATOR_VOLTAGE_SCALE1);
+    /** Configure the main internal regulator output voltage
+    */
+    HAL_PWREx_ControlVoltageScaling(PWR_REGULATOR_VOLTAGE_SCALE1);
 
-  /** Initializes the RCC Oscillators according to the specified parameters
-  * in the RCC_OscInitTypeDef structure.
-  */
-  RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;
-  RCC_OscInitStruct.HSEState = RCC_HSE_ON;
-  RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
-  RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
-  RCC_OscInitStruct.PLL.PLLM = RCC_PLLM_DIV2;
-  RCC_OscInitStruct.PLL.PLLN = 25;
-  RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV2;
-  RCC_OscInitStruct.PLL.PLLQ = RCC_PLLQ_DIV2;
-  RCC_OscInitStruct.PLL.PLLR = RCC_PLLR_DIV2;
-  if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
-  {
-    Error_Handler();
-  }
+    /** Initializes the RCC Oscillators according to the specified parameters
+    * in the RCC_OscInitTypeDef structure.
+    */
+    RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;
+    RCC_OscInitStruct.HSEState = RCC_HSE_ON;
+    RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
+    RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
+    RCC_OscInitStruct.PLL.PLLM = RCC_PLLM_DIV2;
+    RCC_OscInitStruct.PLL.PLLN = 25;
+    RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV2;
+    RCC_OscInitStruct.PLL.PLLQ = RCC_PLLQ_DIV2;
+    RCC_OscInitStruct.PLL.PLLR = RCC_PLLR_DIV2;
+    if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
+    {
+        Error_Handler();
+    }
 
-  /** Initializes the CPU, AHB and APB buses clocks
-  */
-  RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
-                              |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
-  RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
-  RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
-  RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV1;
-  RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
+    /** Initializes the CPU, AHB and APB buses clocks
+    */
+    RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK | RCC_CLOCKTYPE_SYSCLK
+                                  | RCC_CLOCKTYPE_PCLK1 | RCC_CLOCKTYPE_PCLK2;
+    RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
+    RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
+    RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV1;
+    RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
 
-  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_4) != HAL_OK)
-  {
-    Error_Handler();
-  }
+    if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_4) != HAL_OK)
+    {
+        Error_Handler();
+    }
 }
 
 /* USER CODE BEGIN 4 */
@@ -247,15 +250,18 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
     /* USER CODE END Callback 0 */
     if (htim->Instance == TIM2)
     {
+        ctrl_data.hv_vol_fault  = get_tube_vol_fault_pin();
+        ctrl_data.hv_curr_fault = get_tube_curr_fault_pin();
+        ctrl_data.interlock     = get_interLock_pin();
         transform_adc_values();
 
         if (Is_CTMode())
         {
-					//测试B源连续模式及整机烧录
-					  ctrl_data.expo[0]   = get_expo_pin(0);
+            //整机烧录
+            ctrl_data.expo[0]   = get_expo_pin(0);
 
             ctrl_data.expo[1]   = get_expo_pin(1);
-//					//其余模式
+//                  //其余模式
 //            ctrl_data.expo[1]   = get_expo_pin(0);
 
 //            ctrl_data.expo[0]   = get_expo_pin(1);
@@ -286,13 +292,13 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
   */
 void Error_Handler(void)
 {
-  /* USER CODE BEGIN Error_Handler_Debug */
+    /* USER CODE BEGIN Error_Handler_Debug */
     /* User can add his own implementation to report the HAL error return state */
     __disable_irq();
     while (1)
     {
     }
-  /* USER CODE END Error_Handler_Debug */
+    /* USER CODE END Error_Handler_Debug */
 }
 
 #ifdef  USE_FULL_ASSERT
@@ -305,9 +311,9 @@ void Error_Handler(void)
   */
 void assert_failed(uint8_t *file, uint32_t line)
 {
-  /* USER CODE BEGIN 6 */
+    /* USER CODE BEGIN 6 */
     /* User can add his own implementation to report the file name and line number,
        ex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
-  /* USER CODE END 6 */
+    /* USER CODE END 6 */
 }
 #endif /* USE_FULL_ASSERT */

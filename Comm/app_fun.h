@@ -210,4 +210,6 @@ void cmd_parser(void);
 
 void setraytube(message_protocol *msg);
 
+void fault_value_clear(void);
+
 #endif

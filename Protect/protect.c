@@ -130,7 +130,8 @@ void xray_fast_protect()
     if (ctrl_data.hv_vol_fault || ctrl_data.hv_curr_fault)
     {
         xray_data.hv_hardware_count++;
-        if (xray_data.hv_hardware_count > FAST_PROTECT_TIME_RANGE) mHVPS_Fault.FAULT_REG1.bit.HV_HARDW_FAULT = 1;
+        if (xray_data.hv_hardware_count > FAST_PROTECT_TIME_RANGE) 
+					mHVPS_Fault.FAULT_REG1.bit.HV_HARDW_FAULT = 1;
     }
     else
     {

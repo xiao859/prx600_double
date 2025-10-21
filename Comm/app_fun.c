@@ -434,6 +434,19 @@ void SetOnlinePI(message_protocol *msg)
     return;
 }
 
+void fault_value_clear()
+{
+    mHVPS_Fault.FAULT_REG1.value = 0x0000;
+    mHVPS_Fault.FAULT_REG2.value = 0x0000;
+    mHVPS_Fault.FAULT_REG3.value = 0x0000;
+    mHVPS_Fault.FAULT_REG4.value = 0x0000;
+    mHVPS_Fault.FAULT_REG5.value = 0x0000;
+    mHVPS_Fault.FAULT_REG6.value = 0x0000;
+
+    return;
+}
+
+
 void FaultReset(message_protocol *msg)
 {
     uint8_t data1, data2;
@@ -445,12 +458,7 @@ void FaultReset(message_protocol *msg)
 
         FAULT_REG1_temp.bit.OIL_OT1 = mHVPS_Fault.FAULT_REG1.bit.OIL_OT1;
 
-        mHVPS_Fault.FAULT_REG1.value = 0x0000;
-        mHVPS_Fault.FAULT_REG2.value = 0x0000;
-        mHVPS_Fault.FAULT_REG3.value = 0x0000;
-        mHVPS_Fault.FAULT_REG4.value = 0x0000;
-        mHVPS_Fault.FAULT_REG5.value = 0x0000;
-        mHVPS_Fault.FAULT_REG6.value = 0x0000;
+				fault_value_clear();
 
         mHVPS_Fault.FAULT_REG1.value = FAULT_REG1_temp.value;
 

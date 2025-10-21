@@ -22,7 +22,8 @@ hvps_sm_state volatile hv_state[XRAY_NUMS];
 
 Exposure_Parameters exp_para[XRAY_NUMS] = {0};
 
-volatile xray_config_data config_data = {
+volatile xray_config_data config_data =
+{
     0,        //准备就绪
     0,        //射源出信号
     0,        //故障
@@ -31,25 +32,25 @@ volatile xray_config_data config_data = {
     0,        //高压使能
     0,        //高压互锁
     0,        //故障复位
-		{60,60},  //串口配置的管电压
-    {2,2},    //串口配置的管电流
-    {0,0}, 		//管电流查表索引
+    {60, 60}, //串口配置的管电压
+    {2, 2},   //串口配置的管电流
+    {0, 0},     //管电流查表索引
 
-    {0,0}, 		//管电压基准实时配置值
-    {3,3},    //管电压基准上升步长
+    {0, 0},     //管电压基准实时配置值
+    {3, 3},   //管电压基准上升步长
 
-    {0,0},    //灯丝基准目标值
-    {0,0},  	//灯丝基准实时配置
-    {0,0},    //灯丝基准上升步长
+    {0, 0},   //灯丝基准目标值
+    {0, 0},     //灯丝基准实时配置
+    {0, 0},   //灯丝基准上升步长
 
     /* output to filament*/
-    {0,0},    //灯丝使能
+    {0, 0},   //灯丝使能
 
     /* other data */
-    {0,0},   //射源单次曝光计时
-    {0,0},   //射源总曝光计时
-    {0,0},   //曝光时间设置
-    {0,0},   //灯丝开启未曝光计数
+    {0, 0},  //射源单次曝光计时
+    {0, 0},  //射源总曝光计时
+    {0, 0},  //曝光时间设置
+    {0, 0},  //灯丝开启未曝光计数
 
 };
 
@@ -68,19 +69,19 @@ xray_type xray_tube_table[XRAY_TUBE_TYPES] =
             {5,  7,  8,  9, 10, 11, 12, 13, 14, 15, 16, 17},   // 射源1 偏置
         }
     },
-		
+
     // ---------- KL3球管 ----------
     {
-			0,
+        0,
     },
-		
+
     // ---------- 万森球管 ----------
     {
         .pluse_kp = 30,
         .pluse_ki = 25,
-//				.currRef1 = {1720, 1735, 1770, 1810, 1880, 1920, 1950, 1980, 2000, 2010, 2020, 2030},
+//              .currRef1 = {1720, 1735, 1770, 1810, 1880, 1920, 1950, 1980, 2000, 2010, 2020, 2030},
 //        .currRef2 = {1030, 1050, 1110, 1170, 1220, 1240, 1260, 1280, 1300, 1310, 1330, 1355},
-				.currRef1 = {1720, 1735, 1770, 1780, 1800, 1820, 1850, 1860, 1880, 1900, 1920, 1940},
+        .currRef1 = {1720, 1735, 1770, 1780, 1800, 1820, 1850, 1860, 1880, 1900, 1920, 1940},
         .currRef2 = {1030, 1050, 1110, 1130, 1150, 1170, 1180, 1190, 1200, 1210, 1230, 1255},
         .fila_ref_offset =
         {
@@ -91,7 +92,7 @@ xray_type xray_tube_table[XRAY_TUBE_TYPES] =
 
     // ---------- KL29球管 ----------
     {
-			0,
+        0,
     },
 };
 
@@ -99,18 +100,18 @@ xray_type xray_tube_table[XRAY_TUBE_TYPES] =
 volatile xray_parament_table parm_table[XRAY_NUMS] =
 {
     {
-        2,0, 0, 1,
+        2, 0, 0, 1,
         {1,    2,    3,    4,    5,    6,    7,    8,    9,    10,  11,   12},
         {1720, 1875, 1920, 2050, 2100, 2110, 2120, 2130, 2195, 2215, 2240, 2260},
         //{1720, 1735, 1770, 1810, 1880, 1920, 1950, 1980, 2000, 2020, 2040, 2060},
-				{1720, 1735, 1770, 1780, 1800, 1820, 1850, 1860, 1880, 1900, 1920, 1940},
+        {1720, 1735, 1770, 1780, 1800, 1820, 1850, 1860, 1880, 1900, 1920, 1940},
     },
     {
-        2,0, 0, 1,
+        2, 0, 0, 1,
         {1,    2,    3,    4,    5,    6,    7,    8,    9,    10,  11,   12},
         {1030, 1050, 1110, 1170, 1220, 1260, 1320, 1360, 1400, 1410, 1430, 1460},
         //{1030, 1050, 1110, 1170, 1220, 1240, 1260, 1280, 1300, 1310, 1330, 1355},
-				 {1030, 1050, 1110, 1130, 1150, 1170, 1180, 1190, 1200, 1210, 1230, 1255},
+        {1030, 1050, 1110, 1130, 1150, 1170, 1180, 1190, 1200, 1210, 1230, 1255},
     },
 };
 volatile xray_parament_range para_range =
@@ -140,14 +141,15 @@ volatile adc_sampled_value sampled_data =
     30, 30, 10, 1000, 24, 0, 24, 0, 20
 };
 volatile adc_sampled_value sampled_data_last = {0};
-volatile cmd_control_data ctrl_data = {
+volatile cmd_control_data ctrl_data =
+{
     .enable = {0},             // 其他字段可以初始化为0
     .expo = {0},
     .interlock = 0,
     .hv_vol_fault = 0,
     .hv_curr_fault = 0,
     .filament_on = {0},
-    .xrayMode = XRAY_MODE_S_CONTINUOUS, 
+    .xrayMode = XRAY_MODE_S_CONTINUOUS,
     .xray_current = 1,          // 直接赋初值为1
     .xray_switch_counter = 0
 };
@@ -266,32 +268,32 @@ bool load_from_flash(volatile xray_parament_table *parm_table)
     if (CRC1 == flash_data.crc32)
     {
         memcpy((void*)parm_table, flash_data.data, sizeof(flash_data.data));
-				if(parm_table[0].xray_type < 4)
-				{
-					B_pulse_KP = xray_tube_table[parm_table[0].xray_type].pluse_kp;
-					B_pulse_KI = xray_tube_table[parm_table[0].xray_type].pluse_ki;
-					memcpy((void*)fila_ref_offset,xray_tube_table[parm_table[0].xray_type].fila_ref_offset,24);
-					if(parm_table[0].xray_type == 0)
-					{
-						version.tube_ver_high = 0x11;
-						version.tube_ver_low = 0x13;
-					}
-					else if(parm_table[0].xray_type == 1)
-					{
-						version.tube_ver_high = 0x12;
-						version.tube_ver_low = 0x11;
-					}
-					else if(parm_table[0].xray_type == 2)
-					{
-						version.tube_ver_high = 0x11;
-						version.tube_ver_low = 0x11;
-					}
-					else if(parm_table[0].xray_type == 3)
-					{
-						version.tube_ver_high = 0x11;
-						version.tube_ver_low = 0x12;
-					}
-				}
+        if (parm_table[0].xray_type < 4)
+        {
+            B_pulse_KP = xray_tube_table[parm_table[0].xray_type].pluse_kp;
+            B_pulse_KI = xray_tube_table[parm_table[0].xray_type].pluse_ki;
+            memcpy((void*)fila_ref_offset, xray_tube_table[parm_table[0].xray_type].fila_ref_offset, 24);
+            if (parm_table[0].xray_type == 0)
+            {
+                version.tube_ver_high = 0x11;
+                version.tube_ver_low = 0x13;
+            }
+            else if (parm_table[0].xray_type == 1)
+            {
+                version.tube_ver_high = 0x12;
+                version.tube_ver_low = 0x11;
+            }
+            else if (parm_table[0].xray_type == 2)
+            {
+                version.tube_ver_high = 0x11;
+                version.tube_ver_low = 0x11;
+            }
+            else if (parm_table[0].xray_type == 3)
+            {
+                version.tube_ver_high = 0x11;
+                version.tube_ver_low = 0x12;
+            }
+        }
 
         parm_table[0].rising_time = 1;
         parm_table[1].rising_time = 1;
@@ -305,20 +307,20 @@ bool load_from_flash(volatile xray_parament_table *parm_table)
         if (calc_crc32((const uint8_t *)flash_data.data, sizeof(flash_data.data)) == flash_data.crc32)
         {
             memcpy((void*)parm_table, flash_data.data, sizeof(flash_data.data));
-						if(parm_table[0].xray_type == 0)
-						{
-							B_pulse_KP = xray_tube_table[0].pluse_kp;
-							B_pulse_KI = xray_tube_table[0].pluse_ki;
-							memcpy((void*)fila_ref_offset,xray_tube_table[0].fila_ref_offset,24);
-						}
-						else if(parm_table[0].xray_type == 1)
-						{
-							B_pulse_KP = xray_tube_table[1].pluse_kp;
-							B_pulse_KI = xray_tube_table[1].pluse_ki;
-							memcpy((void*)fila_ref_offset,xray_tube_table[0].fila_ref_offset,24);
-						}
-					  parm_table[0].rising_time = 1;
-						parm_table[1].rising_time = 1;
+            if (parm_table[0].xray_type == 0)
+            {
+                B_pulse_KP = xray_tube_table[0].pluse_kp;
+                B_pulse_KI = xray_tube_table[0].pluse_ki;
+                memcpy((void*)fila_ref_offset, xray_tube_table[0].fila_ref_offset, 24);
+            }
+            else if (parm_table[0].xray_type == 1)
+            {
+                B_pulse_KP = xray_tube_table[1].pluse_kp;
+                B_pulse_KI = xray_tube_table[1].pluse_ki;
+                memcpy((void*)fila_ref_offset, xray_tube_table[0].fila_ref_offset, 24);
+            }
+            parm_table[0].rising_time = 1;
+            parm_table[1].rising_time = 1;
             return true;
         }
     }
@@ -615,7 +617,7 @@ void ct_task()
 
         // 仅当满足时间、interlock后才允许进入下一状态
         if (ctrl_data.interlock && ctrl_data.filament_on[ct_source] &&
-                xray_data.timmer_count[ct_source] > TIMER6_1P5_SECOND_CYCLES)//1.5s
+                xray_data.timmer_count[ct_source] > TIMER6_2P5_SECOND_CYCLES)
         {
             config_mcuLock_signal(1);
             set_hv_state(HVPS_SM_ID_PREPARE, ct_source);
@@ -632,17 +634,17 @@ void ct_task()
         }
         else
             config_filamentRef(ct_source); /*灯丝基准值拉到预期*/
-				
+
 //        if (xray_data.timmer_count[ct_source] > TIMER6_2P5_SECOND_CYCLES)//1s
 //        {
-					config_ready_signal(1);
-					set_hv_state(HVPS_SM_ID_READY, ct_source);
-					xray_data.timmer_count[ct_source] = 1;
-					pid_Init(config_data.tube_curr[ct_source], config_data.fila_ref_realtime[ct_source], Is_PulseMode_CT());
-					param_pid.pulse_count = 0;
-					pid_Init_2(config_data.tube_curr[0], config_data.fila_ref_realtime[0], Is_PulseMode_CT(), 0);
-					pid_Init_2(config_data.tube_curr[1], config_data.fila_ref_realtime[1], Is_PulseMode_CT(), 1);
-//				}
+        config_ready_signal(1);
+        set_hv_state(HVPS_SM_ID_READY, ct_source);
+        xray_data.timmer_count[ct_source] = 1;
+        pid_Init(config_data.tube_curr[ct_source], config_data.fila_ref_realtime[ct_source], Is_PulseMode_CT());
+        param_pid.pulse_count = 0;
+        pid_Init_2(config_data.tube_curr[0], config_data.fila_ref_realtime[0], Is_PulseMode_CT(), 0);
+        pid_Init_2(config_data.tube_curr[1], config_data.fila_ref_realtime[1], Is_PulseMode_CT(), 1);
+//              }
         break;
 
     case HVPS_SM_ID_READY:
@@ -681,7 +683,7 @@ void ct_task()
         config_data.expo_count[ct_source]++;
 
         // 曝光控制：延时 PI 初始化
-        user_pid_2.currValue[ct_source] = 0.00645f * ((float)(adc_buffer3[2]));//0.00645*1.01(校准系数)
+        user_pid_2.currValue[ct_source] = 0.00645f * ((float)(adc_buffer3[2]));
         user_pid.currValue = 0.00645f * ((float)(adc_buffer3[2]));
 
         /*连续模式PI调节*/
@@ -872,8 +874,8 @@ void ct_task()
                 parm_table[1].expo_count_total++;
                 exp_count[0] += config_data.expo_count_total[0];
                 exp_count[1] += config_data.expo_count_total[1];
-								config_data.expo_count_total[0] = 0;
-								config_data.expo_count_total[1] = 0;
+                config_data.expo_count_total[0] = 0;
+                config_data.expo_count_total[1] = 0;
                 parm_table[0].expo_times_total +=  exp_count[0] / 1200000;
                 exp_count[0] = exp_count[1] % 1200000;
                 parm_table[1].expo_times_total += exp_count[1] / 1200000;
@@ -886,7 +888,7 @@ void ct_task()
                 exp_count[ct_source] += config_data.expo_count_total[ct_source];
                 parm_table[ct_source].expo_times_total += exp_count[ct_source] / 1200000;
                 exp_count[ct_source] = exp_count[ct_source] % 1200000;
-								config_data.expo_count[ct_source]=0;
+                config_data.expo_count[ct_source] = 0;
             }
             config_disable_sw_safe(1);//config_disable_sw(1);
             config_enable_sw_safe(0);//config_enable_sw(0);
@@ -901,7 +903,7 @@ void ct_task()
             last_expo_count = 0;
             ct_source = 0;
             ctrl_data.xray_current = 1;
-            cali_data.para_save_flag =1;
+            cali_data.para_save_flag = 1;
         }
         break;
     default:
