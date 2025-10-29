@@ -147,10 +147,10 @@ void debug_task()
                         // 曝光完成，进入结束状态
                         parm_table[0].expo_count_total++;
                         parm_table[1].expo_count_total++;
-                        parm_table[0].expo_times_total += config_data.expo_count_total[0] / 1200000;
-                        parm_table[1].expo_times_total += config_data.expo_count_total[1] / 1200000;
-                        config_data.expo_count_total[xray_active] = 0;
-                        config_data.expo_count_total[xray_active] = 0;
+                        parm_table[0].expo_times_total += config_data.expo_count[0] / 1200000;
+                        parm_table[1].expo_times_total += config_data.expo_count[1] / 1200000;
+                        config_data.expo_count[0] = 0;
+                        config_data.expo_count[1] = 0;
                         set_hv_state(HVPS_SM_ID_TRAIN_END, xray_active);
                         config_enable_sw(0);
                         switching = 0;
@@ -254,9 +254,9 @@ void debug_task()
                         set_hv_state(HVPS_SM_ID_TRAIN_END, xray_active);
                         parm_table[0].expo_count_total++;
                         parm_table[1].expo_count_total++;
-                        parm_table[0].expo_times_total += config_data.expo_count_total[0] / 1200000;
-                        parm_table[1].expo_times_total += config_data.expo_count_total[1] / 1200000;
-                        config_data.expo_count_total[xray_active] = 0;
+                        parm_table[0].expo_times_total += config_data.expo_count[0] / 1200000;
+                        parm_table[1].expo_times_total += config_data.expo_count[1] / 1200000;
+                        config_data.expo_count[xray_active] = 0;
                     }
                 }
             }
@@ -265,10 +265,10 @@ void debug_task()
         {
             // 单源连续模式，选择A源或B源曝光一次，结束
 						parm_table[xray_active].expo_count_total++;
-						exp_count[xray_active] += config_data.expo_count_total[xray_active];
+						exp_count[xray_active] += config_data.expo_count[xray_active];
 						parm_table[xray_active].expo_times_total += exp_count[xray_active] / 1200000;
 						exp_count[xray_active] = exp_count[xray_active] % 1200000;
-            config_data.expo_count_total[xray_active] = 0;
+            config_data.expo_count[xray_active] = 0;
             debug_data.timmer_count = 0;
             set_hv_state(HVPS_SM_ID_TRAIN_END, xray_active);
         }
@@ -292,7 +292,7 @@ void debug_task()
                 debug_data.cycle_count[xray_active] = 0;
                 set_hv_state(HVPS_SM_ID_TRAIN_END, xray_active);
                 parm_table[xray_active].expo_count_total++;
-                exp_count[xray_active] += config_data.expo_count_total[xray_active];
+                exp_count[xray_active] += config_data.expo_count[xray_active];
                 parm_table[xray_active].expo_times_total += exp_count[xray_active] / 1200000;
                 exp_count[xray_active] = exp_count[xray_active] % 1200000;
             }

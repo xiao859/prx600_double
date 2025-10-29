@@ -880,10 +880,10 @@ void ct_task()
             {
                 parm_table[0].expo_count_total++;
                 parm_table[1].expo_count_total++;
-                exp_count[0] += config_data.expo_count_total[0];
-                exp_count[1] += config_data.expo_count_total[1];
-                config_data.expo_count_total[0] = 0;
-                config_data.expo_count_total[1] = 0;
+                exp_count[0] +=  config_data.expo_count[0];
+                exp_count[1] +=  config_data.expo_count[1];
+                config_data.expo_count[0] = 0;
+                config_data.expo_count[1] = 0;
                 parm_table[0].expo_times_total +=  exp_count[0] / 1200000;
                 exp_count[0] = exp_count[1] % 1200000;
                 parm_table[1].expo_times_total += exp_count[1] / 1200000;
@@ -893,7 +893,7 @@ void ct_task()
             else
             {
                 parm_table[ct_source].expo_count_total++;
-                exp_count[ct_source] += config_data.expo_count_total[ct_source];
+                exp_count[ct_source] += config_data.expo_count[ct_source];
                 parm_table[ct_source].expo_times_total += exp_count[ct_source] / 1200000;
                 exp_count[ct_source] = exp_count[ct_source] % 1200000;
                 config_data.expo_count[ct_source] = 0;
