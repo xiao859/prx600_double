@@ -779,15 +779,6 @@ void ct_task()
 
     case HVPS_SM_ID_EXPO_END:
 
-        // ----------- 灯丝保护计数 -----------
-        for (uint8_t i = 0; i < XRAY_NUMS; i++)
-        {
-            if (get_filament_pin(i) && get_hv_state(i) != HVPS_SM_ID_EXPOSURING)
-                config_data.fila_protect_cnt[i]++;
-            else
-                config_data.fila_protect_cnt[i] = 0;
-        }
-
         // ----------- 检查是否为双源交替切换 -----------
         is_dual_source = (ctrl_data.filament_on[0] && ctrl_data.filament_on[1] &&
                           ctrl_data.interlock);
@@ -931,6 +922,14 @@ void ct_task()
 
     // LED指示
     xray_on_led((get_hv_state(0) == HVPS_SM_ID_EXPOSURING) || (get_hv_state(1) == HVPS_SM_ID_EXPOSURING));
+		// ----------- 灯丝保护计数 -----------
+		for (uint8_t i = 0; i < XRAY_NUMS; i++)
+		{
+				if (get_filament_pin(i) && get_hv_state(i) != HVPS_SM_ID_EXPOSURING)
+						config_data.fila_protect_cnt[i]++;
+				else
+						config_data.fila_protect_cnt[i] = 0;
+		}
 }
 
 
