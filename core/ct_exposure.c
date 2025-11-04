@@ -766,8 +766,6 @@ void ct_task()
                 // debug_tx3("pi:%d,%d,%f\n", ct_source, oldref[ct_source], user_pid_2.currValue[ct_source]);
             }
 
-            //parm_table[ct_source].expo_count_total++;
-
             // 若未在上面进入 EXPO_END / READY，则此处兜底
             if (get_hv_state(ct_source) == HVPS_SM_ID_EXPOSURING)
             {
@@ -814,9 +812,6 @@ void ct_task()
                     if (sw_count >= 20)
                     {
                         set_hv_state(HVPS_SM_ID_READY, 1 - ct_source);
-
-//                        // 曝光次数统计
-//                        parm_table[ct_source].expo_count_total++;
 
                         // 重置状态
                         sw_state = 0;
