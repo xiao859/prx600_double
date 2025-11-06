@@ -466,6 +466,10 @@ void FaultReset(message_protocol *msg)
 			
 				config_data.fila_protect_cnt[0] = 0;
 				config_data.fila_protect_cnt[1] = 0;
+			
+			  config_reset_signal(1);
+				HAL_Delay(10);
+				config_reset_signal(0);
 
         set_hv_state(HVPS_SM_ID_IDLE, 0);
         set_hv_state(HVPS_SM_ID_IDLE, 1);

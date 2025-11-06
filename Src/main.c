@@ -153,6 +153,7 @@ int main(void)
         /*灯丝复位*/
         config_reset_signal(1);
         fault_value_clear();
+			  config_reset_signal(0);
     }
 
     HAL_GPIO_WritePin(GPIOD, GPIO_PIN_13, GPIO_PIN_SET);
