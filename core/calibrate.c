@@ -115,9 +115,9 @@ void xray_HV_enable(uint16_t value)
 void filament_ref_update(uint8_t curr_idx, uint16_t n)
 {
 	if((cali_data.curr_index>=5)&&(n == 1))
-    parm_table[n].currRef_c[curr_idx]   = user_pid_2.config_ref[n]*0.98;
+    parm_table[n].currRef_c[curr_idx]   = user_pid_2.config_ref[n];//*0.98
 	else if((cali_data.curr_index>=5)&&(n == 0))
-		parm_table[n].currRef_c[curr_idx]   = user_pid_2.config_ref[n]*0.98;
+		parm_table[n].currRef_c[curr_idx]   = user_pid_2.config_ref[n];//*0.98;
 	else 
 		parm_table[n].currRef_c[curr_idx]   = user_pid_2.config_ref[n];
     return;

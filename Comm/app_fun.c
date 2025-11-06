@@ -463,6 +463,9 @@ void FaultReset(message_protocol *msg)
         mHVPS_Fault.FAULT_REG1.value = FAULT_REG1_temp.value;
 
         memset((uint8_t *)(&xray_data), 0, sizeof(xray_data));
+			
+				config_data.fila_protect_cnt[0] = 0;
+				config_data.fila_protect_cnt[1] = 0;
 
         set_hv_state(HVPS_SM_ID_IDLE, 0);
         set_hv_state(HVPS_SM_ID_IDLE, 1);

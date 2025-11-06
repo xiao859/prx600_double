@@ -114,7 +114,7 @@ void tube_current_piControl(uint8_t conflag, uint8_t n)
 
     if (param_pid.pulse_count == 5)
     {
-        param_pid.config_ref = param_pid.config_ref + fila_ref_offset[n][config_data.tube_curr_index[n]];
+       param_pid.config_ref = param_pid.config_ref + fila_ref_offset[n][config_data.tube_curr_index[n]];
         param_pid.pulse_count = 6;
         param_pid.conu_start_ref = param_pid.config_ref;
     }

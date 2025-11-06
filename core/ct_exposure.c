@@ -98,8 +98,8 @@ xray_type xray_tube_table[XRAY_TUBE_TYPES] =
         .currRef2 = {1031, 1051, 1111, 1171, 1221, 1241, 1261, 1281, 1301, 1331, 1351, 1386},
         .fila_ref_offset =
         {
-            {10, 12, 14, 15, 16, 18, 20, 21, 22, 23, 24, 25},  // 射源0 偏置
-            {5,  7,  8,  9, 10, 11, 12, 13, 14, 15, 16, 17},   // 射源1 偏置
+            {0, 0, 0, 2, 3, 3, 3, 3, 5, 6, 7, 8},  // 射源0 偏置
+            {0, 0, 1, 2, 2, 2, 2, 3, 4, 6, 7, 9},   // 射源1 偏置
         }
     },
 };
@@ -280,7 +280,7 @@ bool load_from_flash(volatile xray_parament_table *parm_table)
         {
             B_pulse_KP = xray_tube_table[parm_table[0].xray_type].pluse_kp;
             B_pulse_KI = xray_tube_table[parm_table[0].xray_type].pluse_ki;
-            memcpy((void*)fila_ref_offset, xray_tube_table[parm_table[0].xray_type].fila_ref_offset, 24);
+            memcpy((void*)fila_ref_offset, xray_tube_table[parm_table[0].xray_type].fila_ref_offset, 24*4);
             if (parm_table[0].xray_type == 0)
             {
                 version.tube_ver_high = 0x11;
@@ -319,13 +319,13 @@ bool load_from_flash(volatile xray_parament_table *parm_table)
             {
                 B_pulse_KP = xray_tube_table[0].pluse_kp;
                 B_pulse_KI = xray_tube_table[0].pluse_ki;
-                memcpy((void*)fila_ref_offset, xray_tube_table[0].fila_ref_offset, 24);
+                memcpy((void*)fila_ref_offset, xray_tube_table[0].fila_ref_offset, 24*4);
             }
             else if (parm_table[0].xray_type == 1)
             {
                 B_pulse_KP = xray_tube_table[1].pluse_kp;
                 B_pulse_KI = xray_tube_table[1].pluse_ki;
-                memcpy((void*)fila_ref_offset, xray_tube_table[0].fila_ref_offset, 24);
+                memcpy((void*)fila_ref_offset, xray_tube_table[0].fila_ref_offset, 24*4);
             }
             parm_table[0].rising_time = 1;
             parm_table[1].rising_time = 1;
@@ -700,8 +700,8 @@ void ct_task()
 
             param_pid.ti_CycleCount++;
 
-            user_pid.Kp = 0;
-            user_pid.Ti = 0.2;
+            user_pid.Kp = 40;
+            user_pid.Ti = 0.3;
 
             if (param_pid.ti_CycleCount == TIMER6_10_MILSECOND_CYCLES)
             {
@@ -757,7 +757,7 @@ void ct_task()
             {
                 user_pid_2.Kp[1] = B_pulse_KP;
                 user_pid_2.Ki[1] = B_pulse_KI;
-                user_pid_2.Kp[0] = 40;
+                user_pid_2.Kp[0] = 70;
                 user_pid_2.Ki[0] = 40;
                 oldref[ct_source] = user_pid_2.config_ref[ct_source];
                 tube_current_piControl_v2(ct_source);
