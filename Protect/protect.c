@@ -316,18 +316,19 @@ void xray_fast_protect()
         xray_data.fila_vol_overCount = 0;
     }
     /*灯丝1过流*/
-    if (fila_vol > para_range.filament_curr_max_protected)
-    {
-        xray_data.fila_curr_overCount++;
-        if (xray_data.fila_curr_overCount > FAST_PROTECT_TIME_RANGE)
-        {
-                mHVPS_Fault.FAULT_REG2.bit.LAMP1_OC = 1;
-        }
-    }
-    else
-    {
-        xray_data.fila_vol_underCount = 0;
-    }
+//		fila_vol = sampled_data.filament_curr_value;
+//    if (fila_vol > para_range.filament_curr_max_protected)
+//    {
+//        xray_data.fila_curr_overCount++;
+//        if (xray_data.fila_curr_overCount > FAST_PROTECT_TIME_RANGE)
+//        {
+//                mHVPS_Fault.FAULT_REG2.bit.LAMP1_OC = 1;
+//        }
+//    }
+//    else
+//    {
+//        xray_data.fila_vol_underCount = 0;
+//    }
 
     return;
 }
