@@ -18,6 +18,9 @@ uint32_t exp_count[2] = {0};
 uint8_t B_pulse_KP = 30;
 uint8_t B_pulse_KI = 30;
 
+uint8_t kp_arr[5] = {100,80,70,60,40};
+uint8_t ki_arr[5] = {100,80,70,60,40};
+
 hvps_sm_state volatile hv_state[XRAY_NUMS];
 
 Exposure_Parameters exp_para[XRAY_NUMS] = {0};
@@ -757,8 +760,8 @@ void ct_task()
             {
                 user_pid_2.Kp[1] = B_pulse_KP;
                 user_pid_2.Ki[1] = B_pulse_KI;
-                user_pid_2.Kp[0] = 70;
-                user_pid_2.Ki[0] = 40;
+                user_pid_2.Kp[0] = 110;//kp_arr[param_pid.pulse_count];//
+                user_pid_2.Ki[0] = 50;//ki_arr[param_pid.pulse_count];//
                 oldref[ct_source] = user_pid_2.config_ref[ct_source];
                 tube_current_piControl_v2(ct_source);
                 param_pid.config_ref = user_pid_2.config_ref[ct_source];

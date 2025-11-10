@@ -74,6 +74,8 @@ void pid_Init_2(float target, uint32_t ref_init, uint8_t isPulseMode, uint8_t n)
  */
 void tube_current_piControl(uint8_t conflag, uint8_t n)
 {
+	static uint32_t contrl=0;
+	contrl++;
     param_pid.Error = user_pid.currTarget - user_pid.currValue;
     /* 积分限幅 */
     param_pid.integral  += param_pid.Error;
@@ -121,12 +123,12 @@ void tube_current_piControl(uint8_t conflag, uint8_t n)
 
     uint32_t max_ref = param_pid.conu_start_ref + param_pid.threshold_offset;
 
-    /* 限幅 */
+   		/* 限幅 */
     if (Is_CalibrateMode())
     {
 					param_pid.config_ref = MAX(MIN(param_pid.config_ref, 2850), 1000);
     }
-    else
+    else 
     {
         param_pid.config_ref = MAX(MIN(param_pid.config_ref, max_ref), max_ref - 2);
     }
@@ -161,7 +163,9 @@ void tube_current_piControl_v2(uint8_t n)
 
     output = user_pid_2.Kp[n] * (user_pid_2.err[n] - user_pid_2.last_err[n]) + user_pid_2.Ki[n] * user_pid_2.err[n];
 
-
+		if((param_pid.pulse_count >= 5)&&(ctrl_data.xrayMode== XRAY_MODE_S_CONTINUOUS))
+		return;
+	
     if (param_pid.pulse_count >= 10)
     {
         output = MAX(MIN(output, 1), -1);
