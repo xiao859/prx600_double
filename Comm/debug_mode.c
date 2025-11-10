@@ -20,10 +20,10 @@
 volatile xray_debug_data debug_data;
 
 ///**/
-void xray_HV_enable_debug(uint16_t value)
+void xray_HV_enable_debug(uint16_t value, uint16_t n)
 {
     config_mcuLock_signal(value);
-    config_HVEn_signal(value);      /*高压电源*/
+    config_HVEn_signal(value, n);     /*高压电源*/
     config_xrayOn_signal(value);    /*准备信号*/
 
 
@@ -78,11 +78,11 @@ void debug_task()
         if (HAL_GetTick() - last_exp_tick >= 10)
         {
 
-            xray_HV_enable_debug(1);
+            xray_HV_enable_debug(1,xray_active);
             config_data.expo_count_total[xray_active]++;
             if (debug_data.timmer_count >= debug_data.expoTime_expect[xray_active])
             {
-                xray_HV_enable_debug(0);
+                xray_HV_enable_debug(0,xray_active);
                 xray_data.isCheckAvailable = 0;
                 last_exp_tick = HAL_GetTick(); // 记录曝光结束时间
                 set_hv_state(HVPS_SM_ID_TRAIN_COOLING, xray_active);
@@ -264,10 +264,10 @@ void debug_task()
         else if (ctrl_data.xrayMode == XRAY_MODE_S_CONTINUOUS)
         {
             // 单源连续模式，选择A源或B源曝光一次，结束
-						parm_table[xray_active].expo_count_total++;
-						exp_count[xray_active] += config_data.expo_count[xray_active];
-						parm_table[xray_active].expo_times_total += exp_count[xray_active] / 1200000;
-						exp_count[xray_active] = exp_count[xray_active] % 1200000;
+            parm_table[xray_active].expo_count_total++;
+            exp_count[xray_active] += config_data.expo_count[xray_active];
+            parm_table[xray_active].expo_times_total += exp_count[xray_active] / 1200000;
+            exp_count[xray_active] = exp_count[xray_active] % 1200000;
             config_data.expo_count[xray_active] = 0;
             debug_data.timmer_count = 0;
             set_hv_state(HVPS_SM_ID_TRAIN_END, xray_active);
@@ -300,7 +300,7 @@ void debug_task()
         break;
     case HVPS_SM_ID_TRAIN_END:
 
-        xray_HV_enable_debug(0);
+        xray_HV_enable_debug(0,xray_active);
         count++;
         xray_disable_ref_debug();
         config_filamentOn_signal(0, 0);
@@ -317,14 +317,14 @@ void debug_task()
                 config_enable_sw(0);
                 set_hv_state(HVPS_SM_ID_IDLE, 0);
                 set_hv_state(HVPS_SM_ID_IDLE, 1);
-								cali_data.para_save_flag = 1;
+                cali_data.para_save_flag = 1;
             }
         }
         else if (xray_active == 0)
         {
             set_hv_state(HVPS_SM_ID_IDLE, 0);
             set_hv_state(HVPS_SM_ID_IDLE, 1);
-						cali_data.para_save_flag = 1;
+            cali_data.para_save_flag = 1;
         }
 
         break;

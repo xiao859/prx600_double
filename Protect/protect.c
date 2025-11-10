@@ -110,6 +110,18 @@ float err_curr = 0;
 float err_tub = 0;
 void xray_fast_protect()
 {
+	  /*油箱直接报的故障*/
+    if (ctrl_data.hv_vol_fault || ctrl_data.hv_curr_fault)
+    {
+        xray_data.hv_hardware_count++;
+        if (xray_data.hv_hardware_count > FAST_PROTECT_TIME_RANGE)
+            mHVPS_Fault.FAULT_REG1.bit.HV_HARDW_FAULT = 1;
+    }
+    else
+    {
+        xray_data.hv_hardware_count = 0;
+    }
+
     if ((!Is_Exposing()) || (!xray_data.isCheckAvailable))//[0] || !xray_data.isCheckAvailable[1]
     {
         return;
@@ -122,20 +134,6 @@ void xray_fast_protect()
     if (config_data.expo_count[1] > para_range.expo_time_limit)
     {
         mHVPS_Fault.FAULT_REG3.bit.EXPO2_OVERTIME = 1;
-    }
-
-
-
-    /*油箱直接报的故障*/
-    if (ctrl_data.hv_vol_fault || ctrl_data.hv_curr_fault)
-    {
-        xray_data.hv_hardware_count++;
-        if (xray_data.hv_hardware_count > FAST_PROTECT_TIME_RANGE)
-            mHVPS_Fault.FAULT_REG1.bit.HV_HARDW_FAULT = 1;
-    }
-    else
-    {
-        xray_data.hv_hardware_count = 0;
     }
 
     /*管电压*/

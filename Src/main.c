@@ -172,7 +172,16 @@ int main(void)
                 rely_state = 1;
             }
         }
-
+				if (rely_state == 2)
+				{
+				config_HVEn_signal(1,1);
+				config_HVEn_signal(0,1);
+				}
+								if (rely_state == 3)
+				{
+								config_HVEn_signal(1,0);
+				config_HVEn_signal(0,0);
+				}
         if ((get_hv_state(0) == HVPS_SM_ID_UPDATE_RUN) && (get_hv_state(1) == HVPS_SM_ID_UPDATE_RUN))
         {
             upgrade_proc();

@@ -75,6 +75,8 @@ void Error_Handler(void);
 #define HV_C_FAULT_GPIO_Port GPIOF
 #define HV_EN_Pin GPIO_PIN_3
 #define HV_EN_GPIO_Port GPIOC
+#define HV_EN1_Pin GPIO_PIN_1
+#define HV_EN1_GPIO_Port GPIOB
 #define HV_SW_A_PIN GPIO_PIN_0
 #define HV_SW_A_GPIO_Port GPIOC
 #define HV_SW_B_PIN GPIO_PIN_1

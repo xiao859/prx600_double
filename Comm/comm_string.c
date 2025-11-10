@@ -649,7 +649,7 @@ int set_hv_on(volatile uint8_t *buff, char *p)
         HAL_GPIO_WritePin(GPIOA, GPIO_PIN_0, GPIO_PIN_SET);
         ctrl_data.hv_vol_fault  = get_tube_vol_fault_pin();
         ctrl_data.hv_curr_fault = get_tube_curr_fault_pin();
-        xray_HV_enable_debug(1);
+        xray_HV_enable_debug(1,0);
         HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_1, DAC_ALIGN_12B_R, 1241);
 
         debug_data.timmer_count = 1;
@@ -657,7 +657,7 @@ int set_hv_on(volatile uint8_t *buff, char *p)
     else
     {
         HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_1, DAC_ALIGN_12B_R, 0);
-        xray_HV_enable_debug(0);
+        xray_HV_enable_debug(0,1);
         debug_tx3("HV_off");
     }
 

@@ -22,7 +22,7 @@ extern volatile xray_debug_data debug_data;
 
 void config_filament_ref_slop_debug(uint8_t n);
 void debug_task(void);
-void xray_HV_enable_debug(uint16_t value);
+void xray_HV_enable_debug(uint16_t value,uint16_t n);
 
 #endif
 

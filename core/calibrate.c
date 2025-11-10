@@ -103,9 +103,9 @@ void calibrate_para_init()
 }
 
 /*使能高压信号*/
-void xray_HV_enable(uint16_t value)
+void xray_HV_enable(uint16_t value, uint16_t n)
 {
-    config_HVEn_signal(value);      /*高电平开*/
+    config_HVEn_signal(value, n);     /*高电平开*/
     config_xrayOn_signal(value);    /*低电平开*/
 
     return;
@@ -114,12 +114,12 @@ void xray_HV_enable(uint16_t value)
 /*更新校准结果到表中*/
 void filament_ref_update(uint8_t curr_idx, uint16_t n)
 {
-	if((cali_data.curr_index>=5)&&(n == 1))
-    parm_table[n].currRef_c[curr_idx]   = user_pid_2.config_ref[n]*0.96;//
-	else if((cali_data.curr_index>=5)&&(n == 0))
-		parm_table[n].currRef_c[curr_idx]   = user_pid_2.config_ref[n]*0.96;//;
-	else 
-		parm_table[n].currRef_c[curr_idx]   = user_pid_2.config_ref[n];
+    if ((cali_data.curr_index >= 5) && (n == 1))
+        parm_table[n].currRef_c[curr_idx]   = user_pid_2.config_ref[n] * 0.96; //
+    else if ((cali_data.curr_index >= 5) && (n == 0))
+        parm_table[n].currRef_c[curr_idx]   = user_pid_2.config_ref[n] * 0.96; //;
+    else
+        parm_table[n].currRef_c[curr_idx]   = user_pid_2.config_ref[n];
     return;
 }
 
@@ -186,12 +186,12 @@ void calibrate_task()
             // 曝光后 4ms 开始允许采样检查
             xray_data.isCheckAvailable = (cali_data.timmer_count > 80) ? 1 : 0;
 
-            xray_HV_enable(1);
+            xray_HV_enable(1, cali_source);
             user_pid_2.currValue[cali_source] = 0.00645f * ((float)(adc_buffer3[2]));
             config_data.expo_count_total[cali_source]++;
             if (cali_data.timmer_count >= cali_data.expoTime_expect)
             {
-                xray_HV_enable(0);
+                xray_HV_enable(0,cali_source);
                 xray_data.isCheckAvailable = 0;
                 last_expo_end_time[cali_source] = last_expo_count;            // 记录曝光结束时间戳
                 set_hv_state(HPVS_SM_ID_CAL_COOLING, cali_source);
