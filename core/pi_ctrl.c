@@ -130,7 +130,8 @@ void tube_current_piControl(uint8_t conflag, uint8_t n)
     }
     else 
     {
-        param_pid.config_ref = MAX(MIN(param_pid.config_ref, max_ref), max_ref - 2);
+			//if((param_pid.Error<0.2f)&&(param_pid.Error>-0.2f))
+					param_pid.config_ref = MAX(MIN(param_pid.config_ref, max_ref), max_ref - 2);
     }
 
     if (n == 0)
@@ -163,7 +164,7 @@ void tube_current_piControl_v2(uint8_t n)
 
     output = user_pid_2.Kp[n] * (user_pid_2.err[n] - user_pid_2.last_err[n]) + user_pid_2.Ki[n] * user_pid_2.err[n];
 
-		if((param_pid.pulse_count >= 5)&&(ctrl_data.xrayMode== XRAY_MODE_S_CONTINUOUS))
+		if((param_pid.pulse_count > 5)&&(ctrl_data.xrayMode== XRAY_MODE_S_CONTINUOUS))
 		return;
 	
     if (param_pid.pulse_count >= 10)

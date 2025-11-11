@@ -365,6 +365,11 @@
           <WinNumber>1</WinNumber>
           <ItemText>ki_arr</ItemText>
         </Ww>
+        <Ww>
+          <count>42</count>
+          <WinNumber>1</WinNumber>
+          <ItemText>rely_state</ItemText>
+        </Ww>
       </WatchWindow1>
       <MemoryWindow1>
         <Mm>

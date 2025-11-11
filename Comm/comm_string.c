@@ -338,7 +338,7 @@ int set_expo_mode(volatile uint8_t *buff, char *p)
     volatile uint8_t *p_p = buff + 13;
     int num = 0;
 
-    config_reset_signal(1);
+ //   config_reset_signal(1);
 
     char *token = strtok((char *)p_p, " ");
     while (token != NULL)
@@ -485,7 +485,8 @@ int set_ref_test(volatile uint8_t *buff, char *p)
 int set_reset(volatile uint8_t *buff, char *p)
 {
     config_reset_signal(1);
-
+    fault_value_clear();
+	  config_reset_signal(0);
     debug_tx3("fault reset\n");
 
     return 0;

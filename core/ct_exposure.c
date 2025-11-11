@@ -18,8 +18,8 @@ uint32_t exp_count[2] = {0};
 uint8_t B_pulse_KP = 30;
 uint8_t B_pulse_KI = 30;
 
-uint8_t kp_arr[5] = {100,80,70,60,40};
-uint8_t ki_arr[5] = {100,80,70,60,40};
+uint8_t kp_arr[5] = {100, 80, 70, 60, 40};
+uint8_t ki_arr[5] = {100, 80, 70, 60, 40};
 
 hvps_sm_state volatile hv_state[XRAY_NUMS];
 
@@ -283,7 +283,7 @@ bool load_from_flash(volatile xray_parament_table *parm_table)
         {
             B_pulse_KP = xray_tube_table[parm_table[0].xray_type].pluse_kp;
             B_pulse_KI = xray_tube_table[parm_table[0].xray_type].pluse_ki;
-            memcpy((void*)fila_ref_offset, xray_tube_table[parm_table[0].xray_type].fila_ref_offset, 24*4);
+            memcpy((void*)fila_ref_offset, xray_tube_table[parm_table[0].xray_type].fila_ref_offset, 24 * 4);
             if (parm_table[0].xray_type == 0)
             {
                 version.tube_ver_high = 0x11;
@@ -322,13 +322,13 @@ bool load_from_flash(volatile xray_parament_table *parm_table)
             {
                 B_pulse_KP = xray_tube_table[0].pluse_kp;
                 B_pulse_KI = xray_tube_table[0].pluse_ki;
-                memcpy((void*)fila_ref_offset, xray_tube_table[0].fila_ref_offset, 24*4);
+                memcpy((void*)fila_ref_offset, xray_tube_table[0].fila_ref_offset, 24 * 4);
             }
             else if (parm_table[0].xray_type == 1)
             {
                 B_pulse_KP = xray_tube_table[1].pluse_kp;
                 B_pulse_KI = xray_tube_table[1].pluse_ki;
-                memcpy((void*)fila_ref_offset, xray_tube_table[0].fila_ref_offset, 24*4);
+                memcpy((void*)fila_ref_offset, xray_tube_table[0].fila_ref_offset, 24 * 4);
             }
             parm_table[0].rising_time = 1;
             parm_table[1].rising_time = 1;
@@ -694,32 +694,34 @@ void ct_task()
         config_data.expo_count[ct_source]++;
 
         // 曝光控制：延时 PI 初始化
-        user_pid_2.currValue[ct_source] = 0.00645f * ((float)(adc_buffer3[2]));
-        user_pid.currValue = 0.00645f * ((float)(adc_buffer3[2]));
-
-        /*连续模式PI调节*/
-        if ((param_pid.pulse_count >= 5) && Is_ContinuousMode_CT() && (xray_data.timmer_count[ct_source] > TIMER6_5_MILSECOND_CYCLES))
+        if (xray_data.isCheckAvailable == 1)
         {
+            user_pid_2.currValue[ct_source] = 0.00645f * ((float)(adc_buffer3[2]));
+            user_pid.currValue = 0.00645f * ((float)(adc_buffer3[2]));
 
-            param_pid.ti_CycleCount++;
-
-            user_pid.Kp = 40;
-            user_pid.Ti = 0.3;
-
-            if (param_pid.ti_CycleCount == TIMER6_10_MILSECOND_CYCLES)
+            /*连续模式PI调节*/
+            if ((param_pid.pulse_count >= 5) && Is_ContinuousMode_CT() && (xray_data.timmer_count[ct_source] > TIMER6_5_MILSECOND_CYCLES))
             {
-                param_pid.ki_flag = 1;
-                param_pid.ti_CycleCount = 0;
-                //debug_tx3("pi:%d,%f\n", param_pid.config_ref, user_pid.currValue);
-            }
-            else
-            {
-                param_pid.ki_flag = 0;
-            }
 
-            tube_current_piControl(1, ct_source);
+                param_pid.ti_CycleCount++;
+
+                user_pid.Kp = 40;
+                user_pid.Ti = 0.3;
+
+                if (param_pid.ti_CycleCount == TIMER6_10_MILSECOND_CYCLES)
+                {
+                    param_pid.ki_flag = 1;
+                    param_pid.ti_CycleCount = 0;
+                    //debug_tx3("pi:%d,%f\n", param_pid.config_ref, user_pid.currValue);
+                }
+                else
+                {
+                    param_pid.ki_flag = 0;
+                }
+
+                tube_current_piControl(1, ct_source);
+            }
         }
-
         // ---- 曝光结束条件判断 ----
         if (!ctrl_data.enable[ct_source])
         {
@@ -760,8 +762,8 @@ void ct_task()
             {
                 user_pid_2.Kp[1] = B_pulse_KP;
                 user_pid_2.Ki[1] = B_pulse_KI;
-                user_pid_2.Kp[0] = 110;//kp_arr[param_pid.pulse_count];//
-                user_pid_2.Ki[0] = 50;//ki_arr[param_pid.pulse_count];//
+                user_pid_2.Kp[0] = 110;//kp_arr[param_pid.pulse_count-1];//
+                user_pid_2.Ki[0] = 50;//ki_arr[param_pid.pulse_count-1];//
                 oldref[ct_source] = user_pid_2.config_ref[ct_source];
                 tube_current_piControl_v2(ct_source);
                 param_pid.config_ref = user_pid_2.config_ref[ct_source];
@@ -920,14 +922,14 @@ void ct_task()
 
     // LED指示
     xray_on_led((get_hv_state(0) == HVPS_SM_ID_EXPOSURING) || (get_hv_state(1) == HVPS_SM_ID_EXPOSURING));
-		// ----------- 灯丝保护计数 -----------
-		for (uint8_t i = 0; i < XRAY_NUMS; i++)
-		{
-				if (get_filament_pin(i) && get_hv_state(i) != HVPS_SM_ID_EXPOSURING)
-						config_data.fila_protect_cnt[i]++;
-				else
-						config_data.fila_protect_cnt[i] = 0;
-		}
+    // ----------- 灯丝保护计数 -----------
+    for (uint8_t i = 0; i < XRAY_NUMS; i++)
+    {
+        if (get_filament_pin(i) && get_hv_state(i) != HVPS_SM_ID_EXPOSURING)
+            config_data.fila_protect_cnt[i]++;
+        else
+            config_data.fila_protect_cnt[i] = 0;
+    }
 }
 
 
