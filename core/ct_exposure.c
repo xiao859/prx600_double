@@ -17,10 +17,6 @@ uint32_t exp_count[2] = {0};
 
 uint8_t B_pulse_KP = 30;
 uint8_t B_pulse_KI = 30;
-
-uint8_t kp_arr[5] = {100,80,70,60,40};
-uint8_t ki_arr[5] = {100,80,70,60,40};
-
 hvps_sm_state volatile hv_state[XRAY_NUMS];
 
 Exposure_Parameters exp_para[XRAY_NUMS] = {0};
@@ -95,8 +91,8 @@ xray_type xray_tube_table[XRAY_TUBE_TYPES] =
 
     // ---------- KL29球管 ----------
     {
-        .pluse_kp = 40,
-        .pluse_ki = 40,
+        .pluse_kp = 30,
+        .pluse_ki = 30,
         .currRef1 = {1720, 1735, 1770, 1810, 1880, 1920, 1950, 1980, 2000, 2050, 2070, 2100},
         .currRef2 = {1031, 1051, 1111, 1171, 1221, 1241, 1261, 1281, 1301, 1331, 1351, 1386},
         .fila_ref_offset =
@@ -761,8 +757,8 @@ void ct_task()
             {
                 user_pid_2.Kp[1] = B_pulse_KP;
                 user_pid_2.Ki[1] = B_pulse_KI;
-                user_pid_2.Kp[0] = 110;//kp_arr[param_pid.pulse_count];//
-                user_pid_2.Ki[0] = 50;//ki_arr[param_pid.pulse_count];//
+                user_pid_2.Kp[0] = 80;//kp_arr[param_pid.pulse_count];//
+                user_pid_2.Ki[0] = 35;//ki_arr[param_pid.pulse_count];//
                 oldref[ct_source] = user_pid_2.config_ref[ct_source];
                 tube_current_piControl_v2(ct_source);
                 param_pid.config_ref = user_pid_2.config_ref[ct_source];
