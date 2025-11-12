@@ -157,9 +157,9 @@
         <Bp>
           <Number>0</Number>
           <Type>0</Type>
-          <LineNumber>169</LineNumber>
+          <LineNumber>177</LineNumber>
           <EnabledFlag>1</EnabledFlag>
-          <Address>134259114</Address>
+          <Address>134271490</Address>
           <ByteObject>0</ByteObject>
           <HtxType>0</HtxType>
           <ManyObjects>0</ManyObjects>
@@ -168,39 +168,23 @@
           <BreakIfRCount>1</BreakIfRCount>
           <Filename>../Src/main.c</Filename>
           <ExecCommand></ExecCommand>
-          <Expression>\\PRX600_double\../Src/main.c\169</Expression>
+          <Expression>\\PRX600_double\../Src/main.c\177</Expression>
         </Bp>
         <Bp>
           <Number>1</Number>
           <Type>0</Type>
-          <LineNumber>1010</LineNumber>
+          <LineNumber>175</LineNumber>
           <EnabledFlag>1</EnabledFlag>
-          <Address>0</Address>
+          <Address>134271486</Address>
           <ByteObject>0</ByteObject>
           <HtxType>0</HtxType>
           <ManyObjects>0</ManyObjects>
           <SizeOfObject>0</SizeOfObject>
           <BreakByAccess>0</BreakByAccess>
-          <BreakIfRCount>0</BreakIfRCount>
-          <Filename>..\Comm\app_fun.c</Filename>
-          <ExecCommand></ExecCommand>
-          <Expression></Expression>
-        </Bp>
-        <Bp>
-          <Number>2</Number>
-          <Type>0</Type>
-          <LineNumber>166</LineNumber>
-          <EnabledFlag>1</EnabledFlag>
-          <Address>0</Address>
-          <ByteObject>0</ByteObject>
-          <HtxType>0</HtxType>
-          <ManyObjects>0</ManyObjects>
-          <SizeOfObject>0</SizeOfObject>
-          <BreakByAccess>0</BreakByAccess>
-          <BreakIfRCount>0</BreakIfRCount>
+          <BreakIfRCount>1</BreakIfRCount>
           <Filename>../Src/main.c</Filename>
           <ExecCommand></ExecCommand>
-          <Expression></Expression>
+          <Expression>\\PRX600_double\../Src/main.c\175</Expression>
         </Bp>
       </Breakpoint>
       <WatchWindow1>
@@ -373,6 +357,11 @@
           <count>33</count>
           <WinNumber>1</WinNumber>
           <ItemText>arr1</ItemText>
+        </Ww>
+        <Ww>
+          <count>34</count>
+          <WinNumber>1</WinNumber>
+          <ItemText>rely_state</ItemText>
         </Ww>
       </WatchWindow1>
       <MemoryWindow1>

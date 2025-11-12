@@ -172,6 +172,11 @@ int main(void)
                 rely_state = 1;
             }
         }
+				if(rely_state == 2)
+				{
+				config_HVEn_signal(1);
+					config_HVEn_signal(0);
+				}
 
         if ((get_hv_state(0) == HVPS_SM_ID_UPDATE_RUN) && (get_hv_state(1) == HVPS_SM_ID_UPDATE_RUN))
         {
@@ -253,7 +258,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
     {
         ctrl_data.hv_vol_fault  = get_tube_vol_fault_pin();
         ctrl_data.hv_curr_fault = get_tube_curr_fault_pin();
-        ctrl_data.interlock     = get_interLock_pin();
+  //      ctrl_data.interlock     = get_interLock_pin();
         transform_adc_values();
 
         if (Is_CTMode())
