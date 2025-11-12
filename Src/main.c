@@ -182,6 +182,18 @@ int main(void)
 								config_HVEn_signal(1,0);
 				config_HVEn_signal(0,0);
 				}
+												if (rely_state == 4)
+				{
+								config_HVEn_signal(1,0);
+				config_HVEn_signal(1,1);
+				}
+				
+																if (rely_state == 5)
+				{
+								config_HVEn_signal(0,0);
+				config_HVEn_signal(0,1);
+				}
+				
         if ((get_hv_state(0) == HVPS_SM_ID_UPDATE_RUN) && (get_hv_state(1) == HVPS_SM_ID_UPDATE_RUN))
         {
             upgrade_proc();
@@ -191,7 +203,7 @@ int main(void)
         cmd_parser();
         cmd_parser_string();
 
-        Protect_Check_Slow();      //慢速故障检查
+      //  Protect_Check_Slow();      //慢速故障检查
 
         if (cali_data.para_save_flag == 1)
         {
@@ -288,8 +300,8 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
         }
 
         //故障快速检测
-        xray_fast_protect();
-        xray_system_fault_check();
+     //   xray_fast_protect();
+     //   xray_system_fault_check();
     }
 
     /* USER CODE END Callback 1 */
