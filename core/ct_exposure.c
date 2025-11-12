@@ -685,7 +685,7 @@ void ct_task()
         config_hvref_slope(ct_source);
         config_mcuLock_signal(1);
         config_HVEn_signal(1,0);
-		    config_HVEn_signal(1,1);
+//		    config_HVEn_signal(1,1);
         config_xrayOn_signal(1);
 
         // 曝光计数

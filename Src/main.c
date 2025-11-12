@@ -203,7 +203,7 @@ int main(void)
         cmd_parser();
         cmd_parser_string();
 
-      //  Protect_Check_Slow();      //慢速故障检查
+        Protect_Check_Slow();      //慢速故障检查
 
         if (cali_data.para_save_flag == 1)
         {
@@ -300,8 +300,8 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
         }
 
         //故障快速检测
-     //   xray_fast_protect();
-     //   xray_system_fault_check();
+        xray_fast_protect();
+        xray_system_fault_check();
     }
 
     /* USER CODE END Callback 1 */
