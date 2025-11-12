@@ -77,7 +77,7 @@ typedef union
         uint16_t OIL_TEMP1: 1;
         uint16_t HEATSINK_TEMP: 1;
         uint16_t PWR_24V_OV: 1;
-        uint16_t PWR_24V_UV: 1;
+        uint16_t INTERLOCK2: 1;
         uint16_t OIL_TEMP2: 1;
         uint16_t CONFLICT: 1;
         uint16_t LAMP1_UV: 1;

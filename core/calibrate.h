@@ -11,7 +11,7 @@
 //曝光时间 单位ms
 #define     CALI_PULSE_CURR_EXPO_TIME       15
 
-#define     CALI_PULSE_SIGLE_CURR_PERIOD    35
+#define     CALI_PULSE_SIGLE_CURR_PERIOD    65
 
 
 typedef struct {

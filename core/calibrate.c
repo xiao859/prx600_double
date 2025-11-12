@@ -21,8 +21,8 @@ extern TIM_HandleTypeDef htim5;
 
 
 /*校准参数
- *单电流校准脉冲40个  校准时间3.2s
- *脉冲：35ms校准周期，15ms曝光
+ *单电流校准脉冲40个  校准时间5.2s
+ *脉冲：65ms校准周期，15ms曝光
  * */
 void calibrate_mode_config()
 {
@@ -115,9 +115,9 @@ void xray_HV_enable(uint16_t value)
 void filament_ref_update(uint8_t curr_idx, uint16_t n)
 {
 	if((cali_data.curr_index>=5)&&(n == 1))
-    parm_table[n].currRef_c[curr_idx]   = user_pid_2.config_ref[n]*0.96;//
+    parm_table[n].currRef_c[curr_idx]   = user_pid_2.config_ref[n]*0.98;//
 	else if((cali_data.curr_index>=5)&&(n == 0))
-		parm_table[n].currRef_c[curr_idx]   = user_pid_2.config_ref[n]*0.96;//;
+		parm_table[n].currRef_c[curr_idx]   = user_pid_2.config_ref[n]*0.98;//;
 	else 
 		parm_table[n].currRef_c[curr_idx]   = user_pid_2.config_ref[n];
     return;
