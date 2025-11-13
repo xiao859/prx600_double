@@ -158,7 +158,7 @@ int main(void)
 
     HAL_GPIO_WritePin(GPIOD, GPIO_PIN_13, GPIO_PIN_SET);
 
-    //cali_data.para_save_flag =1;
+//    cali_data.para_save_flag =1;
     while (1)
     {
         /* USER CODE END WHILE */
@@ -258,7 +258,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
     {
         ctrl_data.hv_vol_fault  = get_tube_vol_fault_pin();
         ctrl_data.hv_curr_fault = get_tube_curr_fault_pin();
-  //      ctrl_data.interlock     = get_interLock_pin();
+        ctrl_data.interlock     = get_interLock_pin();
         transform_adc_values();
 
         if (Is_CTMode())
