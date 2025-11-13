@@ -263,42 +263,42 @@ void xray_fast_protect()
         xray_data.tube_mA_overCount = 0;
     }
 
-    /*欠流 区分AB源*/
-    if (tube_curr < para_range.tube_curr_min_protected)
-    {
-        xray_data.tube_mA_underCount++;
-        if (xray_data.tube_mA_underCount > FAST_PROTECT_TIME_RANGE)
-        {
-            if (ctrl_data.xray_current == 1)
-            {
-                err_curr = tube_curr;
-                mHVPS_Fault.FAULT_REG2.bit.MA1_UNDER = 1;
-            }
-            else
-                mHVPS_Fault.FAULT_REG3.bit.MA2_UNDER = 1;
-        }
-    }
-    else
-    {
-        xray_data.tube_mA_underCount = 0;
-    }
+//    /*欠流 区分AB源*/
+//    if (tube_curr < para_range.tube_curr_min_protected)
+//    {
+//        xray_data.tube_mA_underCount++;
+//        if (xray_data.tube_mA_underCount > FAST_PROTECT_TIME_RANGE)
+//        {
+//            if (ctrl_data.xray_current == 1)
+//            {
+//                err_curr = tube_curr;
+//                mHVPS_Fault.FAULT_REG2.bit.MA1_UNDER = 1;
+//            }
+//            else
+//                mHVPS_Fault.FAULT_REG3.bit.MA2_UNDER = 1;
+//        }
+//    }
+//    else
+//    {
+//        xray_data.tube_mA_underCount = 0;
+//    }
 
-    /*电流采样断线*/
-    if (tube_curr < 1)
-    {
-        xray_data.tube_curr_broken_count++;
-        if (xray_data.tube_curr_broken_count > FAST_PROTECT_TIME_RANGE)
-        {
-            if (ctrl_data.xray_current == 1)
-                mHVPS_Fault.FAULT_REG4.bit.current_broken1 = 1;
-            else
-                mHVPS_Fault.FAULT_REG4.bit.current_broken2 = 1  ;
-        }
-    }
-    else
-    {
-        xray_data.tube_curr_broken_count = 0;
-    }
+//    /*电流采样断线*/
+//    if (tube_curr < 1)
+//    {
+//        xray_data.tube_curr_broken_count++;
+//        if (xray_data.tube_curr_broken_count > FAST_PROTECT_TIME_RANGE)
+//        {
+//            if (ctrl_data.xray_current == 1)
+//                mHVPS_Fault.FAULT_REG4.bit.current_broken1 = 1;
+//            else
+//                mHVPS_Fault.FAULT_REG4.bit.current_broken2 = 1  ;
+//        }
+//    }
+//    else
+//    {
+//        xray_data.tube_curr_broken_count = 0;
+//    }
 
     float fila_vol = sampled_data.filament_vol_value;
     /*灯丝2过流*/
