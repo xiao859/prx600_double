@@ -864,7 +864,7 @@ void ct_task()
                     }
                 }
             }
-            if (is_dual_source)
+            if (ctrl_data.xrayMode == XRAY_MODE_D_PULSE)
             {
                 parm_table[0].expo_count_total++;
                 parm_table[1].expo_count_total++;
