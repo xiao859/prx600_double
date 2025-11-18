@@ -864,7 +864,7 @@ void ct_task()
                     }
                 }
             }
-            if (is_dual_source)
+            if (ctrl_data.xrayMode == XRAY_MODE_D_PULSE)
             {
                 parm_table[0].expo_count_total++;
                 parm_table[1].expo_count_total++;
@@ -876,7 +876,6 @@ void ct_task()
                 exp_count[0] = exp_count[1] % 1200000;
                 parm_table[1].expo_times_total += exp_count[1] / 1200000;
                 exp_count[1] = exp_count[1] % 1200000;
-
             }
             else
             {

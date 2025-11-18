@@ -72,7 +72,7 @@ void SystemClock_Config(void);
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
 /* USER CODE END 0 */
-
+uint32_t arr1[5]={1,1200,0,0,0};
 /**
   * @brief  The application entry point.
   * @retval int
@@ -147,6 +147,9 @@ int main(void)
 
     xray_data.isCheckAvailable = 0;
     xray_on_led(0);
+		
+			HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_2, DAC_ALIGN_12B_R, 0); 
+			__HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_4, 0);
 
     if (ctrl_data.hv_vol_fault || ctrl_data.hv_curr_fault)
     {
@@ -169,7 +172,7 @@ int main(void)
             if ((get_tick_ms() - rely_time) > 2000)
             {
                 HAL_GPIO_WritePin(HV_RE_GPIO_Port, HV_RE_PIN, Calc_Gpio_State_P(1));
-                rely_state = 1;
+                rely_state = 6;
             }
         }
 				if (rely_state == 2)
@@ -182,16 +185,37 @@ int main(void)
 								config_HVEn_signal(1,0);
 				config_HVEn_signal(0,0);
 				}
-												if (rely_state == 4)
+						if (rely_state == 4)
 				{
 								config_HVEn_signal(1,0);
 				config_HVEn_signal(1,1);
 				}
 				
-																if (rely_state == 5)
+					if (rely_state == 5)
 				{
-								config_HVEn_signal(0,0);
-				config_HVEn_signal(0,1);
+					config_HVEn_signal(0,0);
+					config_HVEn_signal(0,1);
+				}
+				
+			if (rely_state == 6)
+				{
+					 config_filamentOn_signal(arr1[0], 0);
+					rely_state = 7;
+					
+				}
+											if (rely_state == 7)
+				{
+				HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_2, DAC_ALIGN_12B_R, arr1[1]); 
+				}
+				
+											if (rely_state == 8)
+				{ 
+					config_filamentOn_signal(arr1[2], 1);
+				}
+							if (rely_state == 9)
+				{ 
+					__HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_4, arr1[3]);
+	
 				}
 				
         if ((get_hv_state(0) == HVPS_SM_ID_UPDATE_RUN) && (get_hv_state(1) == HVPS_SM_ID_UPDATE_RUN))
@@ -203,7 +227,7 @@ int main(void)
         cmd_parser();
         cmd_parser_string();
 
-        Protect_Check_Slow();      //慢速故障检查
+//        Protect_Check_Slow();      //慢速故障检查
 
         if (cali_data.para_save_flag == 1)
         {
@@ -300,8 +324,8 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
         }
 
         //故障快速检测
-        xray_fast_protect();
-        xray_system_fault_check();
+//        xray_fast_protect();
+//        xray_system_fault_check();
     }
 
     /* USER CODE END Callback 1 */
