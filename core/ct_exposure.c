@@ -760,7 +760,7 @@ void ct_task()
             {
                 user_pid_2.Kp[1] = B_pulse_KP;
                 user_pid_2.Ki[1] = B_pulse_KI;
-                user_pid_2.Kp[0] = 80;//
+                user_pid_2.Kp[0] = 60;//80
                 user_pid_2.Ki[0] = 35;//50;//
                 oldref[ct_source] = user_pid_2.config_ref[ct_source];
                 tube_current_piControl_v2(ct_source);
