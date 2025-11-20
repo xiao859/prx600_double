@@ -36,27 +36,27 @@ void Protect_Check_Slow()
         xray_data.interLock_count = 0;
     }
 
-    if (sampled_data.power_24v_value > para_range.power_24v_max_protected)
-    {
-        xray_data.pwr_24_overCount++;
-        if (xray_data.pwr_24_overCount > 20 * OVER_RANGE_TIME_LIMIT)
-            mHVPS_Fault.FAULT_REG2.bit.V24_OV = 1;
-    }
-    else
-    {
-        xray_data.pwr_24_overCount = 0;
-    }
+//    if (sampled_data.power_24v_value > para_range.power_24v_max_protected)
+//    {
+//        xray_data.pwr_24_overCount++;
+//        if (xray_data.pwr_24_overCount > 20 * OVER_RANGE_TIME_LIMIT)
+//            mHVPS_Fault.FAULT_REG2.bit.V24_OV = 1;
+//    }
+//    else
+//    {
+//        xray_data.pwr_24_overCount = 0;
+//    }
 
-    if (sampled_data.power_24v_value < para_range.power_24v_min_protected)
-    {
-        xray_data.pwr_24_underCount++;
-        if (xray_data.pwr_24_underCount > 20 * OVER_RANGE_TIME_LIMIT)
-            mHVPS_Fault.FAULT_REG2.bit.V24_UV = 1;
-    }
-    else
-    {
-        xray_data.pwr_24_underCount = 0;
-    }
+//    if (sampled_data.power_24v_value < para_range.power_24v_min_protected)
+//    {
+//        xray_data.pwr_24_underCount++;
+//        if (xray_data.pwr_24_underCount > 20 * OVER_RANGE_TIME_LIMIT)
+//            mHVPS_Fault.FAULT_REG2.bit.V24_UV = 1;
+//    }
+//    else
+//    {
+//        xray_data.pwr_24_underCount = 0;
+//    }
 
     float temp_oil = get_temp(sampled_data.temp_oil_value);
     sampled_data.oil_temp = temp_oil;
@@ -317,19 +317,19 @@ void xray_fast_protect()
         xray_data.fila_vol_overCount = 0;
     }
     /*灯丝1过流*/
-//      fila_vol = sampled_data.filament_curr_value;
-//    if (fila_vol > para_range.filament_curr_max_protected)
-//    {
-//        xray_data.fila_curr_overCount++;
-//        if (xray_data.fila_curr_overCount > FAST_PROTECT_TIME_RANGE)
-//        {
-//                mHVPS_Fault.FAULT_REG2.bit.LAMP1_OC = 1;
-//        }
-//    }
-//    else
-//    {
-//        xray_data.fila_vol_underCount = 0;
-//    }
+      fila_vol = sampled_data.filament_curr_value;
+    if (fila_vol > para_range.filament_curr_max_protected)
+    {
+        xray_data.fila_curr_overCount++;
+        if (xray_data.fila_curr_overCount > FAST_PROTECT_TIME_RANGE)
+        {
+                mHVPS_Fault.FAULT_REG2.bit.LAMP1_OC = 1;
+        }
+    }
+    else
+    {
+        xray_data.fila_vol_underCount = 0;
+    }
 
     return;
 }

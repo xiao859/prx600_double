@@ -158,175 +158,65 @@
         <Ww>
           <count>0</count>
           <WinNumber>1</WinNumber>
-          <ItemText>config_data</ItemText>
+          <ItemText>func_idx</ItemText>
         </Ww>
         <Ww>
           <count>1</count>
           <WinNumber>1</WinNumber>
-          <ItemText>func_idx</ItemText>
+          <ItemText>sum_3</ItemText>
         </Ww>
         <Ww>
           <count>2</count>
           <WinNumber>1</WinNumber>
-          <ItemText>hv_state</ItemText>
+          <ItemText>debug_source_state</ItemText>
         </Ww>
         <Ww>
           <count>3</count>
           <WinNumber>1</WinNumber>
-          <ItemText>ctrl_data</ItemText>
+          <ItemText>huart</ItemText>
         </Ww>
         <Ww>
           <count>4</count>
           <WinNumber>1</WinNumber>
-          <ItemText>xray_data</ItemText>
+          <ItemText>temp1</ItemText>
         </Ww>
         <Ww>
           <count>5</count>
           <WinNumber>1</WinNumber>
-          <ItemText>parm_table,0x0A</ItemText>
+          <ItemText>debug_source_state</ItemText>
         </Ww>
         <Ww>
           <count>6</count>
           <WinNumber>1</WinNumber>
-          <ItemText>sampled_data</ItemText>
+          <ItemText>temp_oil</ItemText>
         </Ww>
         <Ww>
           <count>7</count>
           <WinNumber>1</WinNumber>
-          <ItemText>sum_3</ItemText>
+          <ItemText>filament_ref</ItemText>
         </Ww>
         <Ww>
           <count>8</count>
           <WinNumber>1</WinNumber>
-          <ItemText>uart5_frame_fifo</ItemText>
+          <ItemText>pwm</ItemText>
         </Ww>
         <Ww>
           <count>9</count>
           <WinNumber>1</WinNumber>
-          <ItemText>cali_data</ItemText>
+          <ItemText>tick</ItemText>
         </Ww>
         <Ww>
           <count>10</count>
           <WinNumber>1</WinNumber>
-          <ItemText>debug_data</ItemText>
+          <ItemText>kp_arr</ItemText>
         </Ww>
         <Ww>
           <count>11</count>
           <WinNumber>1</WinNumber>
-          <ItemText>debug_source_state</ItemText>
-        </Ww>
-        <Ww>
-          <count>12</count>
-          <WinNumber>1</WinNumber>
-          <ItemText>uart4</ItemText>
-        </Ww>
-        <Ww>
-          <count>13</count>
-          <WinNumber>1</WinNumber>
-          <ItemText>huart</ItemText>
-        </Ww>
-        <Ww>
-          <count>14</count>
-          <WinNumber>1</WinNumber>
-          <ItemText>temp1</ItemText>
-        </Ww>
-        <Ww>
-          <count>15</count>
-          <WinNumber>1</WinNumber>
-          <ItemText>uart5</ItemText>
-        </Ww>
-        <Ww>
-          <count>16</count>
-          <WinNumber>1</WinNumber>
-          <ItemText>adc_buffer2,0x0A</ItemText>
-        </Ww>
-        <Ww>
-          <count>17</count>
-          <WinNumber>1</WinNumber>
-          <ItemText>adc_buffer3,0x0A</ItemText>
-        </Ww>
-        <Ww>
-          <count>18</count>
-          <WinNumber>1</WinNumber>
-          <ItemText>err_tub</ItemText>
-        </Ww>
-        <Ww>
-          <count>19</count>
-          <WinNumber>1</WinNumber>
-          <ItemText>err_curr</ItemText>
-        </Ww>
-        <Ww>
-          <count>20</count>
-          <WinNumber>1</WinNumber>
-          <ItemText>LC_CMD_NUM</ItemText>
-        </Ww>
-        <Ww>
-          <count>21</count>
-          <WinNumber>1</WinNumber>
-          <ItemText>debug_source_state</ItemText>
-        </Ww>
-        <Ww>
-          <count>22</count>
-          <WinNumber>1</WinNumber>
-          <ItemText>temp_oil</ItemText>
-        </Ww>
-        <Ww>
-          <count>23</count>
-          <WinNumber>1</WinNumber>
-          <ItemText>IDLE_FILAMENT_REF_DEBUG</ItemText>
-        </Ww>
-        <Ww>
-          <count>24</count>
-          <WinNumber>1</WinNumber>
-          <ItemText>filament_ref</ItemText>
-        </Ww>
-        <Ww>
-          <count>25</count>
-          <WinNumber>1</WinNumber>
-          <ItemText>pwm</ItemText>
-        </Ww>
-        <Ww>
-          <count>26</count>
-          <WinNumber>1</WinNumber>
-          <ItemText>mHVPS_Fault</ItemText>
-        </Ww>
-        <Ww>
-          <count>27</count>
-          <WinNumber>1</WinNumber>
-          <ItemText>parm_table</ItemText>
-        </Ww>
-        <Ww>
-          <count>28</count>
-          <WinNumber>1</WinNumber>
-          <ItemText>param_pid</ItemText>
-        </Ww>
-        <Ww>
-          <count>29</count>
-          <WinNumber>1</WinNumber>
-          <ItemText>user_pid_2</ItemText>
-        </Ww>
-        <Ww>
-          <count>30</count>
-          <WinNumber>1</WinNumber>
-          <ItemText>tick</ItemText>
-        </Ww>
-        <Ww>
-          <count>31</count>
-          <WinNumber>1</WinNumber>
-          <ItemText>kp_arr</ItemText>
-        </Ww>
-        <Ww>
-          <count>32</count>
-          <WinNumber>1</WinNumber>
-          <ItemText>arr</ItemText>
-        </Ww>
-        <Ww>
-          <count>33</count>
-          <WinNumber>1</WinNumber>
           <ItemText>arr1</ItemText>
         </Ww>
         <Ww>
-          <count>34</count>
+          <count>12</count>
           <WinNumber>1</WinNumber>
           <ItemText>rely_state</ItemText>
         </Ww>

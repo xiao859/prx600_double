@@ -666,6 +666,7 @@ void ct_task()
             // if (HAL_GetTick() - last_expo_end_tick[other] < 10)
             //    break;  // 距离对方曝光过短，等待
             set_hv_state(HVPS_SM_ID_EXPOSURING, ct_source);
+						config_data.fila_protect_cnt[ct_source] = 0;
             xray_data.timmer_count[ct_source] = 1;
         }
 
