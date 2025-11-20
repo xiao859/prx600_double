@@ -172,7 +172,7 @@ int main(void)
             if ((get_tick_ms() - rely_time) > 2000)
             {
                 HAL_GPIO_WritePin(HV_RE_GPIO_Port, HV_RE_PIN, Calc_Gpio_State_P(1));
-                rely_state = 6;
+                rely_state = 1;
             }
         }
 				if (rely_state == 2)
@@ -227,7 +227,7 @@ int main(void)
         cmd_parser();
         cmd_parser_string();
 
-//        Protect_Check_Slow();      //慢速故障检查
+        Protect_Check_Slow();      //慢速故障检查
 
         if (cali_data.para_save_flag == 1)
         {
@@ -324,8 +324,8 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
         }
 
         //故障快速检测
-//        xray_fast_protect();
-//        xray_system_fault_check();
+        xray_fast_protect();
+        xray_system_fault_check();
     }
 
     /* USER CODE END Callback 1 */

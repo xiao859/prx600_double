@@ -562,7 +562,7 @@ void Lampcontrol(message_protocol *msg)
     case 0x0100:  // data2=0x01, data1=0x00
         if ((get_hv_state(0) == HVPS_SM_ID_IDLE) && (get_hv_state(1) == HVPS_SM_ID_IDLE))
         {
- //           config_filamentOn_signal(1, 0);
+						config_filamentOn_signal(1, 0);
             ctrl_data.filament_on[0] = 1;
             xray_data.timmer_count[0] = 1;
             config_data.fila_ref_step[0] = (float)IDLE_FILAMENT1_REF / (20 * 50); /* 20ms上升时间*/

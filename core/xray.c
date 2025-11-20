@@ -141,7 +141,7 @@ void heartBeat_led()
 {
 	static uint32_t count=0;
 	count++;
-	if(count>10000)
+	if(count>100000)
 	{
     HAL_GPIO_TogglePin(HEART_LED_GPIO_Port, HEART_LED_Pin);
 		count = 0;
