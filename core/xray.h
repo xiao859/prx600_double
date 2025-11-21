@@ -15,7 +15,7 @@ uint16_t get_expo_pin(uint16_t n);
 uint16_t get_enable_pin(uint16_t n);
 uint16_t get_interLock_pin(void);
 
-void config_HVEn_signal(uint16_t value);
+void config_HVEn_signal(uint16_t value,uint16_t n);
 void config_mcuLock_signal(uint16_t value);
 void config_reset_signal(uint16_t value);
 uint16_t get_tube_curr_fault_pin(void);

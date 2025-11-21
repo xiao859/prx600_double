@@ -174,10 +174,35 @@ int main(void)
         }
 				if(rely_state == 2)
 				{
-				config_HVEn_signal(1);
-					config_HVEn_signal(0);
+//				//config_HVEn_signal(1);								
+//					config_disable_sw_safe(1);
+//					config_enable_sw_safe(0);
+//					
+					config_mcuLock_signal(1);
+//					config_HVEn_signal(1,0);
+//					config_HVEn_signal(1,1);
+//					config_HVEn_signal(0,0);
+//					config_HVEn_signal(0,1);
+					
+					config_disable_sw_safe(0);
+					config_enable_sw_safe(1);
+					
+										config_HVEn_signal(1,0);
+					config_HVEn_signal(1,1);
+					config_HVEn_signal(0,0);
+					config_HVEn_signal(0,1);
+					
+					config_HVEn_signal(1,1);
+					config_HVEn_signal(0,0);
 				}
 
+				if(rely_state == 3)
+				{
+					config_disable_sw_safe(1);
+					config_enable_sw_safe(0);
+										config_disable_sw_safe(0);
+					config_enable_sw_safe(1);
+				}
         if ((get_hv_state(0) == HVPS_SM_ID_UPDATE_RUN) && (get_hv_state(1) == HVPS_SM_ID_UPDATE_RUN))
         {
             upgrade_proc();
@@ -187,7 +212,7 @@ int main(void)
         cmd_parser();
         cmd_parser_string();
 
-        Protect_Check_Slow();      //慢速故障检查
+ //       Protect_Check_Slow();      //慢速故障检查
 
         if (cali_data.para_save_flag == 1)
         {
@@ -258,7 +283,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
     {
         ctrl_data.hv_vol_fault  = get_tube_vol_fault_pin();
         ctrl_data.hv_curr_fault = get_tube_curr_fault_pin();
-        ctrl_data.interlock     = get_interLock_pin();
+ //       ctrl_data.interlock     = get_interLock_pin();
         transform_adc_values();
 
         if (Is_CTMode())
@@ -284,8 +309,8 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
         }
 
         //故障快速检测
-        xray_fast_protect();
-        xray_system_fault_check();
+//        xray_fast_protect();
+//        xray_system_fault_check();
     }
 
     /* USER CODE END Callback 1 */

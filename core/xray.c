@@ -55,10 +55,13 @@ uint16_t get_expo_pin(uint16_t n)
 }
 
 /*输出给高压电源----------------------------------------------------------------------------------------*/
-void config_HVEn_signal(uint16_t value)
+void config_HVEn_signal(uint16_t value,uint16_t n)
 {
     //高电平有效
+	if(n == 0)
     HAL_GPIO_WritePin(HV_EN_GPIO_Port, HV_EN_Pin, Calc_Gpio_State_P(value));
+	else
+		HAL_GPIO_WritePin(HV_EN1_GPIO_Port, HV_EN1_Pin, Calc_Gpio_State_P(value));
     return;
 }
 

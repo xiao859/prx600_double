@@ -105,7 +105,7 @@ void calibrate_para_init()
 /*使能高压信号*/
 void xray_HV_enable(uint16_t value)
 {
-    config_HVEn_signal(value);      /*高电平开*/
+ //   config_HVEn_signal(value);      /*高电平开*/
     config_xrayOn_signal(value);    /*低电平开*/
 
     return;

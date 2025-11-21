@@ -23,7 +23,7 @@ volatile xray_debug_data debug_data;
 void xray_HV_enable_debug(uint16_t value)
 {
     config_mcuLock_signal(value);
-    config_HVEn_signal(value);      /*高压电源*/
+   // config_HVEn_signal(value);      /*高压电源*/
     config_xrayOn_signal(value);    /*准备信号*/
 
 

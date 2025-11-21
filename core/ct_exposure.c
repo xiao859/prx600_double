@@ -173,7 +173,8 @@ void xray_CT_disable()
     disable_filamentref(0);
     disable_filamentref(1);
     /*给射源*/
-    config_HVEn_signal(0);
+    config_HVEn_signal(0,0);
+	  config_HVEn_signal(0,1);
     config_mcuLock_signal(0);
 
     /*给灯丝*/
@@ -685,7 +686,7 @@ void ct_task()
         // 持续输出高压与准备信号
         config_hvref_slope(ct_source);
         config_mcuLock_signal(1);
-        config_HVEn_signal(1);
+        config_HVEn_signal(1,ct_source);
         config_xrayOn_signal(1);
 
         // 曝光计数
@@ -751,7 +752,7 @@ void ct_task()
             xray_data.isCheckAvailable = 0;
 
             config_mcuLock_signal(0);
-            config_HVEn_signal(0);
+            config_HVEn_signal(0,ct_source);
             // 曝光完成时间记录
             last_expo_end_tick[ct_source] = last_expo_count;
             config_xrayOn_signal(0);
