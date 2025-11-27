@@ -159,7 +159,7 @@
           <Type>0</Type>
           <LineNumber>134</LineNumber>
           <EnabledFlag>1</EnabledFlag>
-          <Address>134279836</Address>
+          <Address>134279820</Address>
           <ByteObject>0</ByteObject>
           <HtxType>0</HtxType>
           <ManyObjects>0</ManyObjects>
@@ -175,7 +175,7 @@
           <Type>0</Type>
           <LineNumber>297</LineNumber>
           <EnabledFlag>1</EnabledFlag>
-          <Address>134280778</Address>
+          <Address>134280762</Address>
           <ByteObject>0</ByteObject>
           <HtxType>0</HtxType>
           <ManyObjects>0</ManyObjects>
@@ -191,7 +191,7 @@
           <Type>0</Type>
           <LineNumber>280</LineNumber>
           <EnabledFlag>1</EnabledFlag>
-          <Address>134280652</Address>
+          <Address>134280636</Address>
           <ByteObject>0</ByteObject>
           <HtxType>0</HtxType>
           <ManyObjects>0</ManyObjects>
@@ -201,6 +201,22 @@
           <Filename>..\Protect\protect.c</Filename>
           <ExecCommand></ExecCommand>
           <Expression>\\PRX600_double\../Protect/protect.c\280</Expression>
+        </Bp>
+        <Bp>
+          <Number>3</Number>
+          <Type>0</Type>
+          <LineNumber>194</LineNumber>
+          <EnabledFlag>1</EnabledFlag>
+          <Address>0</Address>
+          <ByteObject>0</ByteObject>
+          <HtxType>0</HtxType>
+          <ManyObjects>0</ManyObjects>
+          <SizeOfObject>0</SizeOfObject>
+          <BreakByAccess>0</BreakByAccess>
+          <BreakIfRCount>0</BreakIfRCount>
+          <Filename>../Src/main.c</Filename>
+          <ExecCommand></ExecCommand>
+          <Expression></Expression>
         </Bp>
       </Breakpoint>
       <WatchWindow1>
@@ -418,6 +434,11 @@
           <count>42</count>
           <WinNumber>1</WinNumber>
           <ItemText>rely_state</ItemText>
+        </Ww>
+        <Ww>
+          <count>43</count>
+          <WinNumber>1</WinNumber>
+          <ItemText>cali_data</ItemText>
         </Ww>
       </WatchWindow1>
       <MemoryWindow1>

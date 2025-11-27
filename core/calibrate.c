@@ -184,7 +184,7 @@ void calibrate_task()
         {
 
             // 曝光后 4ms 开始允许采样检查
-            xray_data.isCheckAvailable = (cali_data.timmer_count > 80) ? 1 : 0;
+           // xray_data.isCheckAvailable = (cali_data.timmer_count > 80) ? 1 : 0;
 
             xray_HV_enable(1);
             user_pid_2.currValue[cali_source] = 0.00645f * ((float)(adc_buffer3[2]));
