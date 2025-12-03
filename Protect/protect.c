@@ -19,22 +19,22 @@ void Protect_Check_Slow()
         mHVPS_Fault.FAULT_REG4.bit.lamp_wait_overtime2 = 1;
     }
 
-    if ((ctrl_data.interlock == 0) && ((ctrl_data.expo[0] == 1) || (ctrl_data.expo[1] == 1)))
-    {
-        xray_data.interLock_count++;
-        if (xray_data.interLock_count > OVER_RANGE_TIME_LIMIT)
-        {
-            if (ctrl_data.xray_current == 1)
-                mHVPS_Fault.FAULT_REG1.bit.INTERLOCK1 = 1;
-            else
-                mHVPS_Fault.FAULT_REG4.bit.INTERLOCK2 = 1;
-        }
-        /* 计时，超限报警 */
-    }
-    else
-    {
-        xray_data.interLock_count = 0;
-    }
+//    if ((ctrl_data.interlock == 0) && ((ctrl_data.expo[0] == 1) || (ctrl_data.expo[1] == 1)))
+//    {
+//        xray_data.interLock_count++;
+//        if (xray_data.interLock_count > OVER_RANGE_TIME_LIMIT)
+//        {
+//            if (ctrl_data.xray_current == 1)
+//                mHVPS_Fault.FAULT_REG1.bit.INTERLOCK1 = 1;
+//            else
+//                mHVPS_Fault.FAULT_REG1.bit.INTERLOCK2 = 1;
+//        }
+//        /* 计时，超限报警 */
+//    }
+//    else
+//    {
+//        xray_data.interLock_count = 0;
+//    }
 
 //    if (sampled_data.power_24v_value > para_range.power_24v_max_protected)
 //    {
@@ -89,6 +89,23 @@ void Protect_Check_Slow()
 
 void xray_system_fault_check()
 {
+    if ((ctrl_data.interlock == 0) && ((ctrl_data.expo[0] == 1) || (ctrl_data.expo[1] == 1)))
+    {
+        xray_data.interLock_count++;
+        if (xray_data.interLock_count > 200)
+        {
+            if (ctrl_data.xray_current == 1)
+                mHVPS_Fault.FAULT_REG1.bit.INTERLOCK1 = 1;
+            else
+                mHVPS_Fault.FAULT_REG1.bit.INTERLOCK2 = 1;
+        }
+        /* 计时，超限报警 */
+    }
+		else
+		{
+			xray_data.interLock_count = 0;
+		}
+
     if (!Is_System_Without_Fault())
     {
         set_hv_state(HVPS_SM_ID_FAULT, 0);
@@ -136,6 +153,18 @@ void xray_fast_protect()
     else
     {
         xray_data.hv_hardware_count = 0;
+    }
+		
+		/*油箱直接报的故障*/
+    if (ctrl_data.hv_vol_fault || ctrl_data.hv_curr_fault)
+    {
+        xray_data.curr_hardware_count++;
+        if (xray_data.curr_hardware_count > FAST_PROTECT_TIME_RANGE)
+            mHVPS_Fault.FAULT_REG1.bit.HV_HARDW_FAULT = 1;
+    }
+    else
+    {
+        xray_data.curr_hardware_count = 0;
     }
 
     /*管电压*/
@@ -345,10 +374,5 @@ void transform_adc_values()
     sampled_data.tube_vol_n_value       = 0.02579f * ((float)(adc_buffer3[1]));
     sampled_data.tube_curr_value        = 0.00645f * ((float)(adc_buffer3[2]));
     sampled_data.temp_oil_value         = ((float)(adc_buffer3[3]));
-//      if(param_pid.pulse_count >= 20)
-//      {
-//          sampled_data.tube_vol_p_value = 5;
-//          sampled_data.tube_vol_n_value = 5;
-//      }
 
 }

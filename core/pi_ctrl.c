@@ -46,7 +46,8 @@ void pid_Init(float target, uint32_t ref_init, uint8_t isPulseMode)
     param_pid.coeff     = 1;
     param_pid.config_ref = ref_init;
 
-    param_pid.pulse_count = 0;
+    param_pid.pulse_count[0] = 0;
+		param_pid.pulse_count[1] = 0;
     param_pid.ti_CycleCount = 0;
     param_pid.pi_flag = 0;
     param_pid.pulse_pi_flag = 0;
@@ -74,8 +75,8 @@ void pid_Init_2(float target, uint32_t ref_init, uint8_t isPulseMode, uint8_t n)
  */
 void tube_current_piControl(uint8_t conflag, uint8_t n)
 {
-	static uint32_t contrl=0;
-	contrl++;
+    static uint32_t contrl = 0;
+    contrl++;
     param_pid.Error = user_pid.currTarget - user_pid.currValue;
     /* 积分限幅 */
     param_pid.integral  += param_pid.Error;
@@ -114,24 +115,24 @@ void tube_current_piControl(uint8_t conflag, uint8_t n)
 
     param_pid.config_ref = (uint32_t)(param_pid.config_ref + pid_value);
 
-    if (param_pid.pulse_count == 5)
+    if (param_pid.pulse_count[n] == 5)
     {
-       param_pid.config_ref = param_pid.config_ref + fila_ref_offset[n][config_data.tube_curr_index[n]];
-        param_pid.pulse_count = 6;
+        param_pid.config_ref = param_pid.config_ref + fila_ref_offset[n][config_data.tube_curr_index[n]];
+        param_pid.pulse_count[n] = 6;
         param_pid.conu_start_ref = param_pid.config_ref;
     }
 
     uint32_t max_ref = param_pid.conu_start_ref + param_pid.threshold_offset;
 
-   		/* 限幅 */
+    /* 限幅 */
     if (Is_CalibrateMode())
     {
-					param_pid.config_ref = MAX(MIN(param_pid.config_ref, 2850), 1000);
+        param_pid.config_ref = MAX(MIN(param_pid.config_ref, 2850), 1000);
     }
-    else 
+    else
     {
-			//if((param_pid.Error<0.2f)&&(param_pid.Error>-0.2f))
-					param_pid.config_ref = MAX(MIN(param_pid.config_ref, max_ref), max_ref - 2);
+        //if((param_pid.Error<0.2f)&&(param_pid.Error>-0.2f))
+        param_pid.config_ref = MAX(MIN(param_pid.config_ref, max_ref), max_ref - 2);
     }
 
     if (n == 0)
@@ -164,13 +165,10 @@ void tube_current_piControl_v2(uint8_t n)
 
     output = user_pid_2.Kp[n] * (user_pid_2.err[n] - user_pid_2.last_err[n]) + user_pid_2.Ki[n] * user_pid_2.err[n];
 
-		if((param_pid.pulse_count > 5)&&(ctrl_data.xrayMode== XRAY_MODE_S_CONTINUOUS))
-		return;
-	
-    if (param_pid.pulse_count >= 10)
-    {
-        output = MAX(MIN(output, 1), -1);
-    }
+    if ((param_pid.pulse_count[n] > 5) && (ctrl_data.xrayMode == XRAY_MODE_S_CONTINUOUS))
+        return;
+		if (param_pid.pulse_count[n] > 10)
+					output = MAX(MIN(output, 1), -1);
 
     user_pid_2.last_err[n] = user_pid_2.err[n];
 
@@ -187,4 +185,231 @@ void tube_current_piControl_v2(uint8_t n)
         __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_4, user_pid_2.config_ref[n]);//1360
     }
 //      debug_tx3("pi_p:%d, %f, %d, %f\n", n, user_pid_2.currTarget[n], user_pid_2.config_ref[n],user_pid_2.err[n]);
+}
+
+
+void pi2_para_tune(uint8_t n)
+{
+    if (parm_table[0].xray_type == 3)
+    {
+			  if (config_data.tube_curr_index[n] >= 10)
+        {
+            switch (param_pid.pulse_count[n])
+            {
+            case 1:
+                user_pid_2.Kp[0] = 15;
+                user_pid_2.Ki[0] = 15;
+                user_pid_2.Kp[1] = 30;
+                user_pid_2.Ki[1] = 30;
+                break;
+            case 2:
+                user_pid_2.Kp[0] = 5;
+                user_pid_2.Ki[0] = 5;
+                user_pid_2.Kp[1] = 20;
+                user_pid_2.Ki[1] = 20;
+                break;
+            case 3:
+                user_pid_2.Kp[0] = 5;
+                user_pid_2.Ki[0] = 5;
+                user_pid_2.Kp[1] = 15;
+                user_pid_2.Ki[1] = 15;
+                break;
+            case 4:
+                user_pid_2.Kp[0] = 5;
+                user_pid_2.Ki[0] = 5;
+                user_pid_2.Kp[1] = 10;
+                user_pid_2.Ki[1] = 10;
+                break;
+            default:
+                user_pid_2.Kp[0] = 1;
+                user_pid_2.Ki[0] = 1;
+                user_pid_2.Kp[1] = 5;
+                user_pid_2.Ki[1] = 5;
+                break;
+
+            }
+        }
+        if (config_data.tube_curr_index[n] >= 8)
+        {
+            switch (param_pid.pulse_count[n])
+            {
+            case 1:
+                user_pid_2.Kp[0] = 20;
+                user_pid_2.Ki[0] = 20;
+                user_pid_2.Kp[1] = 30;
+                user_pid_2.Ki[1] = 30;
+                break;
+            case 2:
+                user_pid_2.Kp[0] = 15;
+                user_pid_2.Ki[0] = 15;
+                user_pid_2.Kp[1] = 20;
+                user_pid_2.Ki[1] = 20;
+                break;
+            case 3:
+                user_pid_2.Kp[0] = 10;
+                user_pid_2.Ki[0] = 10;
+                user_pid_2.Kp[1] = 15;
+                user_pid_2.Ki[1] = 15;
+                break;
+            case 4:
+                user_pid_2.Kp[0] = 10;
+                user_pid_2.Ki[0] = 10;
+                user_pid_2.Kp[1] = 10;
+                user_pid_2.Ki[1] = 10;
+                break;
+            default:
+                user_pid_2.Kp[0] = 5;
+                user_pid_2.Ki[0] = 5;
+                user_pid_2.Kp[1] = 5;
+                user_pid_2.Ki[1] = 5;
+                break;
+
+            }
+        }
+        else if (config_data.tube_curr_index[n] >= 6)
+        {
+            switch (param_pid.pulse_count[n])
+            {
+            case 1:
+                user_pid_2.Kp[0] = 25;
+                user_pid_2.Ki[0] = 25;
+                user_pid_2.Kp[1] = 40;
+                user_pid_2.Ki[1] = 40;
+                break;
+            case 2:
+                user_pid_2.Kp[0] = 20;
+                user_pid_2.Ki[0] = 20;
+                user_pid_2.Kp[1] = 20;
+                user_pid_2.Ki[1] = 20;
+                break;
+            case 3:
+                user_pid_2.Kp[0] = 10;
+                user_pid_2.Ki[0] = 10;
+                user_pid_2.Kp[1] = 10;
+                user_pid_2.Ki[1] = 10;
+                break;
+            case 4:
+                user_pid_2.Kp[0] = 5;
+                user_pid_2.Ki[0] = 5;
+                user_pid_2.Kp[1] = 10;
+                user_pid_2.Ki[1] = 10;
+                break;
+            default:
+                user_pid_2.Kp[0] = 5;
+                user_pid_2.Ki[0] = 5;
+                user_pid_2.Kp[1] = 5;
+                user_pid_2.Ki[1] = 5;
+                break;
+            }
+        }
+        else if (config_data.tube_curr_index[n] >= 4)
+        {
+            switch (param_pid.pulse_count[n])
+            {
+            case 1:
+                user_pid_2.Kp[0] = 30;
+                user_pid_2.Ki[0] = 30;
+                user_pid_2.Kp[1] = 60;
+                user_pid_2.Ki[1] = 60;
+                break;
+            case 2:
+                user_pid_2.Kp[0] = 20;
+                user_pid_2.Ki[0] = 20;
+                user_pid_2.Kp[1] = 20;
+                user_pid_2.Ki[1] = 20;
+                break;
+            case 3:
+                user_pid_2.Kp[0] = 15;
+                user_pid_2.Ki[0] = 15;
+                user_pid_2.Kp[1] = 15;
+                user_pid_2.Ki[1] = 15;
+                break;
+            case 4:
+                user_pid_2.Kp[0] = 10;
+                user_pid_2.Ki[0] = 10;
+                user_pid_2.Kp[1] = 10;
+                user_pid_2.Ki[1] = 10;
+                break;
+            default:
+                user_pid_2.Kp[0] = 5;
+                user_pid_2.Ki[0] = 5;
+                user_pid_2.Kp[1] = 5;
+                user_pid_2.Ki[1] = 5;
+                break;
+            }
+        }
+        else if (config_data.tube_curr_index[n] >= 2)
+        {
+            switch (param_pid.pulse_count[n])
+            {
+            case 1:
+                user_pid_2.Kp[0] = 50;
+                user_pid_2.Ki[0] = 50;
+                user_pid_2.Kp[1] = 30;
+                user_pid_2.Ki[1] = 30;
+                break;
+            case 2:
+                user_pid_2.Kp[0] = 30;
+                user_pid_2.Ki[0] = 30;
+                user_pid_2.Kp[1] = 20;
+                user_pid_2.Ki[1] = 20;
+                break;
+            case 3:
+                user_pid_2.Kp[0] = 10;
+                user_pid_2.Ki[0] = 10;
+                user_pid_2.Kp[1] = 15;
+                user_pid_2.Ki[1] = 15;
+                break;
+            case 4:
+                user_pid_2.Kp[0] = 10;
+                user_pid_2.Ki[0] = 10;
+                user_pid_2.Kp[1] = 10;
+                user_pid_2.Ki[1] = 10;
+                break;
+            default:
+                user_pid_2.Kp[0] = 5;
+                user_pid_2.Ki[0] = 5;
+                user_pid_2.Kp[1] = 5;
+                user_pid_2.Ki[1] = 5;
+                break;
+            }
+        }
+        else
+        {
+            switch (param_pid.pulse_count[n])
+            {
+            case 1:
+                user_pid_2.Kp[0] = 60;
+                user_pid_2.Ki[0] = 60;
+                user_pid_2.Kp[1] = 50;
+                user_pid_2.Ki[1] = 50;
+                break;
+            case 2:
+                user_pid_2.Kp[0] = 60;
+                user_pid_2.Ki[0] = 60;
+                user_pid_2.Kp[1] = 50;
+                user_pid_2.Ki[1] = 50;
+                break;
+            case 3:
+                user_pid_2.Kp[0] = 30;
+                user_pid_2.Ki[0] = 30;
+                user_pid_2.Kp[1] = 30;
+                user_pid_2.Ki[1] = 30;
+                break;
+            case 4:
+                user_pid_2.Kp[0] = 20;
+                user_pid_2.Ki[0] = 20;
+                user_pid_2.Kp[1] = 20;
+                user_pid_2.Ki[1] = 20;
+                break;
+            default:
+                user_pid_2.Kp[0] = 10;
+                user_pid_2.Ki[0] = 10;
+                user_pid_2.Kp[1] = 10;
+                user_pid_2.Ki[1] = 10;
+                break;
+            }
+        }
+    }
+    return;
 }

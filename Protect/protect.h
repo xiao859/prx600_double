@@ -149,7 +149,7 @@ typedef union
         uint16_t lamp_wait_overtime: 1;
         uint16_t VOL_CURR_OV: 1;
 			  uint16_t lamp_wait_overtime2: 1;//new add
-			  uint16_t INTERLOCK2: 1;
+			  uint16_t CURR_HARDW_FAULT: 1;
 				uint16_t spark1: 1;
 				uint16_t spark2: 1;
         uint16_t sw_err: 1;
@@ -163,7 +163,8 @@ typedef union
     {
         uint16_t TRAIN1: 1;
         uint16_t TRAIN2: 1;
-        uint16_t rsv: 14;
+			  uint16_t VOL_CURR_OV2: 1;
+        uint16_t rsv: 13;
     }  bit;
 } HVPS_FAULT_GROUP5_REG;
 

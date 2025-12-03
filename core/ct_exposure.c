@@ -59,15 +59,7 @@ xray_type xray_tube_table[XRAY_TUBE_TYPES] =
 {
     // ---------- KL181球管 ----------
     {
-        .pluse_kp = 40,
-        .pluse_ki = 40,
-        .currRef1 = {1720, 1735, 1770, 1810, 1880, 1920, 1950, 1980, 2000, 2020, 2040, 2060},
-        .currRef2 = {1031, 1051, 1111, 1171, 1221, 1241, 1261, 1281, 1301, 1311, 1331, 1356},
-        .fila_ref_offset =
-        {
-            {10, 12, 14, 15, 16, 18, 20, 21, 22, 23, 24, 25},  // 射源0 偏置
-            {5,  7,  8,  9, 10, 11, 12, 13, 14, 15, 16, 17},   // 射源1 偏置
-        }
+				0,
     },
 
     // ---------- KL3球管 ----------
@@ -124,7 +116,7 @@ volatile xray_parament_table parm_table[XRAY_NUMS] =
 };
 volatile xray_parament_range para_range =
 {
-    120, 50,            /*管电压保护值120 50*/
+    150, 50,            /*管电压保护值120 50*/
     145, 5, 750,        /*管电流保护值130 5 */
 
     70, -25, 60, 50,    /*油温*/
@@ -581,14 +573,12 @@ void ct_task()
     static uint16_t ct_source = 0;
     static uint16_t sw_count = 0;
     bool expo_end = false;
-    bool is_dual_source = false;
+//    bool is_dual_source = false;
     static uint32_t last_expo_count = 0;
     bool is_xrayB_mode = false;
 
     //------------ 检查是否为单独B源模式 ---------------//B源在最开始就需要切换采样开关
-    if ((ctrl_data.xray_current == 2) &&
-            (ctrl_data.filament_on[0] == 0) && (ctrl_data.filament_on[1] == 1) &&
-            (ctrl_data.interlock == 1))
+    if ((ctrl_data.xray_current == 2) &&(ctrl_data.filament_on[0] == 0) && (ctrl_data.filament_on[1] == 1))
         is_xrayB_mode = 1;
 
 
@@ -649,7 +639,8 @@ void ct_task()
         set_hv_state(HVPS_SM_ID_READY, ct_source);
         xray_data.timmer_count[ct_source] = 1;
         pid_Init(config_data.tube_curr[ct_source], config_data.fila_ref_realtime[ct_source], Is_PulseMode_CT());
-        param_pid.pulse_count = 0;
+        param_pid.pulse_count[0] = 0;
+				param_pid.pulse_count[1] = 0;
         pid_Init_2(config_data.tube_curr[0], config_data.fila_ref_realtime[0], Is_PulseMode_CT(), 0);
         pid_Init_2(config_data.tube_curr[1], config_data.fila_ref_realtime[1], Is_PulseMode_CT(), 1);
 //              }
@@ -698,7 +689,7 @@ void ct_task()
             user_pid.currValue = 0.00645f * ((float)(adc_buffer3[2]));
 
             /*连续模式PI调节*/
-            if ((param_pid.pulse_count >= 5) && Is_ContinuousMode_CT() && (xray_data.timmer_count[ct_source] > TIMER6_5_MILSECOND_CYCLES))
+            if ((param_pid.pulse_count[ct_source] >= 5) && Is_ContinuousMode_CT() && (xray_data.timmer_count[ct_source] > TIMER6_5_MILSECOND_CYCLES))
             {
 
                 param_pid.ti_CycleCount++;
@@ -735,13 +726,13 @@ void ct_task()
             {
                 // 双源脉冲模式：准备切换通道
                 set_hv_state(HVPS_SM_ID_EXPO_END, ct_source);
-                param_pid.pulse_count++;
+                param_pid.pulse_count[ct_source]++;
             }
             else
             {
                 // 单源脉冲：留在 READY 等待下次曝光
                 set_hv_state(HVPS_SM_ID_READY, ct_source);
-                param_pid.pulse_count++;
+                param_pid.pulse_count[ct_source]++;
             }
         }
 
@@ -758,10 +749,11 @@ void ct_task()
 
             if (ctrl_data.enable[ct_source] == 1)
             {
-                user_pid_2.Kp[1] = B_pulse_KP;
-                user_pid_2.Ki[1] = B_pulse_KI;
-                user_pid_2.Kp[0] = 60;//80
-                user_pid_2.Ki[0] = 35;//50;//
+//                user_pid_2.Kp[1] = B_pulse_KP;
+//                user_pid_2.Ki[1] = B_pulse_KI;
+//                user_pid_2.Kp[0] = 60;//80
+//                user_pid_2.Ki[0] = 35;//50;//
+								pi2_para_tune(ct_source);
                 oldref[ct_source] = user_pid_2.config_ref[ct_source];
                 tube_current_piControl_v2(ct_source);
                 param_pid.config_ref = user_pid_2.config_ref[ct_source];
@@ -780,13 +772,13 @@ void ct_task()
 
     case HVPS_SM_ID_EXPO_END:
 
-        // ----------- 检查是否为双源交替切换 -----------
-        is_dual_source = (ctrl_data.filament_on[0] && ctrl_data.filament_on[1] &&
-                          ctrl_data.interlock);
+//        // ----------- 检查是否为双源交替切换 -----------
+//        is_dual_source = (ctrl_data.filament_on[0] && ctrl_data.filament_on[1] &&
+//                          ctrl_data.interlock);
 
 
 
-        if ((is_dual_source) && (ctrl_data.enable[ct_source]))
+        if ((ctrl_data.xrayMode == XRAY_MODE_D_PULSE) && (ctrl_data.enable[ct_source]))
         {
             uint32_t elapsed = last_expo_count - last_expo_end_tick[ct_source];
 
@@ -879,16 +871,24 @@ void ct_task()
                 exp_count[1] = exp_count[1] % 1200000;
 
             }
-            else
+            else if(is_xrayB_mode == 1)
             {
-                parm_table[ct_source].expo_count_total++;
-                exp_count[ct_source] += config_data.expo_count[ct_source];
-                parm_table[ct_source].expo_times_total += exp_count[ct_source] / 1200000;
-                exp_count[ct_source] = exp_count[ct_source] % 1200000;
-                config_data.expo_count[ct_source] = 0;
+                parm_table[1].expo_count_total++;
+                exp_count[1] += config_data.expo_count[1];
+                parm_table[1].expo_times_total += exp_count[1] / 1200000;
+                exp_count[1] = exp_count[1] % 1200000;
+                config_data.expo_count[1] = 0;
             }
-            config_disable_sw_safe(1);//config_disable_sw(1);
-            config_enable_sw_safe(0);//config_enable_sw(0);
+						else
+						{
+						    parm_table[0].expo_count_total++;
+                exp_count[0] += config_data.expo_count[0];
+                parm_table[0].expo_times_total += exp_count[0] / 1200000;
+                exp_count[0] = exp_count[0] % 1200000;
+                config_data.expo_count[0] = 0;
+						}
+            config_disable_sw_safe(1);
+            config_enable_sw_safe(0);
             // 单源或失能，直接退出
             xray_CT_disable();
             ctrl_data.filament_on[0] = 0;
@@ -908,7 +908,16 @@ void ct_task()
         break;
     }
     // --------- 安全检查：禁止SW1和SW2同时开启 ----------
-    if (sw_status[0] && sw_status[1])
+//    if (sw_status[0] && sw_status[1])
+//    {
+//        // 出现异常，紧急关闭所有采样开关
+//        config_disable_sw_safe(0);
+//        config_disable_sw_safe(1);
+
+//        // 记录故障标志，便于调试
+//        mHVPS_Fault.FAULT_REG4.bit.sw_err = 1;
+//    }
+    if ((HAL_GPIO_ReadPin(HV_SW_A_GPIO_Port,HV_SW_A_PIN) == GPIO_PIN_RESET) && (HAL_GPIO_ReadPin(HV_SW_B_GPIO_Port,HV_SW_B_PIN) == GPIO_PIN_RESET))
     {
         // 出现异常，紧急关闭所有采样开关
         config_disable_sw_safe(0);

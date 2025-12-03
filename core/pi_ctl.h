@@ -28,7 +28,7 @@ typedef struct
     uint32_t config_ref;
 
     uint8_t  pulse_pi_flag;     /* 脉冲模式，PI开始标志 */
-    uint32_t  pulse_count;      /* 脉冲个数计数 */
+    uint32_t  pulse_count[2];      /* 脉冲个数计数 */
 
     uint8_t  pi_flag;           /* 连续模式，PI开始标志 */
     uint8_t  pi_fast_flag;      /* 连续模式快速调节标志 */
@@ -63,7 +63,7 @@ void pid_Init(float target, uint32_t ref_init, uint8_t isPulseMode);
 void tube_current_pid_pulseInit(uint8_t n);
 void tube_current_piControl_v2(uint8_t n);
 void pid_Init_2(float target, uint32_t ref_init, uint8_t isPulseMode,uint8_t n);
-
+void pi2_para_tune(uint8_t n);
 
 #endif
 

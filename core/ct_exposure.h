@@ -259,6 +259,7 @@ typedef struct
     uint32_t isCheckAvailable;   /*管电压和管电流达到稳定后可以开始检测，稳定时间根据上升时间确定*/
 		
 		uint32_t hv_hardware_count;
+		uint32_t curr_hardware_count;
 } xray_running_data;
 
 typedef struct

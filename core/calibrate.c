@@ -221,7 +221,7 @@ void calibrate_task()
             user_pid_2.Kp[0] = 50;
             user_pid_2.Ki[0] = 40;
 
-            param_pid.pulse_count ++;
+            param_pid.pulse_count[cali_source]++;
             tube_current_piControl_v2(cali_source);
             param_pid.config_ref = user_pid_2.config_ref[cali_source];
 
@@ -279,7 +279,8 @@ void calibrate_task()
                         sw_count = 0;
                         cycle = 1;
                         set_hv_state(HPVS_SM_ID_CAL_END, cali_source);
-                        param_pid.pulse_count = 0;
+                        param_pid.pulse_count[0] = 0;
+												param_pid.pulse_count[1] = 0;
                     }
 
                 }
@@ -320,7 +321,8 @@ void calibrate_task()
                         set_hv_state(HPVS_SM_ID_CAL_RUN, cali_source);
                         cali_data.timmer_count = 1;
                         cycle = 1;
-                        param_pid.pulse_count = 0;
+                        param_pid.pulse_count[0] = 0;
+												param_pid.pulse_count[1] = 0;
                     }
                 }
             }

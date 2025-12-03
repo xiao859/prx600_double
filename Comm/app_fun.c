@@ -368,7 +368,7 @@ void SetHV2TubeVoltageandcurrent(message_protocol *msg)
         }
         else
         {
-            mHVPS_Fault.FAULT_REG4.bit.VOL_CURR_OV = 1;
+            mHVPS_Fault.FAULT_REG5.bit.VOL_CURR_OV2 = 1;
             data1 = SETUP_OUT_LIMIT;
         }
 
@@ -381,7 +381,7 @@ void SetHV2TubeVoltageandcurrent(message_protocol *msg)
         }
         else
         {
-            mHVPS_Fault.FAULT_REG4.bit.VOL_CURR_OV = 1;
+            mHVPS_Fault.FAULT_REG5.bit.VOL_CURR_OV2 = 1;
             data2 = SETUP_OUT_LIMIT;
         }
         //      xray_data.timmer_count = 1;
@@ -470,6 +470,9 @@ void FaultReset(message_protocol *msg)
 			  config_reset_signal(1);
         fault_value_clear();
 			  config_reset_signal(0);
+			
+			  config_disable_sw_safe(1);
+        config_enable_sw_safe(0);
 
         set_hv_state(HVPS_SM_ID_IDLE, 0);
         set_hv_state(HVPS_SM_ID_IDLE, 1);
