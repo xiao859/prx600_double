@@ -176,12 +176,12 @@ void tube_current_piControl_v2(uint8_t n)
 
     if (n == 0)
     {
-        user_pid_2.config_ref[n] = MAX(MIN(user_pid_2.config_ref[n], 2400), 1000);
+        user_pid_2.config_ref[n] = MAX(MIN(user_pid_2.config_ref[n], 2300), 1500);
         HAL_DAC_SetValue(&hdac1, DAC_CHANNEL_2, DAC_ALIGN_12B_R, user_pid_2.config_ref[n]);
     }
     else
     {
-        user_pid_2.config_ref[n] = MAX(MIN(user_pid_2.config_ref[n], 1600), 900);
+        user_pid_2.config_ref[n] = MAX(MIN(user_pid_2.config_ref[n], 1500), 900);
         __HAL_TIM_SET_COMPARE(&htim5, TIM_CHANNEL_4, user_pid_2.config_ref[n]);//1360
     }
 //      debug_tx3("pi_p:%d, %f, %d, %f\n", n, user_pid_2.currTarget[n], user_pid_2.config_ref[n],user_pid_2.err[n]);
@@ -199,26 +199,26 @@ void pi2_para_tune(uint8_t n)
             case 1:
                 user_pid_2.Kp[0] = 15;
                 user_pid_2.Ki[0] = 15;
-                user_pid_2.Kp[1] = 30;
-                user_pid_2.Ki[1] = 30;
+                user_pid_2.Kp[1] = 0;
+                user_pid_2.Ki[1] = 1;
                 break;
             case 2:
                 user_pid_2.Kp[0] = 5;
                 user_pid_2.Ki[0] = 5;
-                user_pid_2.Kp[1] = 20;
-                user_pid_2.Ki[1] = 20;
+                user_pid_2.Kp[1] = 1;
+                user_pid_2.Ki[1] = 1;
                 break;
             case 3:
                 user_pid_2.Kp[0] = 5;
                 user_pid_2.Ki[0] = 5;
-                user_pid_2.Kp[1] = 15;
-                user_pid_2.Ki[1] = 15;
+                user_pid_2.Kp[1] = 1;
+                user_pid_2.Ki[1] = 1;
                 break;
             case 4:
                 user_pid_2.Kp[0] = 5;
                 user_pid_2.Ki[0] = 5;
-                user_pid_2.Kp[1] = 10;
-                user_pid_2.Ki[1] = 10;
+                user_pid_2.Kp[1] = 3;
+                user_pid_2.Ki[1] = 3;
                 break;
             default:
                 user_pid_2.Kp[0] = 1;
@@ -236,32 +236,32 @@ void pi2_para_tune(uint8_t n)
             case 1:
                 user_pid_2.Kp[0] = 20;
                 user_pid_2.Ki[0] = 20;
-                user_pid_2.Kp[1] = 30;
-                user_pid_2.Ki[1] = 30;
+                user_pid_2.Kp[1] = 15;
+                user_pid_2.Ki[1] = 15;
                 break;
             case 2:
                 user_pid_2.Kp[0] = 15;
                 user_pid_2.Ki[0] = 15;
-                user_pid_2.Kp[1] = 20;
-                user_pid_2.Ki[1] = 20;
+                user_pid_2.Kp[1] = 5;
+                user_pid_2.Ki[1] = 5;
                 break;
             case 3:
                 user_pid_2.Kp[0] = 10;
                 user_pid_2.Ki[0] = 10;
-                user_pid_2.Kp[1] = 15;
-                user_pid_2.Ki[1] = 15;
+                user_pid_2.Kp[1] = 5;
+                user_pid_2.Ki[1] = 5;
                 break;
             case 4:
                 user_pid_2.Kp[0] = 10;
                 user_pid_2.Ki[0] = 10;
-                user_pid_2.Kp[1] = 10;
-                user_pid_2.Ki[1] = 10;
+                user_pid_2.Kp[1] = 1;
+                user_pid_2.Ki[1] = 1;
                 break;
             default:
                 user_pid_2.Kp[0] = 5;
                 user_pid_2.Ki[0] = 5;
-                user_pid_2.Kp[1] = 5;
-                user_pid_2.Ki[1] = 5;
+                user_pid_2.Kp[1] = 1;
+                user_pid_2.Ki[1] = 1;
                 break;
 
             }
@@ -273,26 +273,26 @@ void pi2_para_tune(uint8_t n)
             case 1:
                 user_pid_2.Kp[0] = 25;
                 user_pid_2.Ki[0] = 25;
-                user_pid_2.Kp[1] = 40;
-                user_pid_2.Ki[1] = 40;
+                user_pid_2.Kp[1] = 15;
+                user_pid_2.Ki[1] = 15;
                 break;
             case 2:
                 user_pid_2.Kp[0] = 20;
                 user_pid_2.Ki[0] = 20;
-                user_pid_2.Kp[1] = 20;
-                user_pid_2.Ki[1] = 20;
+                user_pid_2.Kp[1] = 10;
+                user_pid_2.Ki[1] = 10;
                 break;
             case 3:
                 user_pid_2.Kp[0] = 10;
                 user_pid_2.Ki[0] = 10;
-                user_pid_2.Kp[1] = 10;
-                user_pid_2.Ki[1] = 10;
+                user_pid_2.Kp[1] = 5;
+                user_pid_2.Ki[1] = 5;
                 break;
             case 4:
                 user_pid_2.Kp[0] = 5;
                 user_pid_2.Ki[0] = 5;
-                user_pid_2.Kp[1] = 10;
-                user_pid_2.Ki[1] = 10;
+                user_pid_2.Kp[1] = 5;
+                user_pid_2.Ki[1] = 5;
                 break;
             default:
                 user_pid_2.Kp[0] = 5;
@@ -309,26 +309,26 @@ void pi2_para_tune(uint8_t n)
             case 1:
                 user_pid_2.Kp[0] = 30;
                 user_pid_2.Ki[0] = 30;
-                user_pid_2.Kp[1] = 60;
-                user_pid_2.Ki[1] = 60;
+                user_pid_2.Kp[1] = 20;
+                user_pid_2.Ki[1] = 20;
                 break;
             case 2:
                 user_pid_2.Kp[0] = 20;
                 user_pid_2.Ki[0] = 20;
-                user_pid_2.Kp[1] = 20;
-                user_pid_2.Ki[1] = 20;
+                user_pid_2.Kp[1] = 10;
+                user_pid_2.Ki[1] = 10;
                 break;
             case 3:
                 user_pid_2.Kp[0] = 15;
                 user_pid_2.Ki[0] = 15;
-                user_pid_2.Kp[1] = 15;
-                user_pid_2.Ki[1] = 15;
+                user_pid_2.Kp[1] = 10;
+                user_pid_2.Ki[1] = 10;
                 break;
             case 4:
                 user_pid_2.Kp[0] = 10;
                 user_pid_2.Ki[0] = 10;
-                user_pid_2.Kp[1] = 10;
-                user_pid_2.Ki[1] = 10;
+                user_pid_2.Kp[1] = 5;
+                user_pid_2.Ki[1] = 5;
                 break;
             default:
                 user_pid_2.Kp[0] = 5;
@@ -357,14 +357,14 @@ void pi2_para_tune(uint8_t n)
             case 3:
                 user_pid_2.Kp[0] = 10;
                 user_pid_2.Ki[0] = 10;
-                user_pid_2.Kp[1] = 15;
-                user_pid_2.Ki[1] = 15;
+                user_pid_2.Kp[1] = 10;
+                user_pid_2.Ki[1] = 10;
                 break;
             case 4:
                 user_pid_2.Kp[0] = 10;
                 user_pid_2.Ki[0] = 10;
-                user_pid_2.Kp[1] = 10;
-                user_pid_2.Ki[1] = 10;
+                user_pid_2.Kp[1] = 5;
+                user_pid_2.Ki[1] = 5;
                 break;
             default:
                 user_pid_2.Kp[0] = 5;
@@ -387,26 +387,26 @@ void pi2_para_tune(uint8_t n)
             case 2:
                 user_pid_2.Kp[0] = 60;
                 user_pid_2.Ki[0] = 60;
-                user_pid_2.Kp[1] = 50;
-                user_pid_2.Ki[1] = 50;
+                user_pid_2.Kp[1] = 30;
+                user_pid_2.Ki[1] = 30;
                 break;
             case 3:
                 user_pid_2.Kp[0] = 30;
                 user_pid_2.Ki[0] = 30;
-                user_pid_2.Kp[1] = 30;
-                user_pid_2.Ki[1] = 30;
+                user_pid_2.Kp[1] = 20;
+                user_pid_2.Ki[1] = 20;
                 break;
             case 4:
                 user_pid_2.Kp[0] = 20;
                 user_pid_2.Ki[0] = 20;
-                user_pid_2.Kp[1] = 20;
-                user_pid_2.Ki[1] = 20;
+                user_pid_2.Kp[1] = 10;
+                user_pid_2.Ki[1] = 10;
                 break;
             default:
                 user_pid_2.Kp[0] = 10;
                 user_pid_2.Ki[0] = 10;
-                user_pid_2.Kp[1] = 10;
-                user_pid_2.Ki[1] = 10;
+                user_pid_2.Kp[1] = 5;
+                user_pid_2.Ki[1] = 5;
                 break;
             }
         }
